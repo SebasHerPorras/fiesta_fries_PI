@@ -1,0 +1,170 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\controllers\\countrycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\controllers\\countrycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\services\\countryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\services\\countryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\repositories\\countryrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\repositories\\countryrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\models\\countrymodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\models\\countrymodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\backend-lab-c23770.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\backend-lab-c23770.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|c:\\sebas-dev_windows\\sebas-hernandez-ingesoft\\laboratorio5_c23770\\laboratorio4_c23770\\backend-lab-c23770\\backend-lab-c23770\\sqlquery1.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|",
+      "RelativeMoniker": "D:0:0:{267AC5C3-ACBD-481F-91EF-E6892BD0A342}|backend-lab-C23770\\backend-lab-C23770.csproj|solutionrelative:backend-lab-c23770\\sqlquery1.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "backend-lab-C23770.http",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\backend-lab-C23770.http",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\backend-lab-C23770.http",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\backend-lab-C23770.http",
+              "RelativeToolTip": "backend-lab-C23770\\backend-lab-C23770.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2025-09-09T18:56:09.263Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Program.cs",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Program.cs",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Program.cs",
+              "RelativeToolTip": "backend-lab-C23770\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-09T18:44:58.356Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "SQLQuery1.sql",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\SQLQuery1.sql",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\SQLQuery1.sql",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\SQLQuery1.sql",
+              "RelativeToolTip": "backend-lab-C23770\\SQLQuery1.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2025-09-02T19:00:04.599Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\appsettings.json",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\appsettings.json",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\appsettings.json",
+              "RelativeToolTip": "backend-lab-C23770\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-02T18:43:04.745Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CountryService.cs",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Services\\CountryService.cs",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Services\\CountryService.cs",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Services\\CountryService.cs",
+              "RelativeToolTip": "backend-lab-C23770\\Services\\CountryService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-02T18:25:39.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CountryRepository.cs",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Repositories\\CountryRepository.cs",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Repositories\\CountryRepository.cs",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Repositories\\CountryRepository.cs",
+              "RelativeToolTip": "backend-lab-C23770\\Repositories\\CountryRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-02T18:16:47.964Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CountryModel.cs",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Models\\CountryModel.cs",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Models\\CountryModel.cs",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Models\\CountryModel.cs",
+              "RelativeToolTip": "backend-lab-C23770\\Models\\CountryModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-02T18:13:19.961Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CountryController.cs",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Controllers\\CountryController.cs",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Controllers\\CountryController.cs",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Controllers\\CountryController.cs",
+              "RelativeToolTip": "backend-lab-C23770\\Controllers\\CountryController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-31T22:44:33.853Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "backend-lab-C23770\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\sebas-dev_windows\\sebas-hernandez-IngeSoft\\Laboratorio5_C23770\\Laboratorio4_C23770\\backend-lab-C23770\\backend-lab-C23770\\Properties\\launchSettings.json",
+              "RelativeToolTip": "backend-lab-C23770\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-31T22:40:35.35Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
