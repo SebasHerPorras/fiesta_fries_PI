@@ -3,15 +3,15 @@ import App from './App.vue'
 import { createRouter, createWebHistory } from "vue-router";
 import CountriesList from './components/CountriesList.vue';
 import CountryForm from "./components/CountryForm.vue";
-import HomePage from './components/HomePage.vue'; 
+import LoginRegister from './components/LoginRegister.vue'; 
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes: [
-        { path: "/", name: "Home", component: HomePage},
-        { path: "/country", name: "Country", component: CountryForm},
-        { path: "/countries", name: "Countries", component: CountriesList},
-    ],
-})
+  history: createWebHistory(),
+  routes: [
+    { path: "/", name: "LoginRegister", component: LoginRegister },
+    { path: "/country", name: "Country", component: CountryForm },
+    { path: "/countries", name: "Countries", component: CountriesList },
+  ],
+});
 
 createApp(App).use(router).mount("#app");
