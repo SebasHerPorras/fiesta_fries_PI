@@ -43,5 +43,10 @@ namespace backend.Repositories
             const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash FROM dbo.[User] WHERE email = @Email";
             return connection.QuerySingleOrDefault<UserModel>(query, new { Email = email });
         }
+
+        public string get_connectionString()
+        {
+            return this._connectionString;
+        }
     }
 }

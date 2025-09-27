@@ -5,6 +5,7 @@ import CountriesList from './components/CountriesList.vue';
 import CountryForm from "./components/CountryForm.vue";
 import LoginRegister from './components/LoginRegister.vue'; 
 import Homepage from './components/Homepage.vue';
+import LogINE from './components/LogInEmpleadores.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +14,7 @@ const router = createRouter({
     { path: "/home", name: "Homepage", component: Homepage },
     { path: "/country", name: "Country", component: CountryForm },
     { path: "/countries", name: "Countries", component: CountriesList },
+    { path: "/LogINEmpleadores", name: "LogInE", component: LogINE },
   ],
 });
 
