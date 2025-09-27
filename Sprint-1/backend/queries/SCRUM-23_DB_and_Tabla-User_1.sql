@@ -71,3 +71,12 @@ INSERT INTO Persona(id,[firstName],[secondName],birthdate,direction,personalPhon
 select * from Persona;
 
 select* from [User];
+
+CREATE TABLE EmailVerification(
+   userId UNIQUEIDENTIFIER NOT NULL ,Constraint FK_User_Notification FOREIGN KEY(userId) REFERENCES [User](PK_User),
+   token nvarchar(200),
+   experationDate DATETIME NOT NULL,
+);
+
+INSERT INTO EmailVerification(userID,token,experationDate) VALUES
+('039CE7D8-9109-4D13-9CC7-201211C3CA85','pepe','2025-10-10')

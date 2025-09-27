@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Data.SqlClient;
+using System.Net;
+using System.Net.Mail;
 
 namespace backend.Controllers
 {
@@ -72,7 +74,71 @@ namespace backend.Controllers
 
             Console.WriteLine("Query realizado con éxito\n");
 
-            return Ok(new { id = newUser.Id, email = newUser.Email });
+            /*
+
+
+            //Ojito pq aquí vamos a añadir la vara del correo electrónico 
+
+            // vamos a generar el token 
+
+            var token = Guid.NewGuid().ToString();
+
+
+
+            var mailTokenVerification = new MailModel
+            {
+                
+
+            };
+
+           
+            //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
+            var mailRepository = new MailRepository();
+
+
+
+            mailRepository
+
+             Console.WriteLine("Query realizado con éxito\n");
+
+            //preparamos el link al api donde vamos a manejar la vaina
+            var verificationLink = $"http://localhost:5081/api/user/verify?token={token}";
+
+            // vamo a enviar el correo
+            var mailAddr = new MailAddress("pruebadisenosoft@gmail.com", "Fiesta Fries");
+
+            var sendTo = new MailAddress(newUser.Email);
+
+            const string password = "C21988@@";
+
+            const string subject = "Verificación de Creación de usuario Fiesta Fries";
+
+             string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
+
+            // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                //Estos son la credenciales que generamos anteriormente 
+                Credentials = new NetworkCredential(mailAddr.Address, password)
+            };
+
+            //Aquí vamos a enviar la vaina
+            //Le indicamos que vamos a enviar 
+            using (var message = new MailMessage(mailAddr, sendTo)
+            {
+
+            })
+            {
+                smtp.Send(message);
+            }
+            */
+
+                return Ok(new { id = newUser.Id, email = newUser.Email });
         }
 
     }
