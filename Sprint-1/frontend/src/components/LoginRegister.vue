@@ -63,8 +63,12 @@
 </template>
 
 <script>
+
+// imports necesarios para el login
+import axios from 'axios';
+
 export default {
-  name: "HomePage", // Nombre del componente principal
+  name: "LoginRegister", // Nombre del componente principal
   data() {
     return {
       email: "", // Estado para el email del login
@@ -76,47 +80,38 @@ export default {
     showPasswordError(msg) {
       this.passwordError = msg;
     },
-    login() {
-      const password = this.password;
-      const minLength = 8;
-      const maxLength = 16;
-      const hasUpper = /[A-Z]/.test(password);
-      const hasNumber = /\d/.test(password);
-      const hasSpecial = /[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(
-        password
-      );
+    async login() {
+      this.passwordError = "";
+      this.loading = true;
+      try {
+        const url = "https://localhost:7056/api/user/login";
+        const res = await axios.post(url, {
+          email: this.email.trim(),
+          password: this.password
+        });
 
-      if (!hasSpecial) {
-        this.showPasswordError(
-          "La contraseña debe tener al menos un carácter especial."
-        );
-        return;
-      }
-      if (password.length < minLength) {
-        this.showPasswordError(
-          "La contraseña debe tener al menos 8 caracteres."
-        );
-        return;
-      }
-      if (password.length > maxLength) {
-        this.showPasswordError(
-          "La contraseña no debe exceder los 16 caracteres."
-        );
-        return;
-      }
-      if (!hasUpper) {
-        this.showPasswordError(
-          "La contraseña debe tener al menos una letra mayúscula."
-        );
-        return;
-      }
-      if (!hasNumber) {
-        this.showPasswordError("La contraseña debe tener al menos un número.");
-        return;
-      }
+        console.log("Email:", this.email);
+        console.log("Password length:", this.password?.length);
 
-      this.passwordError = ""; // Limpia el error si todo está bien
-      alert("Login enviado (demo)");
+        // Acepta cualquier 200 OK como login correcto y/o valida la respuesta
+        if (res.status === 200 && res.data && (res.data.id || res.data.email)) {
+          // login exitoso
+          alert("Login exitoso!");
+          this.$router.push({ path: "/country" });
+
+        } else {
+          this.showPasswordError("Credenciales inválidas.");
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          this.showPasswordError("Credenciales inválidas.");
+        } else {
+          this.showPasswordError("Error al conectar con el servidor.");
+          console.error(err);
+        }
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };
@@ -128,7 +123,8 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #1e1e1e; /* var --color-background */
+  background: #1e1e1e;
+  /* var --color-background */
   /* Fondo azul oscuro */
   color: whitesmoke;
 }

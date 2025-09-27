@@ -3,16 +3,25 @@
             <form id="EmployerLogIn" @submit.prevent ="handleSubmit" @reset =" handleReset">
              <h3 id="title">Formulario Empleador</h3>
                 <label for="Name"> 
-                    <input type="text" id="Name" v-model ="form.name" placeholder="Nombre" required>
+                    <input type="text" id="Name" v-model ="form.firstName" placeholder="Nombre" required>
                 </label>
+                <label for="SecondNames">
+                    <input type="text" id="SecondNames" v-model="form.secondName" placeholder="Apelllidos" required/>
+                </label>
+                <label for="Id">
+                    <input type="text" id="Id" v-model="form.id" placeholder="cédula"/>
+                 </label>
                 <label for="Email"> 
                     <input type="email" id="Email" v-model = "form.email" placeholder="Email" required />
                 </label>
                 <label for ="BirthDate">
-                    <input type="date" v-model ="form.date" id="BirthDate" required />
+                    <input type="date" v-model ="form.birthdate" id="BirthDate" required />
                 </label>
                 <label for="Phone_Number">
-                <input type="tel" id="Phone_Number" v-model ="form.phoneNumber" required placeholder="teléfono"/>
+                <input type="tel" id="Phone_Number" v-model ="form.personalPhone" required placeholder="teléfono"/>
+                </label>
+                <label for="Home Number">
+                    <input type="text" id="Home Number" v-model="form.homePhone" placeholder="Teléfono casa"/>
                 </label>
                 <label for="Password">
                 <input type="password" id="Password" v-model = "form.password" required placeholder="Contraseña" />
@@ -25,7 +34,7 @@
                 </label>
                 <div class ="Bottons_container">
                     <input type="submit" value="Enviar" id="Submit-btn" />
-                    <input type="reset" value="Reiniciar" id="Restart-btn" />
+                    <input type="reset" value="Cancelar" id="Restart-btn" />
                 </div>
             </form>
         </div>
@@ -44,29 +53,63 @@
 
 
 <script>
+   import axios from 'axios';
     export default{
         name: "employerFomr",
         data(){
            return{
-             form:{
-                 name: "",
+               form: {
+                 uniqueUser: "",
+                 id: "",
+                 firstName: "",
+                 secondName: "",
                  email: "",
-                 date: "",
-                 phoneNumber: "",
-                 password: "",
-                 passwordConfirm:"",
+                 personalPhone: "",
+                 homePhone: "",
+                 birthdate: "",
+                 personType: "Empleador",
                  direction: "",
-
+                 active: 0
              },
            };
         },
 
         methods: {
-            handleSubmit(){
+           async handleSubmit(){
                 const JSondata = JSON.stringify(this.form,null,2);
                 console.log("Datos capaturados correctamente\n");
                 console.log(JSondata);
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
+                //Ojito qe primero vamos 
+                try {
+                    const createUserUrl = "http://localhost:5081/api/user/create";
+                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
+                    const userData = {
+                        Email: this.form.email.trim(),
+                        PasswordHash: this.form.password
+                    };
+                    console.log("Va a llegar a la primera conexión\n");
+                    const userResponse = await axios.post(createUserUrl, userData);
+                    console.log("Conexión exitosa\n");
+                    console.log("Usuario:", userResponse.data);
+
+                    // Aquí apartir de la respuesta me traigo el id del usuario para trabajar la persona
+                    const userId = userResponse.data.id;
+
+                    this.form.uniqueUser = userId;
+
+                    const personUrl = "http://localhost:5081/api/person/create";
+
+                    const persRes = await axios.post(personUrl, this.form);
+                    console.log("Usuario y Persona creados correctamente:");
+                    console.log("Persona:", persRes.data);
+
+                } catch (error) {
+                    console.log("Error crando usuario o persona",error);
+                }
+
+
+                //Aquí vamos a crear la persona ojito
 
             },
             handleReset(){
@@ -74,12 +117,15 @@
                 //ojito tomamos la vaina y la rechazamos 
                 this.form = {
                       name: "",
+                      secondNames:"",
+                      id:"",
                       email: "",
                       date: "",
                       phoneNumber: "",
                       password: "",
                       passwordConfirm:"",
                       direction: "",
+
                 };
             
             },
@@ -132,7 +178,7 @@
         padding: 22px;
         border-radius: 8px;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        height:515px;
+        height:680px;
     }
 
     .socials {
@@ -154,7 +200,7 @@
     }
 
     .Bottons_container{
-        margin-top: 15px;
+        margin-top: 20px;
         display: flex;
         gap: 5px;
     }
