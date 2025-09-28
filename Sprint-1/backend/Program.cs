@@ -6,12 +6,13 @@ var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:8080") // tu frontend
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:8080")
+                                .AllowAnyHeader()
+                                .AllowAnyMethod()
+                                .AllowCredentials();
+                      });
 });
 
 // Añadir controladores
