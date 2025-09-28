@@ -8,6 +8,7 @@ using System;
 using System.Data.SqlClient;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Quic;
 
 namespace backend.Controllers
 {
@@ -53,10 +54,10 @@ namespace backend.Controllers
         public ActionResult Create([FromBody] UserModel request)
         {
             Console.WriteLine("Entro en el método de creación de usuario\n");
-            if(request==null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.PasswordHash) ){
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.PasswordHash)) {
                 return BadRequest("Email y password son requeridos");
             }
-            
+
             var newUser = new UserModel
             {
                 Id = Guid.NewGuid(),
@@ -74,7 +75,7 @@ namespace backend.Controllers
 
             Console.WriteLine("Query realizado con éxito\n");
 
-            /*
+
 
 
             //Ojito pq aquí vamos a añadir la vara del correo electrónico 
@@ -83,23 +84,26 @@ namespace backend.Controllers
 
             var token = Guid.NewGuid().ToString();
 
+            // La expiración va a ser cada 3 días
 
+            DateTime expiration = DateTime.Now.AddDays(3);
 
             var mailTokenVerification = new MailModel
             {
-                
-
+                userID = newUser.Id,
+                token = token,
+                experationDate = expiration
             };
 
-           
+
             //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
             var mailRepository = new MailRepository();
 
 
 
-            mailRepository
+            mailRepository.insertMailNoty(mailTokenVerification);
 
-             Console.WriteLine("Query realizado con éxito\n");
+            Console.WriteLine("Query realizado con éxito\n");
 
             //preparamos el link al api donde vamos a manejar la vaina
             var verificationLink = $"http://localhost:5081/api/user/verify?token={token}";
@@ -109,11 +113,11 @@ namespace backend.Controllers
 
             var sendTo = new MailAddress(newUser.Email);
 
-            const string password = "C21988@@";
+            const string password = "rxhd qmzc uvxi sxmg";
 
             const string subject = "Verificación de Creación de usuario Fiesta Fries";
 
-             string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
 
             // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
             var smtp = new SmtpClient
@@ -131,14 +135,51 @@ namespace backend.Controllers
             //Le indicamos que vamos a enviar 
             using (var message = new MailMessage(mailAddr, sendTo)
             {
-
+                Subject = subject,
+                Body = body
             })
             {
                 smtp.Send(message);
             }
-            */
 
-                return Ok(new { id = newUser.Id, email = newUser.Email });
+            return Ok(new { id = newUser.Id, email = newUser.Email });
+        }
+
+        //Api para la validación de usuari
+        [HttpGet("verify")]
+        public ActionResult verification([FromQuery] string token)
+        {
+            MailRepository repo = new MailRepository();
+
+            var verificationMail = repo.getByToken(token);
+
+            /// Aquí hacemos las validaciones para el token
+            /// 
+            if (verificationMail == null || verificationMail.experationDate < DateTime.UtcNow)
+            {
+                return BadRequest("El token es nulo o ya caducó");
+            }
+
+            /// Necesito verificarlo
+            /// objeto para realizar la verificación
+            var verificationDate = new
+            {
+                active = 1,
+                userFK = verificationMail.userID
+            };
+
+            UserRepository repos = new UserRepository();
+
+            //onst string connection_string = repos.
+
+            var connection = new SqlConnection(repos.get_connectionString());
+
+
+            const string query = @"UPDATE dbo.[User] SET active = @active WHERE PK_User = @userFk";
+
+            connection.Execute(query, verificationDate);
+
+            return Ok("Correo verificado con éxito");
         }
 
     }

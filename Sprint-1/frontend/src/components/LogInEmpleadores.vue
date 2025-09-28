@@ -69,7 +69,6 @@
                  birthdate: "",
                  personType: "Empleador",
                  direction: "",
-                 active: 0
              },
            };
         },
@@ -103,6 +102,10 @@
                     const persRes = await axios.post(personUrl, this.form);
                     console.log("Usuario y Persona creados correctamente:");
                     console.log("Persona:", persRes.data);
+
+                    this.$router.push({ path: "/" }).then(() => {
+                        alert("El formulario fue compleatado con éxito revise su correo para activar su usuario")
+                    });
 
                 } catch (error) {
                     console.log("Error crando usuario o persona",error);

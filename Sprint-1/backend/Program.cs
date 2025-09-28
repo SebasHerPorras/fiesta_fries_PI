@@ -1,4 +1,4 @@
-var builder = WebApplication.CreateBuilder(args);
+﻿var builder = WebApplication.CreateBuilder(args);
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-// A�adir controladores
+// Añadir controladores
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,7 +28,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ?? Comentamos HTTPS redirection en desarrollo
+// ⚠ Comentamos HTTPS redirection en desarrollo
 // app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);
@@ -40,5 +40,6 @@ app.MapControllers();
 // Escuchar solo en HTTP
 app.Urls.Clear();
 app.Urls.Add("http://localhost:5081");
+app.Urls.Add("https://localhost:7056");
 
 app.Run();

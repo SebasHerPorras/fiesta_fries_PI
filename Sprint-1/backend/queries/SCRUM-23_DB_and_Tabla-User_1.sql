@@ -52,8 +52,8 @@ id int Primary KEY NOT NULL,
 [secondName] varchar(50) NOT NULL, 
 birthdate date NOT NULL,
 direction varchar(200) NOT NULL,
-personalPhone int NOT NULL,
-homePhone int NULL,
+personalPhone varchar(30) NOT NULL,
+homePhone varchar(30) NULL,
 uniqueUser UNIQUEIDENTIFIER NOT NULL,CONSTRAINT FK_Persona_Usuario FOREIGN KEY(uniqueUser) REFERENCES [User](PK_User),
 personType varchar(30) NOT NULL CHECK (personType IN('Empleador','Empleado')),
 )
@@ -80,3 +80,9 @@ CREATE TABLE EmailVerification(
 
 INSERT INTO EmailVerification(userID,token,experationDate) VALUES
 ('039CE7D8-9109-4D13-9CC7-201211C3CA85','pepe','2025-10-10')
+
+
+DELETE FROM Persona;
+DELETE FROM EmailVerification;
+DELETE FROM [USER];
+

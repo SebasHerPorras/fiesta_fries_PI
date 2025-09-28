@@ -24,6 +24,16 @@ namespace backend.Repositories
             connection.Execute(query, model);
         }
 
+        public MailModel? getByToken(string token_)
+        {
 
+            var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"SELECT* FROM dbo.EmailVerification WHERE token = @token";
+
+            Console.WriteLine("Query realizado con éxito\n");
+            return connection.QuerySingleOrDefault<MailModel>(query,new{ token = token_});
+
+        }
     }
 }

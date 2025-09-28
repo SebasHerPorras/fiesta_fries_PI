@@ -5,6 +5,7 @@ using backend.Models;
 using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace backend.Repositories
@@ -40,7 +41,7 @@ namespace backend.Repositories
             return data;
         }
 
-        public PersonModel? GetById(Guid id)
+        public PersonModel? GetById([FromQuery]Guid id)
         {
             using var connection = new SqlConnection(this._connectionString);
             const string query = "SELECT * FROM dbo.Persona WHERE uniqueUser = @uniqueUser";
@@ -49,8 +50,10 @@ namespace backend.Repositories
 
         }
 
-
-        //public PersonModel activeUser
+        public string getConnectionString()
+        {
+            return _connectionString;
+        }
 
     }
 }
