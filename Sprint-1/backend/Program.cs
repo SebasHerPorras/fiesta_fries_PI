@@ -1,40 +1,45 @@
+﻿var builder = WebApplication.CreateBuilder(args);
+
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("https://0.0.0.0:7056", "http://0.0.0.0:5081");
-
+// Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy.WithOrigins("http://localhost:8080")
-                                .AllowAnyHeader()
-                                .AllowAnyMethod();
-                      });
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:8080") // tu frontend
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
-// Add services to the container.
 
+// Añadir controladores
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Solo habilitar Swagger en desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+// ⚠ Comentamos HTTPS redirection en desarrollo
+// app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);
 
+app.UseAuthorization();
+
 app.MapControllers();
+
+// Escuchar solo en HTTP
+app.Urls.Clear();
+app.Urls.Add("http://localhost:5081");
+app.Urls.Add("https://localhost:7056");
 
 app.Run();
