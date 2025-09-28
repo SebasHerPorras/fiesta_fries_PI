@@ -17,9 +17,16 @@ namespace backend.Controllers
         public ActionResult validate([FromBody] int id)
         {
             PersonRepository key = new PersonRepository();
-            
+
             //ocupamos realizar el query
-            var connection = SqlConnection(key.)
+            PersonModel user = key.GetByIdentity(id);
+            Console.WriteLine("LLega aquí\n");
+            if (user == null)
+            {
+               return Ok(new {result = false });
+            }
+           
+            return Ok(new {result = true});
 
         }
     }

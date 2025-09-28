@@ -50,10 +50,17 @@ namespace backend.Repositories
 
         }
 
-        public string getConnectionString()
+        public PersonModel? GetByIdentity(int id_)
         {
-            return _connectionString;
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"SELECT* FROM PERSONA WHERE id = @id";
+            Console.WriteLine("Querry realizado con éxito\n");
+
+            return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }
+
+
 
     }
 }

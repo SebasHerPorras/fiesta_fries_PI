@@ -10,13 +10,15 @@
                     <input type="text" id="SecondNames" v-model="form.secondName" placeholder="Apelllidos" required/>
                 </label>
                 <label for="Id">
-                    <input type="text" id="Id" v-model="form.id" placeholder="cédula"/>
+                    <input type="text" id="Id" v-model="form.id" placeholder="cédula" required/>
+                    <div v-if="idError"  style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{idError}} </div>
                  </label>
                 <label for="Email"> 
                     <input type="email" id="Email" v-model = "form.email" placeholder="Email" required />
                 </label>
                 <label for ="BirthDate">
                     <input type="date" v-model ="form.birthdate" id="BirthDate" required />
+                    <div v-if="birthdateError"  style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{birthdateError}}</div>
                 </label>
                 <label for="Phone_Number">
                 <input type="tel" id="Phone_Number" v-model ="form.personalPhone" required placeholder="teléfono"/>
@@ -26,12 +28,15 @@
                 </label>
                 <label for="Password">
                 <input type="password" id="Password" v-model = "form.password" required placeholder="Contraseña" />
+                      <div v-if="passwordError"  style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px" >{{passwordError}}</div>
                 </label>
                 <label for="Password_Confirm">
                     <input type="password" id="Password_Confirm" v-model ="form.passwordConfirm" required placeholder="Confirmar Contraseña" />
+                      <div v-if="passwordConfirmationError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px" >{{passwordConfirmationError}}</div>
                 </label>
                 <label for="Direction">
                 <input type="text" v-model ="form.direction" id="Direction" required placeholder="Dirección" />
+                    <div v-if="directionError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{directionError}}</div>
                 </label>
                 <div class ="Bottons_container">
                     <input type="submit" value="Enviar" id="Submit-btn" />
@@ -73,7 +78,10 @@
                },
                passwordError:"",
                firstNameError:"",
-               birthdateError:"",
+               birthdateError: "",
+               idError: "",
+               directionError: "",
+               passwordConfirmationError:"",
            };
         },
 
@@ -82,18 +90,74 @@
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
             },
+            showpasswordError(message) {
+                this.passwordError = message;
+            },
+            validateConfirmationPassword(firstPassword, secondPassword) {
+                if (firstPassword == secondPassword) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            showpasswordConfirmationError(message) {
+                this.passwordConfirmationError = message;
+            },
             isAdult(birthDate) {
                 //El día de hoy
+                
                 const today = new Date();
                 const birth = new Date(birthDate);
-                let age = today.getFullYear() - birthDate.getFullYear();
+                console.log(today);
+                console.log(birth);
+                let age = today.getFullYear() - birth.getFullYear();
                 const m = today.getMonth() - birth.getMonth();
                 if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
                     age--;
                 }
+                console.log(age);
                 return age >= 18;
 
-            }, 
+            },
+            clearErrors() {
+                this.passwordError = "";
+                this.firstNameError = "";
+                this.birthdateError = "";
+                this.idError = "";
+                this.directionError = "";
+                this.passwordConfirmationError = "";
+            },
+            showbirthdateError(message) {
+                this.birthdateError = message;
+            },
+            validateDirectionLength() {
+                return this.form.direction.length < 200;
+            },
+            showDirectionError(message) {
+                this.directionError = message;
+            },
+            async validateID() {
+                // tengo que llamar aquí a la api
+                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
+                console.log("Entra aquí jijij");
+                let ageInt = parseInt(this.form.id, 10);
+                console.log(ageInt);
+                const response = await axios.post(validateidurl, ageInt, {headers: { "Content-Type": "application/json" }} );
+                console.log("pasa de aquí\n");
+
+                console.log(response);
+                if (response.data.result) {
+                    // tengo que llamar al método que haga return ojito
+                    this.showidError();
+                    
+                    return false;
+                }
+
+                return true;
+            },
+            showidError() {
+                this.idError = "Este id ya está registrado, ingrse otro";
+            },
             
             isNameValid(name) {
                 name = name.trim();
@@ -102,25 +166,54 @@
             showfisrtNameError(errorMessage) {
                 this.firstNameError = errorMessage;
             },
+
+
            async handleSubmit(){
                 const JSondata = JSON.stringify(this.form,null,2);
                 console.log("Datos capaturados correctamente\n");
                 console.log(JSondata);
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
                 //Ojito qe primero vamos 
-                try {
-                    const createUserUrl = "http://localhost:5081/api/user/create";
-                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
-                    const userData = {
-                        Email: this.form.email.trim(),
-                        PasswordHash: this.form.password
-                    };
+               try {
+                   const createUserUrl = "http://localhost:5081/api/user/create";
+                   //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
+                   const userData = {
+                       Email: this.form.email.trim(),
+                       PasswordHash: this.form.password
+                   };
 
 
-                    if (!(this.isNameValid(this.form.firstName))) {
-                        this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
+                   if (!(this.isNameValid(this.form.firstName))) {
+                       this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
+                       return;
+                   }
+
+                   const event = await this.validateID();
+                   if (!event) {
+                       return;
+                   }
+
+                   if (!(this.isAdult(this.form.birthdate))) {
+                       this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
+                       console.log("Entra aquí4\n");
+                       return;
+                   }
+
+                   if (!this.validateDirectionLength()) {
+                       this.showDirectionError("La dirección no puede exceder los 200 carácteres");
+                       return;
+                   }
+                   if (!this.validatePassword(this.form.password)) {
+                       this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
+                       return;
+                   }
+
+                   if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
+                        this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
                         return;
-                    }
+                   }
+
+                   this.clearErrors();
 
                     console.log("Va a llegar a la primera conexión\n");
                     const userResponse = await axios.post(createUserUrl, userData);
