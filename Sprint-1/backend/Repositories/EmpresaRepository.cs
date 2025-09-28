@@ -16,7 +16,7 @@ namespace backend.Handlers.backend.Repositories
             _connectionString = builder.Configuration.GetConnectionString("CountryContext");
         }
 
-        public string CreateEmpresa(EmpresaModel empresa) 
+        public string CreateEmpresa(EmpresaModel empresa)
         {
             try
             {
@@ -38,8 +38,8 @@ namespace backend.Handlers.backend.Repositories
                     CedulaJuridica = empresa.CedulaJuridica,
                     Nombre = empresa.Nombre,
                     DueñoEmpresa = empresa.DueñoEmpresa,
-                    DireccionEspecifica = (object)empresa.DireccionEspecifica ?? DBNull.Value, 
-                    Telefono = empresa.Telefono.HasValue ? (object)empresa.Telefono.Value : DBNull.Value, 
+                    DireccionEspecifica = (object)empresa.DireccionEspecifica ?? DBNull.Value,
+                    Telefono = empresa.Telefono.HasValue ? (object)empresa.Telefono.Value : DBNull.Value,
                     NoMaxBeneficios = empresa.NoMaxBeneficios,
                     FrecuenciaPago = empresa.FrecuenciaPago,
                     DiaPago = empresa.DiaPago
@@ -49,14 +49,16 @@ namespace backend.Handlers.backend.Repositories
 
                 if (affectedRows >= 1)
                 {
-                    return "EMPRESA_CREADA_EXITOSAMENTE";
+                    Console.WriteLine("INSERT EXITOSO EN REPOSITORY");
+                    return string.Empty; 
                 }
                 else
                 {
+                    Console.WriteLine("No se insertaron filas");
                     return "No se pudo crear la empresa";
                 }
             }
-            catch (SqlException ex) when (ex.Number == 2627) 
+            catch (SqlException ex) when (ex.Number == 2627)
             {
                 Console.WriteLine($"ERROR: Cédula jurídica duplicada - {empresa.CedulaJuridica}");
                 return "Ya existe una empresa con esa cédula jurídica.";
