@@ -110,7 +110,14 @@
             <div class="error" id="diaPagoError">{{ errors.diaPago }}</div>
           </div>
           
-          <button type="submit" class="btn-primary">Registrar Empresa</button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            :disabled="loading"
+          >
+            <span v-if="loading">⏳ Registrando...</span>
+            <span v-else>Registrar Empresa</span>
+          </button>
           
           <div class="success" id="successMessage" :class="{ error: messageType === 'error' }">{{ successMessage }}</div>
         </form>
@@ -137,7 +144,7 @@ export default {
         telefono: '',
         noMaxBeneficios: '',
         frecuenciaPago: '',
-        diaPago: ''
+        diaPago: '',
       },
       errors: {
         cedulaJuridica: '',
@@ -150,10 +157,49 @@ export default {
       },
       successMessage: '',
       messageType: 'success',
-      existingCompanies: []
+      existingCompanies: [],
+      userId: '',
+      loading: false 
     }
   },
+
+  mounted() {
+  this.obtenerUserId();
+},
+
   methods: {
+  obtenerUserId() {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.userId = user.id;
+        console.log('UserId obtenido:', this.userId);
+      } catch (error) {
+        console.error('Error al parsear userData:', error);
+      }
+    }
+    
+    if (!this.userId) {
+      const sessionUser = sessionStorage.getItem('userData');
+      if (sessionUser) {
+        try {
+          const user = JSON.parse(sessionUser);
+          this.userId = user.id;
+          console.log('UserId obtenido de sessionStorage:', this.userId);
+        } catch (error) {
+          console.error('Error al parsear session userData:', error);
+        }
+      }
+    }
+    
+    if (!this.userId) {
+      console.error('No se pudo obtener el userId. El usuario debe estar logueado.');
+      this.successMessage = 'Error: Usuario no autenticado. Por favor, inicie sesión.';
+      this.messageType = 'error';
+    }
+  },
+
     validateCedulaJuridica() {
       const cedula = this.formData.cedulaJuridica.trim();
   
@@ -191,7 +237,7 @@ export default {
     },
     
     validateTelefono() {
-      const telefono = this.formData.telefono.toString().trim();
+      const telefono = this.formData.telefono ? this.formData.telefono.toString().trim() : '';
       
       if (telefono && !/^\d+$/.test(telefono)) {
         this.errors.telefono = 'El telefono debe contener solo numeros.';
@@ -309,6 +355,9 @@ export default {
       console.log('JSON completo:', JSON.stringify(empresaData));
       console.log('================================');
       
+      if (this.loading) return; 
+      this.loading = true;
+
       try {
         await this.guardarEmpresaEnBackend(empresaData);
         
@@ -328,6 +377,8 @@ export default {
           this.successMessage = 'Error: ' + error.message;
         }
         this.messageType = 'error';
+      }finally {
+        this.loading = false; 
       }
     },
     
@@ -335,13 +386,25 @@ export default {
       try {
         console.log('INICIANDO ENVIO AL BACKEND');
         console.log('Datos recibidos en guardarEmpresaEnBackend:', empresaData);
+        console.log('UserId a enviar:', this.userId);
+        
+        if (!this.userId) {
+          throw new Error('Usuario no autenticado. Por favor, inicie sesión.');
+        }
+        
+        const requestData = {
+          userId: this.userId,
+          empresa: empresaData
+        };
+        
+        console.log('Datos completos a enviar:', requestData);
         
         const response = await axios.post(
-            "https://localhost:7056/api/Empresa", 
-            empresaData,
-            {
-                headers: { "Content-Type": "application/json" }
-            }
+          "https://localhost:7056/api/Empresa", 
+          requestData,  
+          {
+            headers: { "Content-Type": "application/json" }
+          }
         );
 
         console.log('Status de respuesta:', response.status);
@@ -351,11 +414,11 @@ export default {
         
       } catch (error) {
         console.error('Error en guardarEmpresaEnBackend:', error);
-         if (error.response && error.response.data) {
-            const serverMessage = error.response.data.message || error.response.data;
-            throw new Error(serverMessage);
-          } else {
-            throw new Error('Error de conexión con el servidor');
+        if (error.response && error.response.data) {
+          const serverMessage = error.response.data.message || error.response.data;
+          throw new Error(serverMessage);
+        } else {
+          throw new Error('Error de conexión con el servidor');
         }
       }
     },

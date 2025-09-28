@@ -74,6 +74,7 @@ export default {
       email: "", // Estado para el email del login
       password: "", // Estado para la contraseña del login
       passwordError: "", // Estado para el mensaje de error de la contraseña
+      loading: false
     };
   },
   methods: {
@@ -95,6 +96,33 @@ export default {
 
         // Acepta cualquier 200 OK como login correcto y/o valida la respuesta
         if (res.status === 200 && res.data && (res.data.id || res.data.email)) {
+          //Guardar datos en LocalStorage
+          const userData = {
+            id: res.data.id,           
+            email: res.data.email,
+            personaId: res.data.personaId,
+            personType: res.data.personType,
+            firstName: res.data.firstName,
+            secondName: res.data.secondName
+          };
+      
+          // Guardar en LocalStorage
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          console.log('Datos de usuario guardados:', userData);
+          console.log('UserId guardado:', userData.id);
+
+          console.log('Datos guardados en localStorage:');
+          console.log('- UserId:', userData.id);
+          console.log('- Email:', userData.email);
+          console.log('- PersonType:', userData.personType);
+          console.log('- PersonaId:', userData.personaId);
+          console.log('- Nombre completo:', userData.firstName, userData.secondName);
+
+          // Verificá que se guardó correctmente
+          const storedData = localStorage.getItem('userData');
+          console.log('✅ Verificación - Datos en localStorage:', storedData);
+          
           // login exitoso
           alert("Login exitoso!");
           this.$router.push({ path: "/country" });

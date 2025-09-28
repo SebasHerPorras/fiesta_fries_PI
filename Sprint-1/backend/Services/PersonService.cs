@@ -31,7 +31,18 @@ namespace backend.Services
             return repository.GetById(id);
         }
 
-        //Demás cositas que vamos a ir añadiendo para realizar ciertas validaciones y autenticaciones
+        public PersonModel? GetByUserId(Guid usuarioId)
+        {
+            try
+            {
+                return repository.GetByUserId(usuarioId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR:Buscando persona por usuario: {ex.Message}");
+                return null;
+            }
+        }
 
     }
 }
