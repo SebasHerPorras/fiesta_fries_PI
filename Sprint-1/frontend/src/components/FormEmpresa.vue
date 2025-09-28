@@ -21,8 +21,9 @@
               id="ruc" 
               v-model="formData.cedulaJuridica"
               class="form-control" 
-              placeholder="Cedula juridica *"
+              placeholder="Cédula jurídica *"
               required
+              maxlength="10" 
               @input="validateCedulaJuridica"
             >
             <div class="error" id="cedulaJuridicaError">{{ errors.cedulaJuridica }}</div>
@@ -155,11 +156,13 @@ export default {
   methods: {
     validateCedulaJuridica() {
       const cedula = this.formData.cedulaJuridica.trim();
-      
+  
       if (!cedula) {
-        this.errors.cedulaJuridica = 'La cedula juridica es obligatoria.';
+        this.errors.cedulaJuridica = 'La cédula jurídica es obligatoria.';
       } else if (!/^\d+$/.test(cedula)) {
-        this.errors.cedulaJuridica = 'La cedula juridica debe contener solo numeros.';
+        this.errors.cedulaJuridica = 'La cédula jurídica debe contener solo números.';
+      } else if (cedula.length !== 10) {
+        this.errors.cedulaJuridica = 'La cédula jurídica debe tener exactamente 10 dígitos.';
       } else {
         this.errors.cedulaJuridica = '';
       }
