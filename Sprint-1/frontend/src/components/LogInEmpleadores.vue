@@ -4,6 +4,7 @@
              <h3 id="title">Formulario Empleador</h3>
                 <label for="Name"> 
                     <input type="text" id="Name" v-model ="form.firstName" placeholder="Nombre" required>
+                    <div v-if="firstNameError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{firstNameError}}</div>
                 </label>
                 <label for="SecondNames">
                     <input type="text" id="SecondNames" v-model="form.secondName" placeholder="Apelllidos" required/>
@@ -69,11 +70,38 @@
                  birthdate: "",
                  personType: "Empleador",
                  direction: "",
-             },
+               },
+               passwordError:"",
+               firstNameError:"",
+               birthdateError:"",
            };
         },
 
         methods: {
+            validatePassword(password) {
+                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
+                return regex.test(password);
+            },
+            isAdult(birthDate) {
+                //El día de hoy
+                const today = new Date();
+                const birth = new Date(birthDate);
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+                return age >= 18;
+
+            }, 
+            
+            isNameValid(name) {
+                name = name.trim();
+                return name.length > 5;
+            },
+            showfisrtNameError(errorMessage) {
+                this.firstNameError = errorMessage;
+            },
            async handleSubmit(){
                 const JSondata = JSON.stringify(this.form,null,2);
                 console.log("Datos capaturados correctamente\n");
@@ -87,6 +115,13 @@
                         Email: this.form.email.trim(),
                         PasswordHash: this.form.password
                     };
+
+
+                    if (!(this.isNameValid(this.form.firstName))) {
+                        this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
+                        return;
+                    }
+
                     console.log("Va a llegar a la primera conexión\n");
                     const userResponse = await axios.post(createUserUrl, userData);
                     console.log("Conexión exitosa\n");
