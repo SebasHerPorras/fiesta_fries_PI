@@ -201,18 +201,18 @@ export default {
     
     validateMaxBenefits() {
       const beneficios = this.formData.noMaxBeneficios;
-      
-      // Convertir a número y verificar
-      const numBeneficios = Number(beneficios);
-      
       if (beneficios === '' || beneficios === null || beneficios === undefined) {
         this.errors.noMaxBeneficios = 'El numero maximo de beneficios es obligatorio.';
-      } else if (isNaN(numBeneficios)) {
-        this.errors.noMaxBeneficios = 'Debe ser un numero valido.';
-      } else if (numBeneficios < 0) {
-        this.errors.noMaxBeneficios = 'No puede ser negativo.';
       } else {
-        this.errors.noMaxBeneficios = '';
+        const numBeneficios = Number(beneficios);
+        
+        if (isNaN(numBeneficios)) {
+          this.errors.noMaxBeneficios = 'Debe ser un numero valido.';
+        } else if (numBeneficios < 0) {
+          this.errors.noMaxBeneficios = 'No puede ser negativo.';
+        } else {
+          this.errors.noMaxBeneficios = '';
+        }
       }
     },
     
@@ -267,7 +267,10 @@ export default {
       this.formData.diaPago
       ];
 
-      const faltanCamposObligatorios = camposObligatorios.some(campo => !campo);
+      const faltanCamposObligatorios = camposObligatorios.some(campo => 
+        campo !== 0 && !campo  
+      );
+
 
       console.log('=== DEBUG DETALLADO DE CAMPOS OBLIGATORIOS ===');
       console.log('cedulaJuridica:', this.formData.cedulaJuridica, '¿Vacío?:', !this.formData.cedulaJuridica);
