@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using Dapper;
+using System.Data.Common;
 
 namespace backend.Handlers.backend.Repositories
 {
@@ -15,7 +16,7 @@ namespace backend.Handlers.backend.Repositories
             _connectionString = builder.Configuration.GetConnectionString("CountryContext");
         }
 
-        public bool CreateEmpresa(EmpresaModel empresa)
+        public string CreateEmpresa(EmpresaModel empresa) 
         {
             try
             {
@@ -29,16 +30,16 @@ namespace backend.Handlers.backend.Repositories
                                       @Telefono, @NoMaxBeneficios, @FrecuenciaPago, @DiaPago)";
 
                 Console.WriteLine("=== EJECUTANDO INSERT ===");
+                Console.WriteLine($"Cédula: {empresa.CedulaJuridica}");
                 Console.WriteLine($"DueñoEmpresa: {empresa.DueñoEmpresa}");
-                Console.WriteLine($"Query: {query}");
 
                 var affectedRows = connection.Execute(query, new
                 {
                     CedulaJuridica = empresa.CedulaJuridica,
                     Nombre = empresa.Nombre,
-                    DueñoEmpresa = empresa.DueñoEmpresa, 
-                    DireccionEspecifica = empresa.DireccionEspecifica,
-                    Telefono = empresa.Telefono,
+                    DueñoEmpresa = empresa.DueñoEmpresa,
+                    DireccionEspecifica = (object)empresa.DireccionEspecifica ?? DBNull.Value, 
+                    Telefono = empresa.Telefono.HasValue ? (object)empresa.Telefono.Value : DBNull.Value, 
                     NoMaxBeneficios = empresa.NoMaxBeneficios,
                     FrecuenciaPago = empresa.FrecuenciaPago,
                     DiaPago = empresa.DiaPago
@@ -46,13 +47,29 @@ namespace backend.Handlers.backend.Repositories
 
                 Console.WriteLine($"Filas afectadas: {affectedRows}");
 
-                return affectedRows >= 1;
+                if (affectedRows >= 1)
+                {
+                    return "EMPRESA_CREADA_EXITOSAMENTE";
+                }
+                else
+                {
+                    return "No se pudo crear la empresa";
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 2627) 
+            {
+                Console.WriteLine($"ERROR: Cédula jurídica duplicada - {empresa.CedulaJuridica}");
+                return "Ya existe una empresa con esa cédula jurídica.";
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"ERROR SQL: {ex.Message} (Número: {ex.Number})");
+                return $"Error de base de datos: {ex.Message}";
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR EN REPOSITORY: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                throw; 
+                return $"Error general: {ex.Message}";
             }
         }
 

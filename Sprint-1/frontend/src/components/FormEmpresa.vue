@@ -306,7 +306,7 @@ export default {
       try {
         await this.guardarEmpresaEnBackend(empresaData);
         
-        this.successMessage = 'Empresa registrada correctamente en la base de datos.';
+        this.successMessage = 'Empresa registrada correctamente.';
         this.messageType = 'success';
         
         setTimeout(() => {
@@ -316,7 +316,11 @@ export default {
         
       } catch (error) {
         console.error('Error al guardar empresa:', error);
-        this.successMessage = error.message || 'Error al conectar con el servidor. Intente nuevamente.';
+        if (error.message.includes('cédula jurídica')) {
+          this.successMessage =    error.message;
+        } else {
+          this.successMessage = 'Error: ' + error.message;
+        }
         this.messageType = 'error';
       }
     },
@@ -341,10 +345,11 @@ export default {
         
       } catch (error) {
         console.error('Error en guardarEmpresaEnBackend:', error);
-        if (error.response) {
-          throw new Error(error.response.data.message || 'Error del servidor');
-        } else {
-          throw new Error('Error de conexión con el servidor');
+         if (error.response && error.response.data) {
+            const serverMessage = error.response.data.message || error.response.data;
+            throw new Error(serverMessage);
+          } else {
+            throw new Error('Error de conexión con el servidor');
         }
       }
     },
@@ -369,7 +374,6 @@ export default {
 </script>
 
 <style scoped>
-/* Tus estilos se mantienen igual */
 * {
   margin: 0;
   padding: 0;

@@ -15,34 +15,31 @@ namespace backend.Services
 
         public string CreateEmpresa(EmpresaModel empresa)
         {
-            var result = string.Empty;
-
             try
             {
                 Console.WriteLine("=== EMPRESA SERVICE ===");
-                Console.WriteLine($"Recibiendo empresa - DueñoEmpresa: {empresa.DueñoEmpresa}");
                 Console.WriteLine($"Cédula: {empresa.CedulaJuridica}");
+                Console.WriteLine($"DueñoEmpresa: {empresa.DueñoEmpresa}");
 
-                var isCreated = _empresaRepository.CreateEmpresa(empresa);
+                var result = _empresaRepository.CreateEmpresa(empresa);
 
-                if (!isCreated)
+                if (result == "EMPRESA_CREADA_EXITOSAMENTE")
                 {
-                    result = "Error al crear la empresa en el repositorio";
-                    Console.WriteLine($"Error: {result}");
+                    Console.WriteLine("Empresa creada exitosamente");
+                    return "La empresa se ha registrado correctamente."; 
                 }
                 else
                 {
-                    Console.WriteLine("Empresa creada exitosamente en el repositorio");
+                    Console.WriteLine($"Error: {result}");
+                    return result; 
                 }
             }
             catch (Exception ex)
             {
-                result = $"Error creando empresa: {ex.Message}";
-                Console.WriteLine($"Excepción en service: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                var errorMessage = $"Error en service: {ex.Message}";
+                Console.WriteLine($"{errorMessage}");
+                return errorMessage;
             }
-
-            return result;
         }
 
         public List<EmpresaModel> GetEmpresas()
