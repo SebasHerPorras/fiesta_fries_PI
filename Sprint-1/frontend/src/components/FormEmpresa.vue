@@ -47,7 +47,7 @@
               id="direccion" 
               v-model="formData.direccionEspecifica"
               class="form-control" 
-              placeholder="Direccion especifica"
+              placeholder="Direccion especifica (opcional)"
               @input="validateDireccion"
             >
             <div class="error" id="direccionError">{{ errors.direccionEspecifica }}</div>
@@ -59,7 +59,7 @@
               id="phone" 
               v-model="formData.telefono"
               class="form-control" 
-              placeholder="Telefono"
+              placeholder="Telefono (opcional)"
               @input="validateTelefono"
             >
             <div class="error" id="telefonoError">{{ errors.telefono }}</div>
@@ -123,6 +123,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: 'CompanyFormulario',
   data() {
@@ -198,13 +200,16 @@ export default {
     },
     
     validateMaxBenefits() {
-      const beneficios = this.formData.noMaxBeneficios.toString().trim();
+      const beneficios = this.formData.noMaxBeneficios;
       
-      if (beneficios === '') {
+      // Convertir a número y verificar
+      const numBeneficios = Number(beneficios);
+      
+      if (beneficios === '' || beneficios === null || beneficios === undefined) {
         this.errors.noMaxBeneficios = 'El numero maximo de beneficios es obligatorio.';
-      } else if (!/^\d+$/.test(beneficios)) {
+      } else if (isNaN(numBeneficios)) {
         this.errors.noMaxBeneficios = 'Debe ser un numero valido.';
-      } else if (parseInt(beneficios) < 0) {
+      } else if (numBeneficios < 0) {
         this.errors.noMaxBeneficios = 'No puede ser negativo.';
       } else {
         this.errors.noMaxBeneficios = '';
@@ -255,21 +260,23 @@ export default {
       const hasErrors = Object.values(this.errors).some(error => error !== '');
       
       const camposObligatorios = [
-        this.formData.cedulaJuridica,
-        this.formData.nombre, 
-        this.formData.noMaxBeneficios,
-        this.formData.frecuenciaPago,
-        this.formData.diaPago
+      this.formData.cedulaJuridica,
+      this.formData.nombre, 
+      this.formData.noMaxBeneficios,
+      this.formData.frecuenciaPago,
+      this.formData.diaPago
       ];
-      
+
       const faltanCamposObligatorios = camposObligatorios.some(campo => !campo);
 
-      console.log('=== DEBUG VALIDACIONES ===');
-      console.log('hasErrors:', hasErrors);
+      console.log('=== DEBUG DETALLADO DE CAMPOS OBLIGATORIOS ===');
+      console.log('cedulaJuridica:', this.formData.cedulaJuridica, '¿Vacío?:', !this.formData.cedulaJuridica);
+      console.log('nombre:', this.formData.nombre, '¿Vacío?:', !this.formData.nombre);
+      console.log('noMaxBeneficios:', this.formData.noMaxBeneficios, '¿Vacío?:', !this.formData.noMaxBeneficios);
+      console.log('frecuenciaPago:', this.formData.frecuenciaPago, '¿Vacío?:', !this.formData.frecuenciaPago);
+      console.log('diaPago:', this.formData.diaPago, '¿Vacío?:', !this.formData.diaPago);
       console.log('faltanCamposObligatorios:', faltanCamposObligatorios);
-      console.log('Errores:', JSON.stringify(this.errors, null, 2));
-      console.log('Campos obligatorios:', camposObligatorios);
-      console.log('================================');
+      console.log('===============================================');
 
       if (hasErrors || faltanCamposObligatorios) {
         console.log('SE DETIENE POR VALIDACIONES');
@@ -281,8 +288,8 @@ export default {
       const empresaData = {
         cedulaJuridica: Number(this.formData.cedulaJuridica),
         nombre: this.formData.nombre.trim(),
-        direccionEspecifica: this.formData.direccionEspecifica.trim(),
-        telefono: this.formData.telefono ? Number(this.formData.telefono) : 0,
+        direccionEspecifica: this.formData.direccionEspecifica.trim() || null,
+        telefono: this.formData.telefono ? Number(this.formData.telefono) : null,
         noMaxBeneficios: Number(this.formData.noMaxBeneficios),
         frecuenciaPago: this.formData.frecuenciaPago,
         diaPago: Number(this.formData.diaPago)
@@ -319,28 +326,26 @@ export default {
         console.log('INICIANDO ENVIO AL BACKEND');
         console.log('Datos recibidos en guardarEmpresaEnBackend:', empresaData);
         
-        const response = await fetch('http://localhost:5081/api/Empresa', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(empresaData)
-        });
-        
+        const response = await axios.post(
+            "https://localhost:7056/api/Empresa", 
+            empresaData,
+            {
+                headers: { "Content-Type": "application/json" }
+            }
+        );
+
         console.log('Status de respuesta:', response.status);
+        console.log('Respuesta del servidor:', response.data);
         
-        const responseText = await response.text();
-        console.log('Respuesta del servidor:', responseText);
-        
-        if (!response.ok) {
-          throw new Error(responseText);
-        }
-        
-        return responseText;
+        return response.data;
         
       } catch (error) {
         console.error('Error en guardarEmpresaEnBackend:', error);
-        throw error;
+        if (error.response) {
+          throw new Error(error.response.data.message || 'Error del servidor');
+        } else {
+          throw new Error('Error de conexión con el servidor');
+        }
       }
     },
         
@@ -364,6 +369,7 @@ export default {
 </script>
 
 <style scoped>
+/* Tus estilos se mantienen igual */
 * {
   margin: 0;
   padding: 0;

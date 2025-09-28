@@ -1,6 +1,6 @@
 ﻿public class EmpresaModel
 {
-    public int CedulaJuridica { get; set; }
+    public long CedulaJuridica { get; set; }
     public string Nombre { get; set; }
     public string DireccionEspecifica { get; set; }
     public int Telefono { get; set; }

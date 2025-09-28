@@ -12,7 +12,7 @@ const router = createRouter({
     { path: "/", name: "LoginRegister", component: LoginRegister },
     { path: "/country", name: "Country", component: CountryForm },
     { path: "/countries", name: "Countries", component: CountriesList },
-    { path: "/", name: "FormEmpresa", component: FormEmpresa },
+    { path: "/FormEmpresa", name: "FormEmpresa", component: FormEmpresa },
   ],
 });
 

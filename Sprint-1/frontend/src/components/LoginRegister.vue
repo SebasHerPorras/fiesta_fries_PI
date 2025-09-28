@@ -84,7 +84,7 @@ export default {
       this.passwordError = "";
       this.loading = true;
       try {
-        const url = "https://localhost:5081/api/user/login";
+        const url = "https://localhost:7056/api/user/login";
         const res = await axios.post(url, {
           email: this.email.trim(),
           password: this.password
