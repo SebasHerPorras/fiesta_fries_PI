@@ -57,7 +57,7 @@ router.get("/seguro-privado", function (req, res) {
   const edadNum = Number(edad);
   const depNum = Number(dependientes);
 
-  if (isNaN(edadNum) || edadNum < 0) {
+  if (isNaN(edadNum) || edadNum < 18) {
     return res.status(400).json({ error: "Edad inválida" });
   }
   if (isNaN(depNum) || depNum < 0) {
