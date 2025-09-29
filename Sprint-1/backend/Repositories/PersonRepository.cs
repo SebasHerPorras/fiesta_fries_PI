@@ -59,7 +59,6 @@ namespace backend.Repositories
 
             return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }
-
         public PersonModel? GetByUserId(Guid usuarioId)
         {
             try
@@ -68,10 +67,11 @@ namespace backend.Repositories
                 connection.Open();
 
                 var query = @"
-            SELECT * 
-            FROM Persona 
-            WHERE uniqueUser = @UsuarioId 
-            AND active = 1";
+            SELECT p.* 
+            FROM Persona p
+            INNER JOIN [User] u ON p.uniqueUser = u.PK_User
+            WHERE p.uniqueUser = @UsuarioId
+              AND u.active = 0";
 
                 return connection.QueryFirstOrDefault<PersonModel>(query, new
                 {
@@ -84,6 +84,7 @@ namespace backend.Repositories
                 return null;
             }
         }
+
 
 
 

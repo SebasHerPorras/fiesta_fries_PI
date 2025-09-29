@@ -77,6 +77,11 @@ namespace backend.Services
             }
         }
 
-        //Demás cositas...
+        public PersonModel? GetByIdentity(int id)
+        {
+            if (id <= 0) return null;
+            return repository.GetByIdentity(id);
+        }
+
     }
 }
