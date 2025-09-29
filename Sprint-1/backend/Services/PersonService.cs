@@ -64,10 +64,17 @@ namespace backend.Services
             return repository.GetById(id);
         }
 
-        // Nuevo: buscar persona por su id (identidad numérica)
-        public PersonModel? GetByIdentity(int identityId)
+        public PersonModel? GetByUserId(Guid usuarioId)
         {
-            return repository.GetByIdentity(identityId);
+            try
+            {
+                return repository.GetByUserId(usuarioId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR:Buscando persona por usuario: {ex.Message}");
+                return null;
+            }
         }
 
         //Demás cositas...

@@ -47,7 +47,27 @@ namespace backend.Controllers
             }
 
             Console.WriteLine("[DEBUG] Authentication succeeded for user id: " + user.Id);
-            return Ok(new { id = user.Id, email = user.Email });
+
+            var personaService = new PersonService();
+            var persona = personaService.GetByUserId(user.Id);
+
+            if (persona == null)
+            {
+                Console.WriteLine("[DEBUG] Usuario no tiene persona asociada: " + user.Id);
+                return BadRequest("El usuario no tiene una persona asociada.");
+            }
+
+            Console.WriteLine($"[DEBUG] Persona encontrada: ID {persona.id}, Tipo: {persona.personType}");
+
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                personaId = persona.id,
+                personType = persona.personType,
+                firstName = persona.firstName,
+                secondName = persona.secondName
+            });
         }
 
         [HttpPost("create")]

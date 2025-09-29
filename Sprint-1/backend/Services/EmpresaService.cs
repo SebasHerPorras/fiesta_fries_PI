@@ -23,21 +23,21 @@ namespace backend.Services
 
                 var result = _empresaRepository.CreateEmpresa(empresa);
 
-                if (result == "EMPRESA_CREADA_EXITOSAMENTE")
+                if (string.IsNullOrEmpty(result))
                 {
-                    Console.WriteLine("Empresa creada exitosamente");
-                    return "La empresa se ha registrado correctamente."; 
+                    Console.WriteLine("SERVICE: Empresa creada exitosamente");
+                    return string.Empty; 
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {result}");
+                    Console.WriteLine($"SERVICE: Error - {result}");
                     return result; 
                 }
             }
             catch (Exception ex)
             {
                 var errorMessage = $"Error en service: {ex.Message}";
-                Console.WriteLine($"{errorMessage}");
+                Console.WriteLine($"SERVICE EXCEPTION: {errorMessage}");
                 return errorMessage;
             }
         }
@@ -45,6 +45,32 @@ namespace backend.Services
         public List<EmpresaModel> GetEmpresas()
         {
             return _empresaRepository.GetEmpresas();
+        }
+
+        public List<EmpresaModel> GetEmpresasByOwner(int ownerId)
+        {
+            try
+            {
+                return _empresaRepository.GetByOwner(ownerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Service GetEmpresasByOwner: {ex.Message}");
+                return new List<EmpresaModel>();
+            }
+        }
+
+        public EmpresaModel GetEmpresaById(int id)
+        {
+            try
+            {
+                return _empresaRepository.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Service GetEmpresaById: {ex.Message}");
+                return null;
+            }
         }
     }
 }

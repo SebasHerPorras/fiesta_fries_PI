@@ -29,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ⚠ Comentamos HTTPS redirection en desarrollo
+// Comentamos HTTPS redirection en desarrollo
 // app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);

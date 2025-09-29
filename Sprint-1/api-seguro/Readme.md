@@ -162,7 +162,18 @@ calcularDeducciones("", 2);
     {
       "error": "Faltan parámetros"
     }
-
+3. **Parámetros inválidos**
+  - Edad < 18 o no numérica
+  - Dependientes < 0 o no numérico
+  - Código de respuesta: 400 Bad Request
+  - JSON de error:
+    {
+      "error": "Edad inválida"
+    }
+    o
+    {
+      "error": "Dependientes inválido"
+    }
 ---
 
 ## Resumen

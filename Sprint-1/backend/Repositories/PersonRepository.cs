@@ -60,6 +60,31 @@ namespace backend.Repositories
             return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }
 
+        public PersonModel? GetByUserId(Guid usuarioId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                connection.Open();
+
+                var query = @"
+            SELECT * 
+            FROM Persona 
+            WHERE uniqueUser = @UsuarioId 
+            AND active = 1";
+
+                return connection.QueryFirstOrDefault<PersonModel>(query, new
+                {
+                    UsuarioId = usuarioId
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] En repository GetByUserId: {ex.Message}");
+                return null;
+            }
+        }
+
 
 
     }
