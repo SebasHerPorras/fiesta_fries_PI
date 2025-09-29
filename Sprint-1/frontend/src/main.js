@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import CountriesList from './components/CountriesList.vue';
 import CountryForm from "./components/CountryForm.vue";
 import LoginRegister from './components/LoginRegister.vue';
+import FormEmpresa from './components/FormEmpresa.vue'; 
 import LogINE from './components/LogInEmpleadores.vue';
 import LogE from './components/LoginEmpleado.vue';
 
@@ -13,6 +14,7 @@ const router = createRouter({
     { path: "/", name: "LoginRegister", component: LoginRegister },
     { path: "/country", name: "Country", component: CountryForm },
     { path: "/countries", name: "Countries", component: CountriesList },
+    { path: "/FormEmpresa", name: "FormEmpresa", component: FormEmpresa },
     { path: "/LogINEmpleadores", name: "LogInE", component: LogINE },
     { path: "/LogInEmpleado", name: "LogE", component: LogE },
   ],
