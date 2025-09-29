@@ -44,9 +44,24 @@ namespace backend.Repositories
             return connection.QuerySingleOrDefault<UserModel>(query, new { Email = email });
         }
 
+        // Nuevo: insertar usuario (usa los mismos nombres de propiedades que UserModel)
+        public void Insert(UserModel user)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = @"INSERT INTO dbo.[User] (PK_User, email, [password], active) VALUES (@Id, @Email, @PasswordHash, @active)";
+            connection.Execute(query, user);
+        }
+
         public string get_connectionString()
         {
             return this._connectionString;
+        }
+
+        public UserModel? EmailVerification(string email_)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+            const string query = @"SELECT* FROM dbo.[USER] WHERE email = @Email";
+            return connection.QueryFirstOrDefault<UserModel>(query, new { Email = email_ });
         }
     }
 }
