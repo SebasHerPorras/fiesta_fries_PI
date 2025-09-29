@@ -3,6 +3,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -110,6 +111,93 @@ namespace backend.Controllers
             var empresas = _empresaService.GetEmpresas();
             return empresas;
         }
+
+        [HttpGet("mis-empresas/{userId}")]
+        public IActionResult GetEmpresasByUser(string userId)
+        {
+            try
+            {
+                Console.WriteLine("=== SOLICITUD OBTENER EMPRESAS DEL USUARIO ===");
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest(new { success = false, message = "UserId es requerido" });
+                }
+
+                if (!Guid.TryParse(userId, out Guid userGuid))
+                {
+                    return BadRequest(new { success = false, message = "UserId inválido" });
+                }
+
+                Console.WriteLine($"UserId recibido: {userId}");
+
+                var persona = _personService.GetByUserId(userGuid);
+                if (persona == null)
+                {
+                    Console.WriteLine("Error: No se encontró persona asociada al usuario");
+                    return NotFound(new { success = false, message = "No se encontró perfil de empleador para este usuario" });
+                }
+
+                Console.WriteLine($"Persona encontrada: ID {persona.id}, Nombre: {persona.firstName} {persona.secondName}");
+
+                var empresas = _empresaService.GetEmpresasByOwner(persona.id);
+
+                Console.WriteLine($"Se encontraron {empresas.Count} empresas para el usuario");
+
+                return Ok(new
+                {
+                    success = true,
+                    empresas = empresas,
+                    count = empresas.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GetEmpresasByUser: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Error interno del servidor: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetEmpresaById(int id)
+        {
+            try
+            {
+                Console.WriteLine($"=== SOLICITUD OBTENER EMPRESA POR ID: {id} ===");
+
+                var empresa = _empresaService.GetEmpresaById(id);
+                if (empresa == null)
+                {
+                    Console.WriteLine($"Empresa con ID {id} no encontrada");
+                    return NotFound(new { success = false, message = "Empresa no encontrada" });
+                }
+
+                Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
+                return Ok(new
+                {
+                    success = true,
+                    empresa = empresa
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GetEmpresaById: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Error interno del servidor: {ex.Message}"
+                });
+            }
+        }
+
+
+
+
     }
 
    

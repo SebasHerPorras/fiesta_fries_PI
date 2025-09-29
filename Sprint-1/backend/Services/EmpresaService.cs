@@ -46,5 +46,31 @@ namespace backend.Services
         {
             return _empresaRepository.GetEmpresas();
         }
+
+        public List<EmpresaModel> GetEmpresasByOwner(int ownerId)
+        {
+            try
+            {
+                return _empresaRepository.GetByOwner(ownerId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Service GetEmpresasByOwner: {ex.Message}");
+                return new List<EmpresaModel>();
+            }
+        }
+
+        public EmpresaModel GetEmpresaById(int id)
+        {
+            try
+            {
+                return _empresaRepository.GetById(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Service GetEmpresaById: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
