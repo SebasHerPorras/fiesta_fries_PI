@@ -81,5 +81,60 @@ namespace backend.Handlers.backend.Repositories
             string query = "SELECT * FROM dbo.Empresa";
             return connection.Query<EmpresaModel>(query).ToList();
         }
+
+        public List<EmpresaModel> GetByOwner(int ownerId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+            SELECT e.*, 
+                   0 as CantidadEmpleados  -- Por ahora 0, luego puedes contar empleados reales
+            FROM Empresa e
+            WHERE e.DueñoEmpresa = @OwnerId
+            ORDER BY e.Nombre";
+
+                Console.WriteLine($"Buscando empresas para DueñoEmpresa: {ownerId}");
+                var empresas = connection.Query<EmpresaModel>(query, new { OwnerId = ownerId }).ToList();
+                Console.WriteLine($"Se encontraron {empresas.Count} empresas");
+
+                return empresas;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository GetByOwner: {ex.Message}");
+                throw;
+            }
+        }
+
+        public EmpresaModel GetById(int id)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+            SELECT e.*, 
+                   0 as CantidadEmpleados
+            FROM Empresa e
+            WHERE e.id = @Id";
+
+                Console.WriteLine($"Buscando empresa con ID: {id}");
+                var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { Id = id });
+
+                if (empresa != null)
+                    Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
+                else
+                    Console.WriteLine($"Empresa con ID {id} no encontrada");
+
+                return empresa;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository GetById: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
