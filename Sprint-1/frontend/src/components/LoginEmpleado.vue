@@ -1,94 +1,178 @@
 ﻿<template>
-    <div class="main_container">
-        <form id="EmployerLogIn" @submit.prevent="handleSubmit" @reset=" handleReset">
-            <h3 id="title">Formulario Empleado</h3>
-            <label for="Name">
-                <input type="text" id="Name" v-model="form.firstName" placeholder="Nombre" required>
-                <div v-if="firstNameError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{firstNameError}}</div>
-            </label>
-            <label for="SecondNames">
-                <input type="text" id="SecondNames" v-model="form.secondName" placeholder="Apelllidos" required />
-            </label>
-            <label for="Id">
-                <input type="text" id="Id" v-model="form.id" placeholder="cédula" required />
-                <div v-if="idError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{idError}} </div>
-            </label>
-            <label for="payMethods">
-                <select id="methods">
-                    <option value="" disabled selected>Seleccione el método de pago</option>
-                    <option label="método de pago"></option>
-                </select>
-
-            </label>
-            <label for="BirthDate">
-                <input type="date" v-model="form.birthdate" id="BirthDate" required />
-                <div v-if="birthdateError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{birthdateError}}</div>
-            </label>
-            <label for="Phone_Number">
-                <input type="tel" id="Phone_Number" v-model="form.personalPhone" required placeholder="teléfono" />
-            </label>
-            <label for="Home Number">
-                <input type="text" id="Home Number" v-model="form.homePhone" placeholder="Teléfono casa" />
-            </label>
-            <label for="Password">
-                <input type="password" id="Password" v-model="form.password" required placeholder="Contraseña" />
-                <div v-if="passwordError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">{{passwordError}}</div>
-            </label>
-            <label for="Password_Confirm">
-                <input type="password" id="Password_Confirm" v-model="form.passwordConfirm" required placeholder="Confirmar Contraseña" />
-                <div v-if="passwordConfirmationError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">{{passwordConfirmationError}}</div>
-            </label>
-            <label for="Direction">
-                <input type="text" v-model="form.direction" id="Direction" required placeholder="Dirección" />
-                <div v-if="directionError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px"> {{directionError}}</div>
-            </label>
-            <div class="Bottons_container">
-                <input type="submit" value="Enviar" id="Submit-btn" />
-                <input type="reset" value="Cancelar" id="Restart-btn" />
+    <div class="wrap">
+        <main class="hero">
+            <div class="brand">
+                <div class="logo-box">
+                    <span class="f">F</span>
+                </div>
+                <div class="texts">
+                    <h1>Fiesta Fries</h1>
+                    <p>Gestor de Planillas</p>
+                </div>
             </div>
-        </form>
+
+            <aside class="register-card">
+                <h2>Formulario Empleado</h2>
+                <form id="EmployerLogIn" @submit.prevent="handleSubmit" @reset="handleReset">
+                    <label class="input">
+                        <input type="text"
+                               id="Name"
+                               v-model="form.firstName"
+                               placeholder="👤 Nombre"
+                               required />
+                    </label>
+                    <div v-if="firstNameError" class="error-msg">{{ firstNameError }}</div>
+
+                    <label class="input">
+                        <input type="text"
+                               id="SecondNames"
+                               v-model="form.secondName"
+                               placeholder="👥 Apellidos"
+                               required />
+                    </label>
+
+                    <div class="input">
+                            <select id="role" name="role" v-model="payMethod" required>
+                                <option value="" disabled selected style="color: #ece6e6ff">Método de pago</option>
+                                <option value="cash"  style="color: #ece6e6ff"> Efectivo</option>
+                                <option value=" bankAccount" style="color: #ece6e6ff">Cuenta de Banco</option>
+                            </select>
+                    </div>
+
+                    <label class="input">
+                        <input type="text"
+                               id="Id"
+                               v-model="form.id"
+                               placeholder="🆔 Cédula"
+                               required />
+                    </label>
+                    <div v-if="idError" class="error-msg">{{ idError }}</div>
+
+
+                    <label class="input">
+                        <input type="date"
+                               v-model="form.birthdate"
+                               id="BirthDate"
+                               required />
+                    </label>
+                    <div v-if="birthdateError" class="error-msg">{{ birthdateError }}</div>
+
+                    <label class="input">
+                        <input type="tel"
+                               id="Phone_Number"
+                               v-model="form.personalPhone"
+                               placeholder="📱 Teléfono"
+                               required />
+                    </label>
+
+                    <label class="input">
+                        <input type="text"
+                               id="Home Number"
+                               v-model="form.homePhone"
+                               placeholder="☎ Teléfono casa" />
+                    </label>
+
+                    <label class="input">
+                        <input type="password"
+                               id="Password"
+                               v-model="password"
+                               placeholder="🔒 Contraseña"
+                               required />
+                    </label>
+                    <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
+
+                    <label class="input">
+                        <input type="password"
+                               id="Password_Confirm"
+                               v-model="passwordConfirmation"
+                               placeholder="🔒 Confirmar Contraseña"
+                               required />
+                    </label>
+                    <div v-if="passwordConfirmationError" class="error-msg">
+                        {{ passwordConfirmationError }}
+                    </div>
+
+                    <label class="input">
+                        <input type="text"
+                               v-model="form.direction"
+                               id="Direction"
+                               placeholder="📍 Dirección"
+                               required />
+                    </label>
+                    <div v-if="directionError" class="error-msg">{{ directionError }}</div>
+
+                    <div class="buttons">
+                        <button class="btn" type="submit">Enviar</button>
+                    </div>
+                </form>
+            </aside>
+        </main>
+
+        <!-- Aquí vamo a dejar el footer -->
+        <footer>
+            <div>©2025 Fiesta Fries</div>
+            <div class="socials">
+                <a href="#" aria-label="Facebook">f</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="YouTube">▶</a>
+                <a href="#" aria-label="Instagram">✶</a>
+            </div>
+        </footer>
     </div>
-    <footer>
-        <div>©2025 Fiesta Fries</div>
-        <div class="socials">
-            <!-- Enlaces a redes sociales (solo íconos, no funcionales, de momento ojito) -->
-            <a href="#" aria-label="Facebook">f</a>
-            <a href="#" aria-label="LinkedIn">in</a>
-            <a href="#" aria-label="YouTube">▶</a>
-            <a href="#" aria-label="Instagram">✶</a>
-        </div>
-    </footer>
 </template>
 
 
 
 <script>
-   import axios from 'axios';
-    export default{
+    import axios from 'axios';
+    export default {
         name: "employerFomr",
-        data(){
-           return{
-               form: {
-                 uniqueUser: "",
-                 id: "",
-                 firstName: "",
-                 secondName: "",
-                 personalPhone: "",
-                 homePhone: "",
-                 birthdate: "",
-                 personType: "Empleado",
-                 direction: "",
-               },
-               passwordError:"",
-               firstNameError:"",
-               birthdateError: "",
-               idError: "",
-               directionError: "",
-               passwordConfirmationError:"",
-           };
+        data() {
+            return {
+                form: {
+                    uniqueUser: "",
+                    id: "",
+                    firstName: "",
+                    secondName: "",
+                    email:"",
+                    personalPhone: "",
+                    homePhone: "",
+                    birthdate: "",
+                    personType: "Empleado",
+                    direction: "",
+                },
+                payMethod: "",
+                passwordError: "",
+                firstNameError: "",
+                birthdateError: "",
+                idError: "",
+                directionError: "",
+                passwordConfirmationError: "",
+                email: "",
+                workstation: "",
+                employmentType: "",
+                password: "",
+                passwordConfirmation: "",
+
+            };
         },
 
         methods: {
+            getType() {
+                const getTypeUrl = this.$route.query.tipoEmpleo || "";
+                this.employmentType = getTypeUrl;
+                console.log(getTypeUrl);
+            },
+            getEmailUrl() {
+                const getEmailFromUrl = this.$route.query.email || "";
+                this.email = getEmailFromUrl;
+                console.log(this.email);
+            },
+            getPuestoURL() {
+                const getPuestoFromUrl = this.$route.query.puesto || "";
+                this.workstation = getPuestoFromUrl;
+                console.log(getPuestoFromUrl);
+            },
             validatePassword(password) {
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
@@ -145,7 +229,7 @@
                 console.log("Entra aquí jijij");
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
-                const response = await axios.post(validateidurl, ageInt, {headers: { "Content-Type": "application/json" }} );
+                const response = await axios.post(validateidurl, ageInt, { headers: { "Content-Type": "application/json" } });
                 console.log("pasa de aquí\n");
 
                 console.log(response);
@@ -171,59 +255,67 @@
             },
 
 
-           async handleSubmit(){
-                const JSondata = JSON.stringify(this.form,null,2);
+            async handleSubmit() {
+                const JSondata = JSON.stringify(this.form, null, 2);
                 console.log("Datos capaturados correctamente\n");
                 console.log(JSondata);
+                this.getEmailUrl();
+                this.getPuestoURL();
+                this.getType();
+
+                
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
                 //Ojito qe primero vamos
-               try {
-                   const createUserUrl = "http://localhost:5081/api/user/create";
-                   //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
-                   const userData = {
-                       Email: this.form.email.trim(),
-                       PasswordHash: this.form.password
-                   };
+                try {
+                    const createUserUrl = "http://localhost:5081/api/user/create";
+                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
+                    console.log(this.password);
+                    console.log(this.passwordConfirmation);
+                    const userData = {
+                        Email: this.email,
+                        PasswordHash: this.password
+                    };
 
+                    this.form.email = this.email;
 
-                   if (!(this.isNameValid(this.form.firstName))) {
-                       this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
-                       return;
-                   }
+                    if (!(this.isNameValid(this.form.firstName))) {
+                        this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
+                        return;
+                    }
 
-                   const event = await this.validateID();
-                   if (!event) {
-                       return;
-                   }
+                    const event = await this.validateID();
+                    if (!event) {
+                        return;
+                    }
 
-                   if (!(this.isAdult(this.form.birthdate))) {
-                       this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
-                       console.log("Entra aquí4\n");
-                       return;
-                   }
+                    if (!(this.isAdult(this.form.birthdate))) {
+                        this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
+                        console.log("Entra aquí4\n");
+                        return;
+                    }
 
-                   if (!this.validateDirectionLength()) {
-                       this.showDirectionError("La dirección no puede exceder los 200 carácteres");
-                       return;
-                   }
-                   if (!this.validatePassword(this.form.password)) {
-                       this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
-                       return;
-                   }
+                    if (!this.validateDirectionLength()) {
+                        this.showDirectionError("La dirección no puede exceder los 200 carácteres");
+                        return;
+                    }
+                    if (!this.validatePassword(this.password)) {
+                        this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
+                        return;
+                    }
 
-                   if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
+                    if (!this.validateConfirmationPassword(this.password, this.passwordConfirmation)) {
                         this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
                         return;
-                   }
+                    }
 
-                   this.clearErrors();
+                    this.clearErrors();
 
                     console.log("Va a llegar a la primera conexión\n");
                     const userResponse = await axios.post(createUserUrl, userData);
                     console.log("Conexión exitosa\n");
                     console.log("Usuario:", userResponse.data);
 
-                    // Aquí apartir de la respuesta me traigo el id del usuario para trabajar la persona
+                    // Aquí apartir de la respuesta me traigo el id del usuario para trabajar el empleado
                     const userId = userResponse.data.id;
 
                     this.form.uniqueUser = userId;
@@ -234,31 +326,56 @@
                     console.log("Usuario y Persona creados correctamente:");
                     console.log("Persona:", persRes.data);
 
+                    const empleado = {
+                        personaId: this.form.id,
+                        firstName: this.form.firstName,
+                        secondName: this.form.secondName,
+                        birthdate: this.form.birthdate,
+                        direction: this.form.direction,
+                        personalPhone: this.form.personalPhone,
+                        homePhone: this.form.homePhone,
+                        personType: this.form.personType,
+                        userEmail: this.email,
+                        userPassword: this.password,
+                        position: this.workstation,
+                        employmentType: this.employmentType
+
+                    };
+
+                    console.log(empleado);
+
+                    // Aquí vamos a crear la persona
+                    const EmpleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
+
+                    const EmpleadoRes = await axios.post(EmpleadoUrl, empleado);
+                    console.log("Usuario y Persona creados correctamente:");
+                    console.log("Persona:", EmpleadoRes.data);
+
                     this.$router.push({ path: "/" }).then(() => {
                         alert("El formulario fue compleatado con éxito revise su correo para activar su usuario")
                     });
 
                 } catch (error) {
-                    console.log("Error crando usuario o persona",error);
+                    console.log("Error crando usuario o persona", error);
                 }
 
 
                 //Aquí vamos a crear la persona ojito
 
             },
-            handleReset(){
+            handleReset() {
 
                 //ojito tomamos la vaina y la rechazamos
                 this.form = {
-                      name: "",
-                      secondNames:"",
-                      id:"",
-                      email: "",
-                      date: "",
-                      phoneNumber: "",
-                      password: "",
-                      passwordConfirm:"",
-                      direction: "",
+                    name: "",
+                    secondNames: "",
+                    id: "",
+                    email: "",
+                    date: "",
+                    phoneNumber: "",
+                    password: "",
+                    passwordConfirm: "",
+                    direction: "",
 
                 };
 
@@ -268,49 +385,32 @@
     };
 </script>
 
-
-<style>
-    .main_container {
-        display: grid;
-        place-items: center;
-        margin-top: 20px;
-        background-color: #1e1e1e;
-        text-align: center;
-    }
-
-    label {
-        color: white;
-        margin-top: 5px;
-    }
-
-    input {
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        color: #ece6e6ff;
-        width: 210px;
-    }
-
-    select{
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        color: #ece6e6ff;
-        width: 210px
-    }
+<style scoped>
 
 
-    footer {
+    .wrap {
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
+        background: #1e1e1e;
+        color: whitesmoke;
+    }
+
+    .hero {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 40px;
+        padding: 48px 64px;
+        flex: 1 0 auto;
+    }
+
+    .brand {
+        display: flex;
         align-items: center;
-        gap: 10px;
-        text-align: center;
-        padding: 10px 0;
+        gap: 18px;
+        max-width: 45%;
+        margin-top: 40px;
     }
 
     #EmployerLogIn {
@@ -323,7 +423,105 @@
         padding: 22px;
         border-radius: 8px;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        height: 680px;
+        height: 700px;
+    }
+
+    .logo-box {
+        width: 84px;
+        height: 84px;
+        background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .logo-box .f {
+            font-weight: 800;
+            font-size: 44px;
+            color: white;
+        }
+
+    .texts h1 {
+        margin: 0;
+        font-size: 34px;
+    }
+
+    .texts p {
+        margin: 6px 0 0;
+        color: #bdbdbd;
+    }
+
+    .register-card {
+        width: 410px;
+        background: rgb(71, 69, 69);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 24px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        height: 800px;
+    }
+
+        .register-card h2 {
+            color: #eee;
+            margin: 0 0 16px;
+            font-weight: 600;
+            font-size: 18px;
+            text-align: center;
+        }
+
+    .input {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 12px;
+        color: #ece6e6ff;
+    }
+
+        .input input {
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: whitesmoke;
+            width: 100%;
+            font-size: 14px;
+        }
+
+    .error-msg {
+        color: #ff6b6b;
+        font-size: 13px;
+        margin: -6px 0 10px 4px;
+        text-align: left;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 40px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 0;
+        font-weight: 600;
+        cursor: pointer;
+        background: #1fb9b4;
+        color: white;
+    }
+
+    footer {
+        background: #fff;
+        padding: 28px 64px;
+        border-top: 1px solid #eee;
+        color: #8b8b8b;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .socials {
@@ -343,26 +541,44 @@
             color: #bdbdbd;
             font-size: 14px;
         }
-
-    .Bottons_container {
-        margin-top: 20px;
-        display: flex;
-        gap: 5px;
+    .input select {
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: whitesmoke;
+        width: 100%;
+        font-size: 14px;
+        appearance: none;
+        cursor: pointer;
     }
 
-    #Submit-btn {
-        color: white;
-        background-color: #1fb9b4;
-    }
+        .input select option {
+            background: #1e1e1e;
+            color: whitesmoke;
+        }
 
-    #Restart-btn {
-        color: #bdbdbd;
-        background-color: white;
-    }
+    @media (max-width: 900px) {
+        .hero {
+            flex-direction: column;
+            align-items: center;
+            padding: 36px;
+        }
 
+        .brand {
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
 
-    #title {
-        color: #bdbdbd;
-        margin-bottom: 20px;
+        .register-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        footer {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
     }
 </style>
+

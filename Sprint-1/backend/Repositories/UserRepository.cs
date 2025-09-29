@@ -56,5 +56,12 @@ namespace backend.Repositories
         {
             return this._connectionString;
         }
+
+        public UserModel? EmailVerification(string email_)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+            const string query = @"SELECT* FROM dbo.[USER] WHERE email = @Email";
+            return connection.QueryFirstOrDefault<UserModel>(query, new { Email = email_ });
+        }
     }
 }

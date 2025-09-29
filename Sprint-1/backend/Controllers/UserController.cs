@@ -182,6 +182,18 @@ namespace backend.Controllers
             return Ok("Correo verificado con éxito");
         }
 
+        [HttpGet("emailverify")]
+        public ActionResult EmailVerification([FromQuery] string email)
+        {
+            if (!this.userService.EmailConfirmation(email))
+            {
+                return Ok(new { result = true });
+            }
+
+            return Ok(new { result = false });
+
+        }
+
     }
 
 }
