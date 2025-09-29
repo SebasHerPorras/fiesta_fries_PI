@@ -16,7 +16,6 @@ namespace backend.Controllers
             this.service = new PersonService();
         }
 
-
         [HttpPost("create")]
         public ActionResult createPerson([FromBody] PersonModel person)
         {
@@ -25,8 +24,8 @@ namespace backend.Controllers
                 return BadRequest("Datos inválidos");
             }
 
-            service.Insert(person);
-            return Ok(new { message = "Persona creada exitosamente" });
+            var created = service.Insert(person);
+            return Ok(created); // ahora retorna la persona creada (incluye uniqueUser y id)
         }
     }
 
