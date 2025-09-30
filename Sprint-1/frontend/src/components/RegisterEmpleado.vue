@@ -12,7 +12,7 @@
                     </div>
                 </div>
 
-                <div v-if="$route.path === '/home'" class="company-dropdown">
+                <div class="company-dropdown">
                     <label for="companySelect">Empresa :</label>
                     <select id="companySelect" v-model="selectedCompany" @change="saveSelectedCompany">
                         <option disabled value="">No tienes empresas registradas</option>
@@ -31,18 +31,43 @@
                 </ul>
             </nav>
         </header>
+        <main class="hero">
+            <aside class="register-card">
+                <h2>Registrar Empleado</h2>
+                <form id="EmployeeRegister" @submit.prevent="handleSubmit" @reset="handleReset">
 
-        <section class="hero">
-            <div class="brand">
-                <div class="texts">
-                    <h1> Homepage </h1>
-                    <p>
-                        Nuestra herramienta permite gestionar el pago de planillas de forma
-                        total y automatizada
-                    </p>
-                </div>
-            </div>
-        </section>
+                <label class="input">
+                    <input type="email"
+                        v-model="form.email"
+                        placeholder="Correo del empleado"
+                        @blur="validateEmail"
+                        required />
+                </label>
+                
+                <div v-if="emailError" class="error-msg">{{ emailError }}</div>
+
+                    <label class="input">
+                        <input type="text"
+                               v-model="form.position"
+                               placeholder="Puesto"
+                               required />
+                    </label>
+
+                    <label class="input">
+                        <select v-model="form.employmentType" required>
+                            <option disabled value="">Tipo de Contrato</option>
+                            <option value="Tiempo Completo">Tiempo Completo</option>
+                            <option value="Medio Tiempo">Medio Tiempo</option>
+                            <option value="Por Horas">Por Horas</option>
+                        </select>
+                    </label>
+
+                    <div class="buttons">
+                        <button class="btn" type="submit">Registrar</button>
+                    </div>
+                </form>
+            </aside>
+        </main>
 
         <footer>
             <div>©2025 Fiesta Fries</div>
@@ -57,68 +82,77 @@
 </template>
 
 <script>
-    import axios from "axios";
-
-    export default {
-        name: "HomePage",
-        data() {
-            return {
-                userName: "Cargando...",
-                userRole: "Cargando...",
-                companies: [],
-                selectedCompany: null,
-            };
+export default {
+    name: "RegistrarEmpleado",
+    data() {
+        return {
+            userName: "Cargando...",
+            userRole: "Cargando...",
+            companies: [],
+            selectedCompany: null,
+            form: {
+                email: "",
+                position: "",
+                employmentType: ""
         },
+        emailError: ""
+        };
+    },
+    mounted() {
+        this.loadUserFromLocalStorage();
+    },
+    methods: {
+        loadUserFromLocalStorage() {
+            const stored = localStorage.getItem("userData");
+            if (!stored) {
+                this.$router.push("/"); // si no hay sesión, redirige
+                return;
+            }
+            const userData = JSON.parse(stored);
 
-        mounted() {
-            this.loadUserFromLocalStorage();
-            this.loadCompanies();
+            // Aquí ajusta según cómo guardaste los datos en login
+            this.userName = `${userData.firstName} ${userData.secondName}`;
+            this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
         },
-        methods: {
-            loadUserFromLocalStorage() {
-                const stored = localStorage.getItem("userData");
-                if (!stored) {
-                    this.$router.push("/");
-                    return;
-                }
-                const userData = JSON.parse(stored);
-                this.userName = `${userData.firstName} ${userData.secondName}`;
-                this.userRole = userData.personType;
-            },
-            async loadCompanies() {
-                try {
-                    const stored = JSON.parse(localStorage.getItem("userData"));
-                    const personaId = stored?.personaId; // DueñoEmpresa
-                    if (!personaId) return;
-
-                    const res = await axios.get(`http://localhost:7056/api/empresa/byUser/${personaId}`);
-                    this.companies = res.data;
-
-                    if (this.companies.length > 0) {
-                        // Default: Primera empresa en BD
-                        this.selectedCompany = this.companies[0];
-                        this.saveSelectedCompany();
-                    } else {
-                        // Si no hay empresas, null válido
-                        this.selectedCompany = null;
-                        localStorage.removeItem("selectedCompany");
-                    }
-                } catch (err) {
-                    console.error("Error cargando empresas:", err);
-                }
-            },
-            saveSelectedCompany() {
-                localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
-                console.log("Empresa seleccionada:", this.selectedCompany);
-            },
-            logout() {
-                localStorage.removeItem("userData");
-                localStorage.removeItem("selectedCompany");
-                this.$router.push("/");
-            },
+        validateEmail() {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regex.test(this.form.email)) {
+                this.emailError = "Formato de correo incorrecto";
+            } else {
+                this.emailError = "";
+            }
         },
+        handleSubmit() {
+            this.validateEmail();
+            if (this.emailError) return;
+
+            console.log("Datos del empleado a registrar:", this.form);
+
+            // Simulación de guardado
+            let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
+            empleados.push(this.form);
+            localStorage.setItem("empleados", JSON.stringify(empleados));
+
+            alert("Empleado guardado en LocalStorage (modo prueba)");
+            this.handleReset();
+        },
+        handleReset() {
+            this.form = { email: "", position: "", employmentType: "" };
+            this.emailError = "";
+        },
+        saveSelectedCompany() {
+            localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+        },
+        logout() {
+            localStorage.removeItem("userData");
+            localStorage.removeItem("selectedCompany");
+            this.$router.push("/");
+        }
+    }
     };
 </script>
+
+
 
 <style scoped>
     /* wrap es el contenedor principal (el fondo) */
@@ -363,4 +397,89 @@
             font-size: 20px;
         }
     }
+
+    .wrap {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #1e1e1e;
+        color: whitesmoke;
+    }
+
+    .hero {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 40px;
+        padding: 48px 64px;
+        flex: 1 0 auto;
+    }   
+
+    .input {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 12px;
+        color: #ece6e6ff;
+    }
+
+        .input input {
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: whitesmoke;
+            width: 100%;
+            font-size: 14px;
+        }
+
+    .error-msg {
+        color: #ff6b6b;
+        font-size: 13px;
+        margin: -6px 0 10px 4px;
+        text-align: left;
+    }
+
+    .input select {
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: whitesmoke;
+        width: 100%;
+        font-size: 14px;
+        appearance: none;
+        cursor: pointer;
+    }
+
+        .input select option {
+            background: #1e1e1e;
+            color: whitesmoke;
+        }
+
+    @media (max-width: 900px) {
+        .hero {
+            flex-direction: column;
+            align-items: center;
+            padding: 36px;
+        }
+
+        .brand {
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        footer {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+    }
 </style>
+
