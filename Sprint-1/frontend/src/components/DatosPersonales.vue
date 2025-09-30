@@ -125,12 +125,8 @@ export default {
   this.userData = userData;
 
   // Normalizar distintas representaciones del flag admin
-  const adminFlag = userData?.admin;
-  this.isAdmin =
-    adminFlag === true ||
-    adminFlag === 1 ||
-    adminFlag === "1" ||
-    String(adminFlag).toLowerCase() === "true";
+  this.isAdmin = userData?.isAdmin;
+ 
 
   // Si es Admin, asignar valores y salir antes de cualquier llamada al backend
   if (this.isAdmin) {
@@ -142,7 +138,12 @@ export default {
     this.birthdate = "N/A";
     console.log("Usuario es admin, seteado AdminAccount y saliendo")
     return;
+  } else {
+
+    console.log("\n\n\nUsuario NO es admin, cargando perfil Persona\n\n\n");
+    
   }
+  console.log("userData cargado:", userData.isAdmin ? "(Admin)" : "(No Admin)", userData);
 
   // Si no es admin, proceder a cargar perfil Persona
   const userId = userData?.id || userData?.PK_User || userData?.userId;
@@ -177,27 +178,47 @@ export default {
         if (!userId)
         return;
 
-      const isEmpleador = stored.personType === "Empleador";
-
-      if (!isEmpleador) {
-        console.log(`Usuario es ${stored.personType || 'admin'}, no se cargan empresas`);
-        this.companies = [];
-        return;
-      }
- 
-      // Buscar empresas usando el personaId
-      const empresasRes = await axios.get(`http://localhost:5081/api/empresa/mis-empresas/${userId}`);
-      this.companies = empresasRes.data;
-        // Verificar la estructura de la respuesta
+      // Si es ADMIN, cargar TODAS las empresas
+      if (this.isAdmin || stored.isAdmin) {
+        console.log('Usuario es admin, cargando TODAS las empresas');
+        const empresasRes = await axios.get(`http://localhost:5081/api/empresa/todas`);
+        
+        // Verificar estructura de respuesta
         if (empresasRes.data && empresasRes.data.success) {
-          // Si la respuesta tiene estructura { success: true, empresas: [...] }
           this.companies = empresasRes.data.empresas || [];
         } else if (Array.isArray(empresasRes.data)) {
-          // Si la respuesta es directamente un array
           this.companies = empresasRes.data;
         } else {
           this.companies = [];
         }
+        
+        console.log(`Admin - ${this.companies.length} empresas cargadas`);
+        return;
+      }
+
+      // Si NO es admin, verificar si es Empleador
+      const isEmpleador = stored.personType === "Empleador";
+
+      if (!isEmpleador) {
+        console.log(`Usuario es ${stored.personType || 'empleado'}, no se cargan empresas`);
+        this.companies = [];
+        return;
+      }
+ 
+      // Buscar empresas del Empleador específico
+      console.log('Usuario es Empleador, cargando sus empresas');
+      const empresasRes = await axios.get(`http://localhost:5081/api/empresa/mis-empresas/${userId}`);
+      
+      // Verificar la estructura de la respuesta
+      if (empresasRes.data && empresasRes.data.success) {
+        // Si la respuesta tiene estructura { success: true, empresas: [...] }
+        this.companies = empresasRes.data.empresas || [];
+      } else if (Array.isArray(empresasRes.data)) {
+        // Si la respuesta es directamente un array
+        this.companies = empresasRes.data;
+      } else {
+        this.companies = [];
+      }
 
       if (this.companies.length > 0) {
           const savedCompany = localStorage.getItem("selectedCompany");
