@@ -1,6 +1,7 @@
-﻿<template>
-    <div class="wrap">
-        <header class="header">
+<template>
+  <div class="wrap">
+    <!-- HEADER -->
+    <header class="header">
         <nav class="nav">
             <div class="brand">
             <div class="logo-box">
@@ -34,10 +35,6 @@
                 <router-link to="/RegEmpleado">Registrar Empleado</router-link>
             </li>
 
-            <li v-if="userRole === 'Empleado'">
-                <router-link to="/Profile">Datos Personales</router-link>
-            </li>
-
             <li v-if="isAdmin">
                 <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
             </li>
@@ -47,92 +44,123 @@
         </nav>
         </header>
 
-        <section class="hero">
-            <div class="brand">
-                <div class="texts">
-                    <h1> Homepage </h1>
-                    <p>
-                        Nuestra herramienta permite gestionar el pago de planillas de forma
-                        total y automatizada
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            <div>©2025 Fiesta Fries</div>
-            <div class="socials">
-                <a href="#" aria-label="Facebook">f</a>
-                <a href="#" aria-label="LinkedIn">in</a>
-                <a href="#" aria-label="YouTube">▶</a>
-                <a href="#" aria-label="Instagram">✶</a>
-            </div>
-        </footer>
+<main class="hero">
+    <div class="profile-card">
+      <h2>Perfil del Usuario</h2>
+      <div class="table-container">
+        <table class="profile-table">
+          <tbody>
+            <tr>
+              <th>Nombre</th>
+              <td>{{ userName }}</td>
+            </tr>
+            <tr>
+              <th>Correo</th>
+              <td>{{ email }}</td>
+            </tr>
+            <tr>
+              <th>Teléfono</th>
+              <td>{{ personalPhone }}</td>
+            </tr>
+            <tr>
+              <th>Dirección</th>
+              <td>{{ direction }}</td>
+            </tr>
+            <tr>
+              <th>Fecha de nacimiento</th>
+              <td>{{ birthdate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </main>
+
+    <!-- FOOTER -->
+    <footer>
+      <div>©2025 Fiesta Fries</div>
+    </footer>
+  </div>
 </template>
 
 <script>
-    import axios from "axios";
+import axios from "axios";
 
-    export default {
-        name: "HomePage",
-        data() {
-            return {
-                userName: "Cargando...",
-                userRole: "Cargando...",
-                companies: [],
-                selectedCompany: null,
-            };
-        },
-
-        mounted() {
-            this.loadUserFromLocalStorage();
-            this.loadCompanies();
-        },
-        methods: {
-            loadUserFromLocalStorage() {
-                const stored = localStorage.getItem("userData");
-                if (!stored) {
-                    this.$router.push("/");
-                    return;
-                }
-                const userData = JSON.parse(stored);
-                this.userName = `${userData.firstName} ${userData.secondName}`;
-                this.userRole = userData.personType;
-            },
-            async loadCompanies() {
-                try {
-                    const stored = JSON.parse(localStorage.getItem("userData"));
-                    const personaId = stored?.personaId; // DueñoEmpresa
-                    if (!personaId) return;
-
-                    const res = await axios.get(`http://localhost:7056/api/empresa/byUser/${personaId}`);
-                    this.companies = res.data;
-
-                    if (this.companies.length > 0) {
-                        // Default: Primera empresa en BD
-                        this.selectedCompany = this.companies[0];
-                        this.saveSelectedCompany();
-                    } else {
-                        // Si no hay empresas, null válido
-                        this.selectedCompany = null;
-                        localStorage.removeItem("selectedCompany");
-                    }
-                } catch (err) {
-                    console.error("Error cargando empresas:", err);
-                }
-            },
-            saveSelectedCompany() {
-                localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
-                console.log("Empresa seleccionada:", this.selectedCompany);
-            },
-            logout() {
-                localStorage.removeItem("userData");
-                localStorage.removeItem("selectedCompany");
-                this.$router.push("/");
-            },
-        },
+export default {
+  name: "PerfilUsuario",
+  data() {
+    return {
+      userName: "Cargando...",
+      email: "",
+      personalPhone: "",
+      direction: "",
+      birthdate: "",
+      userRole: "",
+      companies: [],
+      selectedCompany: null
     };
+  },
+  mounted() {
+    this.loadCurrentUserProfile();
+    this.loadCompanies();
+  },
+  methods: {
+    // 🔑 Aquí va la nueva función
+    async loadCurrentUserProfile() {
+      const stored = localStorage.getItem("userData");
+      if (!stored) {
+        this.$router.push("/");
+        return;
+      }
+      const { id: userId } = JSON.parse(stored);
+      try {
+        const res = await axios.get(`http://localhost:5081/api/person/profile/${userId}`);
+        const p = res.data;
+
+
+        // rellenamos datos con lo que devuelve el DTO
+        this.userName = `${p.firstName} ${p.secondName}`;
+        this.email = p.email;
+        this.personalPhone = p.personalPhone;
+        this.direction = p.direction;
+        this.birthdate = new Date(p.birthdate).toLocaleDateString();
+        // Para header
+        this.userRole = p.personType;
+
+      } catch (err) {
+        console.error("Error obteniendo perfil:", err);
+      }
+    },
+
+    async loadCompanies() {
+      try {
+        const stored = JSON.parse(localStorage.getItem("userData"));
+        const personaId = stored?.personaId;
+        if (!personaId) return;
+
+        const res = await axios.get(`http://localhost:5081/api/empresa/byUser/${personaId}`);
+        this.companies = res.data;
+
+        if (this.companies.length > 0) {
+          this.selectedCompany = this.companies[0];
+          this.saveSelectedCompany();
+        }
+      } catch (err) {
+        console.error("Error cargando empresas:", err);
+      }
+    },
+
+    saveSelectedCompany() {
+      localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+    },
+
+    logout() {
+      localStorage.removeItem("userData");
+      localStorage.removeItem("selectedCompany");
+      this.$router.push("/");
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -286,6 +314,57 @@
         .btn:hover {
             background: #1aa19c;
         }
+    
+
+    /* Estilo tabla Datos */
+    .profile-card {
+        width: 100%;
+        max-width: 600px;
+        background: rgb(71, 69, 69);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 24px;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .profile-card h2 {
+        color: #eee;
+        margin: 0 0 16px;
+        font-weight: 600;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .profile-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .profile-table th {
+        text-align: left;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #1fb9b4;
+        width: 40%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-table td {
+        padding: 10px;
+        color: #eee;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-table tr:last-child th,
+    .profile-table tr:last-child td {
+        border-bottom: none;
+    }
+
 
     /* Estilo footer *Compartido entre rutas* */
     footer {

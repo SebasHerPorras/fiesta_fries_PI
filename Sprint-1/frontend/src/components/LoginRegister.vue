@@ -125,7 +125,7 @@ export default {
           
           // login exitoso
           alert("Login exitoso!");
-          this.$router.push({ path: "/home" });
+          this.$router.push({ path: "/Home" });
 
         } else {
           this.showPasswordError("Credenciales inválidas.");
