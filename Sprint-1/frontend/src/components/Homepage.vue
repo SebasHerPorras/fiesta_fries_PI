@@ -52,8 +52,8 @@
                 <div class="texts">
                     <h1> Homepage </h1>
                     <p>
-                        Nuestra herramienta permite gestionar el pago de planillas de forma
-                        total y automatizada
+                        Herramienta que permite gestionar el pago de planillas de forma
+                        total, sencilla y automatizada
                     </p>
                 </div>
             </div>
@@ -223,6 +223,7 @@
     .hero {
         display: flex;
         align-items: center;
+        text-align: center;
         justify-content: center;
         color: whitesmoke;
         padding: 48px 64px;
@@ -236,35 +237,6 @@
         flex-wrap: wrap;
         justify-content: center;
     }
-
-    .login-card {
-        width: 280px;
-        min-height: 180px;
-        background: rgb(71, 69, 69);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 22px;
-        border-radius: 8px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-        /* Título del card */
-        .login-card h2 {
-            color: #eee;
-            margin: 0 0 12px;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        /* Texto del card */
-        .login-card p {
-            color: #bdbdbd;
-            font-size: 14px;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
 
     /* Botón */
     .btn {
