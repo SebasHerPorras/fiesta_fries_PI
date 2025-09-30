@@ -142,7 +142,7 @@ export default {
           console.log('✅ Verificación - Datos en localStorage:', storedData);
           
           // Redirigir a la página principal después del login exitoso
-          this.$router.push({ path: "/Home" });
+          this.$router.push({ path: "/Profile" });
 
         } else {
           this.showPasswordError("Credenciales inválidas.");
