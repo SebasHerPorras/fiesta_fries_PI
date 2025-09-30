@@ -29,10 +29,10 @@
           <label class="input">
             <input v-model="password" type="password" placeholder="🔒Contraseña" required />
           </label>
-          <!-- v if por si hay un error en la contraseña -->
-          <div v-if="passwordError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">
+            <!-- v if por si hay un error en la contraseña -->
+            <div v-if="passwordError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">
             {{ passwordError }}
-          </div>
+            </div>
 
           <!-- Botón para enviar el login -->
           <button class="btn" type="submit">Iniciar Sesión</button>
@@ -97,14 +97,32 @@ export default {
         // Acepta cualquier 200 OK como login correcto y/o valida la respuesta
         if (res.status === 200 && res.data && (res.data.id || res.data.email)) {
           //Guardar datos en LocalStorage
-          const userData = {
-            id: res.data.id,           
-            email: res.data.email,
-            personaId: res.data.personaId,
-            personType: res.data.personType,
-            firstName: res.data.firstName,
-            secondName: res.data.secondName
-          };
+          let userData;
+          
+          // Si es admin, solo guardar datos básicos
+          if (res.data.isAdmin) {
+            userData = {
+              id: res.data.id,           
+              email: res.data.email,
+              isAdmin: true
+            };
+            console.log('Usuario ADMIN - datos básicos guardados');
+          } else {
+            // Si NO es admin, guardar datos completos de la persona
+            userData = {
+              id: res.data.id,           
+              email: res.data.email,
+              isAdmin: false,
+              personaId: res.data.personaId,
+              personType: res.data.personType,
+              firstName: res.data.firstName,
+              secondName: res.data.secondName,
+              firstLastName: res.data.firstLastName,
+              secondLastName: res.data.secondLastName,
+              phoneNumber: res.data.phoneNumber
+            };
+            console.log('Usuario EMPLEADO - datos completos guardados');
+          }
       
           // Guardar en LocalStorage
           localStorage.setItem('userData', JSON.stringify(userData));
@@ -123,8 +141,7 @@ export default {
           const storedData = localStorage.getItem('userData');
           console.log('✅ Verificación - Datos en localStorage:', storedData);
           
-          // login exitoso
-          alert("Login exitoso!");
+          // Redirigir a la página principal después del login exitoso
           this.$router.push({ path: "/Home" });
 
         } else {
