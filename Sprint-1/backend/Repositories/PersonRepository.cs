@@ -59,7 +59,6 @@ namespace backend.Repositories
 
             return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }
-
         public PersonModel? GetByUserId(Guid usuarioId)
         {
             try
@@ -68,10 +67,11 @@ namespace backend.Repositories
                 connection.Open();
 
                 var query = @"
-            SELECT * 
-            FROM Persona 
-            WHERE uniqueUser = @UsuarioId 
-            AND active = 1";
+                SELECT p.* 
+                FROM Persona p
+                INNER JOIN [User] u ON p.uniqueUser = u.PK_User
+                WHERE p.uniqueUser = @UsuarioId
+                  AND u.active = 0";
 
                 return connection.QueryFirstOrDefault<PersonModel>(query, new
                 {
@@ -81,6 +81,37 @@ namespace backend.Repositories
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR] En repository GetByUserId: {ex.Message}");
+                return null;
+            }
+        }
+
+        public PersonalProfileDto? GetPersonalProfile(Guid usuarioId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                connection.Open();
+
+                var query = @"
+                SELECT 
+                    p.firstName AS FirstName,
+                    p.secondName AS SecondName,
+                    p.birthdate AS Birthdate,
+                    p.direction AS Direction,
+                    p.personType as PersonType,
+                    p.personalPhone AS PersonalPhone,
+                    p.homePhone AS HomePhone,
+                    u.email AS Email
+                    
+                FROM Persona p INNER JOIN [User] u
+                    ON p.uniqueUser = u.PK_User
+                WHERE p.uniqueUser = @UsuarioId";
+
+                return connection.QueryFirstOrDefault<PersonalProfileDto>(query, new { UsuarioId = usuarioId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] GetPersonalProfile: {ex.Message}");
                 return null;
             }
         }

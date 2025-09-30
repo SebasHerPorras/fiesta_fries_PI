@@ -27,6 +27,24 @@ namespace backend.Controllers
             var created = service.Insert(person);
             return Ok(created); // ahora retorna la persona creada (incluye uniqueUser y id)
         }
+
+        [HttpGet("profile/{userId:guid}")]
+        public ActionResult getPersonalProfile(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                return BadRequest("ID de usuario inválido");
+            }
+
+            var profile = service.GetPersonalProfile(userId);
+            if (profile == null)
+            {
+                return NotFound("Perfil no encontrado");
+            }
+
+            return Ok(profile);
+        }
+
     }
 
 }

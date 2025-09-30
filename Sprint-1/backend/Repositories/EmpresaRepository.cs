@@ -13,7 +13,7 @@ namespace backend.Handlers.backend.Repositories
         public EmpresaRepository()
         {
             var builder = WebApplication.CreateBuilder();
-            _connectionString = builder.Configuration.GetConnectionString("CountryContext");
+            _connectionString = builder.Configuration.GetConnectionString("UserContext");
         }
 
         public string CreateEmpresa(EmpresaModel empresa)

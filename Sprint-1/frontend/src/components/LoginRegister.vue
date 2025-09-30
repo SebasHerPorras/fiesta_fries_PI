@@ -42,7 +42,7 @@
         <div class="login-footer">
           <p>
             ¿No tienes una cuenta de Empleador?
-            <a href="/country">Regístrate</a>
+            <a href="/LogINEmpleadores">Regístrate</a>
           </p>
         </div>
       </aside>
@@ -125,7 +125,7 @@ export default {
           
           // login exitoso
           alert("Login exitoso!");
-          this.$router.push({ path: "/country" });
+          this.$router.push({ path: "/Home" });
 
         } else {
           this.showPasswordError("Credenciales inválidas.");

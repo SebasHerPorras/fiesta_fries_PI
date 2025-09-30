@@ -77,6 +77,15 @@ namespace backend.Services
             }
         }
 
-        //Demás cositas...
+        public PersonModel? GetByIdentity(int id)
+        {
+            if (id <= 0) return null;
+            return repository.GetByIdentity(id);
+        }
+        public PersonalProfileDto? GetPersonalProfile(Guid usuarioId)
+        {
+            if (usuarioId == Guid.Empty) return null;
+            return repository.GetPersonalProfile(usuarioId);
+        }
     }
 }
