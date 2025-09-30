@@ -36,7 +36,6 @@ namespace backend.Controllers
             if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
                 return BadRequest("Email y password son requeridos.");
 
-            // DEBUG seguro: email y longitud de password (no imprimir la contraseña)
             Console.WriteLine($"[DEBUG] Incoming login request. Email: '{request.Email}' PasswordLength: {request.Password?.Length ?? 0}");
 
             var user = userService.Authenticate(request.Email.Trim(), request.Password);
@@ -47,26 +46,44 @@ namespace backend.Controllers
             }
 
             Console.WriteLine("[DEBUG] Authentication succeeded for user id: " + user.Id);
+            Console.WriteLine($"[DEBUG] User is admin: {user.admin}");
 
+            // Si es admin, retornar solo datos básicos
+            if (user.admin == true)
+            {
+                Console.WriteLine("[DEBUG] User is admin - returning basic data");
+                return Ok(new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    isAdmin = true
+                });
+            }
+
+            // Si NO es admin, buscar la persona asociada
+            Console.WriteLine("[DEBUG] User is not admin - searching for associated person");
             var personaService = new PersonService();
             var persona = personaService.GetByUserId(user.Id);
 
             if (persona == null)
             {
-                Console.WriteLine("[DEBUG] Usuario no tiene persona asociada: " + user.Id);
-                return BadRequest("El usuario no tiene una persona asociada.");
+                Console.WriteLine("[DEBUG] No person found for user - returning error");
+                return BadRequest("El usuario no tiene una persona asociada en el sistema.");
             }
 
-            Console.WriteLine($"[DEBUG] Persona encontrada: ID {persona.id}, Tipo: {persona.personType}");
+            Console.WriteLine($"[DEBUG] Person found - ID: {persona.id}, Type: {persona.personType}");
 
+            // Retornar datos completos para usuario no admin
             return Ok(new
             {
                 id = user.Id,
                 email = user.Email,
+                isAdmin = false,
                 personaId = persona.id,
                 personType = persona.personType,
                 firstName = persona.firstName,
-                secondName = persona.secondName
+                secondName = persona.secondName,
+                phoneNumber = persona.personalPhone
             });
         }
 

@@ -2,8 +2,8 @@
   <div class="wrap">
     <!-- HEADER -->
     <header class="header">
-        <nav class="nav">
-            <div class="brand">
+    <nav class="nav">
+        <div class="brand">
             <div class="logo-box">
                 <span class="f">F</span>
             </div>
@@ -11,38 +11,37 @@
                 <h1>{{ userName }}</h1>
                 <p>{{ userRole }}</p>
             </div>
-            </div>
+        </div>
 
-            <div v-if="userRole === 'Empleador'" class="company-dropdown">
-            <label for="companySelect">Empresa :</label>
-            <select id="companySelect" v-model="selectedCompany" @change="saveSelectedCompany">
-                <option disabled value="">No tienes empresas registradas</option>
-                <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
-                {{ company.nombre }}
-                </option>
-            </select>
-            </div>
-
-            <ul class="nav-list">
-            <li><router-link to="/Home">Home</router-link></li>
+        <ul class="nav-list">
+            <!-- Siempre visibles -->
             <li><router-link to="/Profile">Datos Personales</router-link></li>
 
-            <!-- Solo Empleador -->
+            <!-- Solo Empleador: Registrar Empresa -->
             <li v-if="userRole === 'Empleador'">
                 <router-link to="/FormEmpresa">Registrar Empresa</router-link>
             </li>
-            <li v-if="userRole === 'Empleador'">
-                <router-link to="/RegEmpleado">Registrar Empleado</router-link>
+
+            <!-- Dropdown de empresas SOLO para Empleador -->
+            <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
+                <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                    <option disabled value="">Seleccionar Empresa</option>
+                    <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
+                    {{ company.nombre }}
+                    </option>
+                </select>
             </li>
 
+            <!-- Solo Administrador: Ver Toda Empresa -->
             <li v-if="isAdmin">
                 <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
             </li>
 
+            <!-- Siempre visible -->
             <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-            </ul>
-        </nav>
-        </header>
+        </ul>
+    </nav>
+</header>
 
 <main class="hero">
     <div class="profile-card">
@@ -97,7 +96,9 @@ export default {
       birthdate: "",
       userRole: "",
       companies: [],
-      selectedCompany: null
+      selectedCompany: null,
+      userData: {},
+      isAdmin: false
     };
   },
   mounted() {
@@ -105,53 +106,160 @@ export default {
     this.loadCompanies();
   },
   methods: {
-    // 🔑 Aquí va la nueva función
-    async loadCurrentUserProfile() {
-      const stored = localStorage.getItem("userData");
-      if (!stored) {
-        this.$router.push("/");
-        return;
-      }
-      const { id: userId } = JSON.parse(stored);
-      try {
-        const res = await axios.get(`http://localhost:5081/api/person/profile/${userId}`);
-        const p = res.data;
+  async loadCurrentUserProfile() {
+  const stored = localStorage.getItem("userData");
+  if (!stored) {
+    this.$router.push("/");
+    return;
+  }
 
+  // parseamos todo el objeto para usarlo luego
+  let userData;
+  try {
+    userData = JSON.parse(stored);
+  } catch (e) {
+    console.error("Error parseando userData desde localStorage:", e);
+    this.$router.push("/");
+    return;
+  }
+  this.userData = userData;
 
-        // rellenamos datos con lo que devuelve el DTO
-        this.userName = `${p.firstName} ${p.secondName}`;
-        this.email = p.email;
-        this.personalPhone = p.personalPhone;
-        this.direction = p.direction;
-        this.birthdate = new Date(p.birthdate).toLocaleDateString();
-        // Para header
-        this.userRole = p.personType;
+  // Normalizar distintas representaciones del flag admin
+  this.isAdmin = userData?.isAdmin;
+ 
 
-      } catch (err) {
-        console.error("Error obteniendo perfil:", err);
-      }
-    },
+  // Si es Admin, asignar valores y salir antes de cualquier llamada al backend
+  if (this.isAdmin) {
+    this.userName = "AdminAccount";
+    this.userRole = "Admin";
+    this.email = userData?.email || "admin@local";
+    this.personalPhone = "N/A";
+    this.direction = "N/A";
+    this.birthdate = "N/A";
+    console.log("Usuario es admin, seteado AdminAccount y saliendo")
+    return;
+  } else {
 
+    console.log("\n\n\nUsuario NO es admin, cargando perfil Persona\n\n\n");
+    
+  }
+  console.log("userData cargado:", userData.isAdmin ? "(Admin)" : "(No Admin)", userData);
+
+  // Si no es admin, proceder a cargar perfil Persona
+  const userId = userData?.id || userData?.PK_User || userData?.userId;
+  if (!userId) {
+    console.warn("No se encontró userId en userData:", userData);
+    // asignar algo para no quedar en "Cargando..."
+    this.userName = `${userData?.firstName || "Usuario"} ${userData?.secondName || ""}`.trim();
+    return;
+  }
+
+  try {
+    const profileRes = await axios.get(`http://localhost:5081/api/person/profile/${userId}`);
+    const p = profileRes.data || {};
+
+    this.userName = `${p.firstName || ""} ${p.secondName || ""}`.trim() || (userData?.email || "Usuario");
+    this.email = p.email || userData?.email || "";
+    this.personalPhone = p.personalPhone || "N/A";
+    this.direction = p.direction || "N/A";
+    this.birthdate = p.birthdate ? new Date(p.birthdate).toLocaleDateString() : "N/A";
+    this.userRole = p.personType || userData?.personType || "";
+  } catch (err) {
+    console.error("Error obteniendo perfil:", err);
+    // En caso de fallo, evitar dejar "Cargando..."
+    this.userName = userData?.email || "Usuario";
+    this.email = userData?.email || "";
+  }
+},
     async loadCompanies() {
       try {
         const stored = JSON.parse(localStorage.getItem("userData"));
-        const personaId = stored?.personaId;
-        if (!personaId) return;
+        const userId = stored?.id;
+        if (!userId)
+        return;
 
-        const res = await axios.get(`http://localhost:5081/api/empresa/byUser/${personaId}`);
-        this.companies = res.data;
+      // Si es ADMIN, cargar TODAS las empresas
+      if (this.isAdmin || stored.isAdmin) {
+        console.log('Usuario es admin, cargando TODAS las empresas');
+        const empresasRes = await axios.get(`http://localhost:5081/api/empresa/todas`);
+        
+        // Verificar estructura de respuesta
+        if (empresasRes.data && empresasRes.data.success) {
+          this.companies = empresasRes.data.empresas || [];
+        } else if (Array.isArray(empresasRes.data)) {
+          this.companies = empresasRes.data;
+        } else {
+          this.companies = [];
+        }
+        
+        console.log(`Admin - ${this.companies.length} empresas cargadas`);
+        return;
+      }
 
-        if (this.companies.length > 0) {
-          this.selectedCompany = this.companies[0];
-          this.saveSelectedCompany();
+      // Si NO es admin, verificar si es Empleador
+      const isEmpleador = stored.personType === "Empleador";
+
+      if (!isEmpleador) {
+        console.log(`Usuario es ${stored.personType || 'empleado'}, no se cargan empresas`);
+        this.companies = [];
+        return;
+      }
+ 
+      // Buscar empresas del Empleador específico
+      console.log('Usuario es Empleador, cargando sus empresas');
+      const empresasRes = await axios.get(`http://localhost:5081/api/empresa/mis-empresas/${userId}`);
+      
+      // Verificar la estructura de la respuesta
+      if (empresasRes.data && empresasRes.data.success) {
+        // Si la respuesta tiene estructura { success: true, empresas: [...] }
+        this.companies = empresasRes.data.empresas || [];
+      } else if (Array.isArray(empresasRes.data)) {
+        // Si la respuesta es directamente un array
+        this.companies = empresasRes.data;
+      } else {
+        this.companies = [];
+      }
+
+      if (this.companies.length > 0) {
+          const savedCompany = localStorage.getItem("selectedCompany");
+          if (savedCompany) {
+            try {
+              this.selectedCompany = JSON.parse(savedCompany);
+              console.log("Empresa recuperada de localStorage:", this.selectedCompany);
+            } catch (e) {
+              console.error("Error parsing saved company:", e);
+              this.selectedCompany = this.companies[0];
+              this.saveSelectedCompany();
+            }
+          } else {
+            this.selectedCompany = this.companies[0];
+            this.saveSelectedCompany();
+          }
+        } else {
+          console.log("Empleador no tiene empresas registradas");
         }
       } catch (err) {
         console.error("Error cargando empresas:", err);
+        this.companies = [];
       }
     },
 
     saveSelectedCompany() {
-      localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+      if (this.selectedCompany) {
+        // Guardar toda la información de la empresa en localStorage
+        localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+        console.log("Empresa seleccionada guardada:", this.selectedCompany.nombre);
+      } else {
+        localStorage.removeItem("selectedCompany");
+      }
+    },
+
+    onCompanyChange() {
+      if (this.selectedCompany) {
+        this.saveSelectedCompany();
+        // Redirigir a la página de administración de empresas
+        this.$router.push('/PageEmpresaAdmin');
+      }
     },
 
     logout() {
@@ -246,6 +354,34 @@ export default {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: white;
             }
+
+    /* Dropdown en header */
+    .company-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #bdbdbd;
+      padding: 0.5rem 1rem;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .company-select:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: rgb(0, 0, 0);
+    }
+
+    .company-select:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: rgb(0, 0, 0);
+    }
+
+    /* Asegurar que el select tenga el mismo alto que los otros enlaces */
+    .company-select {
+        height: 100%;
+    }
 
     /* Sección principal con flex para centrar contenido */
     .hero {

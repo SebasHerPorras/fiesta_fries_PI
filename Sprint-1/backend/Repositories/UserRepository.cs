@@ -25,14 +25,14 @@ namespace backend.Repositories
                 throw new InvalidOperationException("Connection string 'UserContext' está vacía.");
 
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash FROM dbo.[User]";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User]";
             return connection.Query<UserModel>(query).ToList();
         }
 
         public UserModel? GetById(Guid id)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash FROM dbo.[User] WHERE PK_User = @Id";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE PK_User = @Id";
             return connection.QuerySingleOrDefault<UserModel>(query, new { Id = id });
         }
 
@@ -40,7 +40,7 @@ namespace backend.Repositories
         public UserModel? GetByEmail(string email)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash FROM dbo.[User] WHERE email = @Email";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE email = @Email";
             return connection.QuerySingleOrDefault<UserModel>(query, new { Email = email });
         }
 
@@ -48,7 +48,7 @@ namespace backend.Repositories
         public void Insert(UserModel user)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = @"INSERT INTO dbo.[User] (PK_User, email, [password], active) VALUES (@Id, @Email, @PasswordHash, @active)";
+            const string query = @"INSERT INTO dbo.[User] (PK_User, email, [password], active, admin) VALUES (@Id, @Email, @PasswordHash, @active, @admin)";
             connection.Execute(query, user);
         }
 
@@ -60,7 +60,7 @@ namespace backend.Repositories
         public UserModel? EmailVerification(string email_)
         {
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"SELECT* FROM dbo.[USER] WHERE email = @Email";
+            const string query = @"SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE email = @Email";
             return connection.QueryFirstOrDefault<UserModel>(query, new { Email = email_ });
         }
     }
