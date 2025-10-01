@@ -20,8 +20,8 @@
       <button @click="agregarBeneficios" class="btn-secondary" :disabled="loading">
         ➕ Agregar Beneficios
       </button>
-      <button @click="verListaBeneficios" class="btn-secondary" :disabled="loading">
-        🙏 Lista de Beneficios
+      <button @click="toggleBeneficios" class="btn-info">
+        🙏 {{ mostrandoBeneficios ? 'Ver Empresas' : 'Lista de Beneficios' }}
       </button>
       <button @click="toggleEmpleados" class="btn-info">
         👥 {{ mostrandoEmpleados ? 'Ver Empresas' : 'Lista de Empleados' }}
@@ -31,84 +31,139 @@
     <div class="content">
       <!-- Estado de carga -->
       <div v-if="loading" class="loading">
-        ⏳ {{ mostrandoEmpleados ? 'Cargando empleados...' : 'Cargando empresas...' }}
+        ⏳ {{ 
+          mostrandoEmpleados ? 'Cargando empleados...' : 
+          mostrandoBeneficios ? 'Cargando beneficios...' : 
+          'Cargando empresas...' 
+        }}
       </div>
 
-      <!-- Vista de EMPRESAS -->
-      <div v-else-if="!mostrandoEmpleados">
-        <!-- Lista de empresas -->
-        <div v-if="empresas.length > 0" class="empresas-list">
-          <div class="table-container">
-            <table class="empresas-table">
-              <thead>
-                <tr>
-                  <th>Cédula</th>
-                  <th>Nombre</th>
-                  <th>Empleados</th>
-                  <th>Frecuencia Pago</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="empresa in empresas" :key="empresa.id" class="empresa-row">
-                  <td>{{ empresa.cedulaJuridica }}</td>
-                  <td>{{ empresa.nombre }}</td>
-                  <td>{{ empresa.cantidadEmpleados || 0 }}</td>
-                  <td>{{ formatFrecuenciaPago(empresa.frecuenciaPago) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Estado vacío empresas -->
-        <div v-else class="empty-state">
-          <div class="empty-icon">🏢</div>
-          <h3>No tienes empresas registradas</h3>
-          <p>Comienza agregando tu primera empresa</p>
-          <button @click="navigateToCreate" class="btn-primary">
-            ＋ Crear Primera Empresa
-          </button>
-        </div>
-      </div>
-
-      <!-- Vista de EMPLEADOS -->
+      <!-- Vista principal con condiciones anidadas -->
       <div v-else>
-        <div class="empleados-list">
-          <div class="section-header">
-            <h3>👥 Lista de Empleados</h3>
-            <span class="count-badge">{{ empleadosQuemados.length }} empleados</span>
+        <!-- Vista de EMPRESAS -->
+        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios">
+          <!-- Lista de empresas -->
+          <div v-if="empresas.length > 0" class="empresas-list">
+            <div class="table-container">
+              <table class="empresas-table">
+                <thead>
+                  <tr>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Empleados</th>
+                    <th>Frecuencia Pago</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="empresa in empresas" :key="empresa.id" class="empresa-row">
+                    <td>{{ empresa.cedulaJuridica }}</td>
+                    <td>{{ empresa.nombre }}</td>
+                    <td>{{ empresa.cantidadEmpleados || 0 }}</td>
+                    <td>{{ formatFrecuenciaPago(empresa.frecuenciaPago) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="table-container">
-            <table class="empleados-table">
-              <thead>
-                <tr>
-                  <th>Cédula</th>
-                  <th>Nombre Completo</th>
-                  <th>Edad</th>
-                  <th>Correo</th>
-                  <th>Departamento</th>
-                  <th>Tipo Contrato</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="empleado in empleadosQuemados" :key="empleado.cedula" class="empleado-row">
-                  <td>{{ empleado.cedula }}</td>
-                  <td>{{ empleado.nombre }}</td>
-                  <td>{{ empleado.edad }}</td>
-                  <td>{{ empleado.correo }}</td>
-                  <td>
-                    <span class="department-badge" :class="getDepartmentClass(empleado.departamento)">
-                      {{ empleado.departamento }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="contract-badge" :class="getContractClass(empleado.tipoContrato)">
-                      {{ empleado.tipoContrato }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <!-- Estado vacío empresas -->
+          <div v-else class="empty-state">
+            <div class="empty-icon">🏢</div>
+            <h3>No tienes empresas registradas</h3>
+            <p>Comienza agregando tu primera empresa</p>
+            <button @click="navigateToCreate" class="btn-primary">
+              ＋ Crear Primera Empresa
+            </button>
+          </div>
+        </div>
+
+        <!-- Vista de EMPLEADOS -->
+        <div v-else-if="mostrandoEmpleados">
+          <div class="empleados-list">
+            <div class="section-header">
+              <h3>👥 Lista de Empleados</h3>
+              <span class="count-badge">{{ empleadosQuemados.length }} empleados</span>
+            </div>
+            <div class="table-container">
+              <table class="empleados-table">
+                <thead>
+                  <tr>
+                    <th>Cédula</th>
+                    <th>Nombre Completo</th>
+                    <th>Edad</th>
+                    <th>Correo</th>
+                    <th>Departamento</th>
+                    <th>Tipo Contrato</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="empleado in empleadosQuemados" :key="empleado.cedula" class="empleado-row">
+                    <td>{{ empleado.cedula }}</td>
+                    <td>{{ empleado.nombre }}</td>
+                    <td>{{ empleado.edad }}</td>
+                    <td>{{ empleado.correo }}</td>
+                    <td>
+                      <span class="department-badge" :class="getDepartmentClass(empleado.departamento)">
+                        {{ empleado.departamento }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="contract-badge" :class="getContractClass(empleado.tipoContrato)">
+                        {{ empleado.tipoContrato }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista de BENEFICIOS -->
+        <div v-else-if="mostrandoBeneficios">
+          <div class="beneficios-list">
+            <div class="section-header">
+              <h3>🙏 Lista de Beneficios</h3>
+              <span class="count-badge">{{ beneficios.length }} beneficios</span>
+            </div>
+            <div class="table-container">
+              <table class="beneficios-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Quien Asume</th>
+                    <th>Valor</th>
+                    <th>Etiqueta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="beneficio in beneficios" :key="beneficio.idBeneficio" class="beneficio-row">
+                    <td>{{ beneficio.nombre }}</td>
+                    <td>
+                      <span class="type-badge" :class="getTypeClass(beneficio.tipo)">
+                        {{ beneficio.tipo }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="assume-badge" :class="getAssumeClass(beneficio.quienAsume)">
+                        {{ beneficio.quienAsume }}
+                      </span>
+                    </td>
+                    <td>
+                      <span :class="getValueClass(beneficio.etiqueta)">
+                        {{ formatValor(beneficio) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="etiqueta-badge" :class="getEtiquetaClass(beneficio.etiqueta)">
+                        {{ beneficio.etiqueta }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -133,6 +188,7 @@
   </div> 
 </template>
 
+
 <script>
 import axios from 'axios';
 
@@ -145,8 +201,9 @@ export default {
       message: '',
       messageType: 'success',
       mostrandoEmpleados: false,
-      // Empleados - serán reemplazados por datos reales del backend
+      mostrandoBeneficios: false,
       empleadosQuemados: [],
+      beneficios: [],
       selectedCompany: null,
       selectedCompanyId: null,
       selectedCompanyCedula: null
@@ -208,8 +265,7 @@ export default {
       } catch (error) {
         console.error('Error cargando empleados:', error);
         this.empleadosQuemados = [];
-        
-        // Mensaje de error más específico
+      
         let errorMessage = 'Error al cargar empleados';
         if (error.response?.status === 404) {
           errorMessage = 'No se encontraron empleados para esta empresa';
@@ -225,6 +281,102 @@ export default {
       }
     },
 
+
+  async toggleBeneficios() {
+    this.mostrandoEmpleados = false;
+    this.mostrandoBeneficios = !this.mostrandoBeneficios;
+    
+    if (this.mostrandoBeneficios) {
+      if (this.loadSelectedCompany()) {
+        await this.loadBeneficiosReales();
+      } else {
+        this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
+        this.mostrandoBeneficios = false;
+      }
+    } else {
+      this.showMessage('Mostrando lista de empresas', 'success');
+    }
+  },
+
+ 
+ async loadBeneficiosReales() {
+  if (!this.selectedCompanyCedula) {
+    this.showMessage('No hay empresa seleccionada', 'error');
+    return;
+  }
+
+  this.loading = true;
+  try {
+    console.log('Cargando beneficios para empresa:', this.selectedCompanyCedula);
+    
+    const response = await axios.get(`http://localhost:5081/api/Beneficio/por-empresa/${this.selectedCompanyCedula}`);
+
+    console.log('Respuesta completa:', response);
+    console.log('Datos de beneficios:', response.data);
+    
+    let beneficiosData = [];
+
+    if (response.data && response.data.success && Array.isArray(response.data.beneficios)) {
+      beneficiosData = response.data.beneficios;
+      console.log(`Se cargaron ${beneficiosData.length} beneficio/s`);
+    } else {
+      console.log('Formato inesperado:', response.data);
+      beneficiosData = [];
+    }
+
+    this.beneficios = beneficiosData;
+    this.showMessage(`Se cargaron ${beneficiosData.length} beneficio/s de ${this.selectedCompany.nombre}`, 'success');
+    
+  } catch (error) {
+    console.error('Error cargando beneficios:', error);
+    console.error('Detalles del error:', error.response?.data);
+    this.beneficios = [];
+    
+    let errorMessage = 'Error al cargar beneficios';
+    if (error.response?.status === 404) {
+      errorMessage = 'No se encontraron beneficios para esta empresa';
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    this.showMessage(errorMessage, 'error');
+  } finally {
+    this.loading = false;
+  }
+},
+
+  // Obtener clase CSS para tipo de beneficio
+  getTypeClass(tipo) {
+    const classes = {
+      'Monto Fijo': 'monto-fijo',
+      'Porcentual': 'porcentual',
+      'API': 'api'
+    };
+    return classes[tipo] || 'default';
+  },
+
+  // Obtener clase CSS para quien asume el beneficio
+  getAssumeClass(quienAsume) {
+    const classes = {
+      'Empresa': 'empresa',
+      'Empleado': 'empleado',
+      'Compartido': 'compartido'
+    };
+    return classes[quienAsume] || 'default';
+  },
+
+  // Formatear el valor según el tipo
+  formatValor(beneficio) {
+    if (beneficio.tipo === 'Porcentual') {
+      return `${beneficio.valor}%`;
+    } else if (beneficio.tipo === 'Monto Fijo') {
+      return `₡${beneficio.valor?.toLocaleString() || '0'}`;
+    } else {
+      return beneficio.valor ? `₡${beneficio.valor.toLocaleString()}` : 'API';
+    }
+  },
     // Obtener clase CSS para departamento
     getDepartmentClass(departamento) {
       const classes = {
@@ -245,6 +397,20 @@ export default {
         'Temporal': 'temporal'
       };
       return classes[tipoContrato] || 'default';
+    },
+
+    // Obtener clase CSS para etiqueta
+    getEtiquetaClass(etiqueta) {
+      const classes = {
+        'Beneficio': 'beneficio',
+        'Deducción': 'deduccion'
+      };
+      return classes[etiqueta] || 'default';
+    },
+
+    // Obtener clase para el valor (positivo/negativo)
+    getValueClass(etiqueta) {
+      return etiqueta === 'Deducción' ? 'valor-negativo' : 'valor-positivo';
     },
 
     async loadEmpresas() {
@@ -283,7 +449,7 @@ export default {
     },
 
     navigateToCreate() {
-      this.$router.push('/crear-empresa');
+      this.$router.push('/FormEmpresa');
     },
 
     viewDetails(empresa) {
@@ -307,9 +473,8 @@ export default {
     },
 
     verListaBeneficios() {
-      this.$router.push('/lista-beneficios'); 
-    },
-
+    this.toggleBeneficios();
+  },
     formatFrecuenciaPago(frecuencia) {
       const frecuencias = {
         'quincenal': 'Quincenal',
@@ -613,6 +778,145 @@ export default {
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
   border: 1px solid #ff6b6b;
+}
+
+/* Estilos para la tabla de beneficios */
+.beneficios-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.beneficios-table th,
+.beneficios-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.beneficios-table th {
+  background: rgba(31, 185, 180, 0.2);
+  font-weight: 600;
+  color: #1fb9b4;
+}
+
+.beneficio-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.type-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+
+.type-badge.default {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.default {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+/* Badges para tipos de beneficios (actualizados) */
+.type-badge.monto-fijo {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.type-badge.porcentual {
+  background: rgba(23, 162, 184, 0.2);
+  color: #17a2b8;
+}
+
+.type-badge.api {
+  background: rgba(102, 16, 242, 0.2);
+  color: #6610f2;
+}
+
+.type-badge.default {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+/* Badges para quien asume */
+.assume-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.assume-badge.empresa {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.assume-badge.empleado {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.assume-badge.compartido {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.assume-badge.default {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+/* Badges para etiquetas */
+.etiqueta-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.etiqueta-badge.beneficio {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.etiqueta-badge.deduccion {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.etiqueta-badge.default {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+/* Estilos para valores */
+.valor-positivo {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.valor-negativo {
+  color: #dc3545;
+  font-weight: 600;
 }
 
 /* Footer de la página */

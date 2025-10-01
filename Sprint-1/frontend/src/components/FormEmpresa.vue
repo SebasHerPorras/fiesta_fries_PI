@@ -194,7 +194,7 @@ export default {
 
   methods: {
     volverAlHome() {
-      this.$router.push('/Profile');
+      this.$router.go(-1);
     },
 
     obtenerUserId() {
