@@ -2,47 +2,46 @@
   <div class="wrap">
     <!-- HEADER -->
     <header class="header">
-    <nav class="nav">
-        <div class="brand">
-            <div class="logo-box">
-                <span class="f">F</span>
-            </div>
-            <div class="texts">
-                <h1>{{ userName }}</h1>
-                <p>{{ userRole }}</p>
-            </div>
-        </div>
+      <nav class="nav">
+          <div class="brand">
+              <div class="logo-box">
+                  <span class="f">F</span>
+              </div>
+              <div class="texts">
+                  <h1>{{ userName }}</h1>
+                  <p>{{ userRole }}</p>
+              </div>
+          </div>
 
-        <ul class="nav-list">
-            <!-- Siempre visibles -->
-            <li><router-link to="/Profile">Datos Personales</router-link></li>
-            <li><router-link to="/FormBeneficios">Crear Beneficio</router-link></li>
+          <ul class="nav-list">
+              <!-- Siempre visibles -->
+              <li><router-link to="/Profile">Datos Personales</router-link></li>
 
-            <!-- Solo Empleador: Registrar Empresa -->
-            <li v-if="userRole === 'Empleador'">
-                <router-link to="/FormEmpresa">Registrar Empresa</router-link>
-            </li>
+              <!-- Solo Empleador: Registrar Empresa -->
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/FormEmpresa">Registrar Empresa</router-link>
+              </li>
 
-            <!-- Dropdown de empresas SOLO para Empleador -->
-            <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
-                <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
-                    <option disabled value="">Seleccionar Empresa</option>
-                    <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
-                    {{ company.nombre }}
-                    </option>
-                </select>
-            </li>
+              <!-- Dropdown de empresas SOLO para Empleador -->
+              <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
+                  <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                      <option disabled value="">Seleccionar Empresa</option>
+                      <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
+                      {{ company.nombre }}
+                      </option>
+                  </select>
+              </li>
 
-            <!-- Solo Administrador: Ver Toda Empresa -->
-            <li v-if="isAdmin">
-                <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
-            </li>
+              <!-- Solo Administrador: Ver Toda Empresa -->
+              <li v-if="isAdmin">
+                  <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+              </li>
 
-            <!-- Siempre visible -->
-            <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-        </ul>
-    </nav>
-</header>
+              <!-- Siempre visible -->
+              <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
+          </ul>
+      </nav>
+  </header>
 
 <main class="hero">
     <div class="profile-card">
@@ -107,11 +106,11 @@ export default {
     this.loadCompanies();
   },
   methods: {
-  async loadCurrentUserProfile() {
-  const stored = localStorage.getItem("userData");
-  if (!stored) {
-    this.$router.push("/");
-    return;
+    async loadCurrentUserProfile() {
+    const stored = localStorage.getItem("userData");
+    if (!stored) {
+      this.$router.push("/");
+      return;
   }
 
   // parseamos todo el objeto para usarlo luego

@@ -200,7 +200,7 @@ export default {
       } else {
         this.mostrarError('No hay empresa seleccionada. Volviendo a Inicio...');
         setTimeout(() => {
-          this.$router.push('/Profile');
+          this.$router.go(-1);
         }, 2000);
       }
     },
