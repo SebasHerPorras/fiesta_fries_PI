@@ -12,6 +12,3 @@ token nvarchar(50) PRIMARY KEY NOT NULL,
 expirationDate DATETIME NOT NULL,
 )
 
-
-SELECT* FROM EmailVerificationE;
-SELECT* FROM EmailVerificationE;

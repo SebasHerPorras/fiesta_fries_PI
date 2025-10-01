@@ -1,4 +1,7 @@
-﻿-- Tabla Empresa
+﻿
+USE Fiesta_Fries_DB;
+GO
+-- Tabla Empresa
 
 CREATE TABLE [dbo].[Empresa](
     [CedulaJuridica] BIGINT NOT NULL, 

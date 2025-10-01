@@ -1,8 +1,7 @@
-namespace backend.Models
+﻿namespace backend.Models
 {
-    public class EmpleadoModel
+    public class EmpleadoTemp
     {
-        public int id { get; set; } // debe ser igual al id de Persona (FK)
         public string position { get; set; } = string.Empty;
         public string employmentType { get; set; } = string.Empty;
 
@@ -10,8 +9,10 @@ namespace backend.Models
 
         public DateTime hireDate { get; set; }
 
-        public string department { get; set; }
+        public string departament { get; set; }
+        public long idCompny { get; set; }
 
-        public long idCompny {  get; set; }
+        public string token { get; set; }
+
     }
 }

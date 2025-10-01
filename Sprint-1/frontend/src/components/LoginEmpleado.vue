@@ -159,6 +159,10 @@
                 passwordConfirmation: "",
                 idFormatError: "",
                 numberError: "",
+                salary: "",
+                date: "",
+                idC: "",
+                departament: "",
             };
         },
 
@@ -183,6 +187,26 @@
             },
             ShowIDFomratError(message) {
                 this.idFormatError = message;
+            },
+            getDepartament() {
+                const get = this.$route.query.departamento || "";
+                this.departament = get;
+                console.log(this.departament);
+            },
+            getIdcrl() {
+                const get = this.$route.query.idC || "";
+                this.idC = get;
+                console.log(this.idC);
+            },
+            getDateUrl() {
+                const getDateFromUrl = this.$route.query.fechaC || "";
+                this.date = getDateFromUrl;
+                console.log(this.date);
+            },
+            getSalaryUrl() {
+                const getSalaryUrl = this.$route.query.salario || "";
+                this.salary = getSalaryUrl;
+                console.log(this.salary);
             },
             getType() {
                 const getTypeUrl = this.$route.query.tipoEmpleo || "";
@@ -366,6 +390,11 @@
                     console.log("Usuario y Persona creados correctamente:");
                     console.log("Persona:", persRes.data);
 
+                    this.getSalaryUrl();
+                    this.getDateUrl();
+                    this.getIdcrl();
+                    this.getDepartament() 
+
                     const empleado = {
                         personaId: this.form.id,
                         firstName: this.form.firstName,
@@ -378,9 +407,13 @@
                         userEmail: this.email,
                         userPassword: this.password,
                         position: this.workstation,
-                        employmentType: this.employmentType
-
+                        employmentType: this.employmentType,
+                        salary: this.salary,
+                        hireDate: this.date,
+                        idCompny: this.idC,
+                        departament:this.departament,
                     };
+
 
                     console.log(empleado);
 

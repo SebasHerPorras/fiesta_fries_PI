@@ -25,7 +25,7 @@ namespace backend.Repositories
 
         public EmailModelE? getByToken(string token_)
         {
-
+            Console.WriteLine($"Token recibido: {token_}");
             using var connection = new SqlConnection(this._connectionString);
             const string query = @"SELECT* FROM dbo.EmailVerificationE WHERE token = @token";
             return connection.QuerySingleOrDefault<EmailModelE>(query, new { token = token_ });

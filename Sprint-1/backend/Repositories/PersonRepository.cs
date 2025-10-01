@@ -71,7 +71,7 @@ namespace backend.Repositories
                 FROM Persona p
                 INNER JOIN [User] u ON p.uniqueUser = u.PK_User
                 WHERE p.uniqueUser = @UsuarioId
-                  AND u.active = 0";
+                  AND u.active = 1";
 
                 return connection.QueryFirstOrDefault<PersonModel>(query, new
                 {
