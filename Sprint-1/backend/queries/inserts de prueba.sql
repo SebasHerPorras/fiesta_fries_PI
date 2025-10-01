@@ -80,6 +80,12 @@ update  [User]
 set [admin] = 1
 where email = 'sebastian.hernandezporras@ucr.ac.cr';
 
+-- Verificar que los usuarios estén activos
+UPDATE [User] SET active = 1 
+WHERE email IN ('diego.cerdasdelgado@ucr.ac.cr', 'emilio.romero@ucr.ac.cr', 'enrique.bermudez@ucr.ac.cr');
+
+
+
 ---- Quitar las FOREIGN KEYS
 --ALTER TABLE dbo.Persona DROP CONSTRAINT FK_Persona_Usuario;
 --ALTER TABLE dbo.Empresa DROP CONSTRAINT FK_Empresa_Persona;
@@ -101,3 +107,48 @@ VALUES (
     10.50,
     'Beneficio'
 );
+select * from Beneficio
+
+-- Insertar empleados para Taco Bell (CedulaJuridica: 3102234567)
+
+-- EMPLEADO 1: Diego Cerdas
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(119180741, 'Diego', 'Cerdas Delgado', '1995-03-10', 'Cartago, Costa Rica', '8888-1234', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'diego.cerdasdelgado@ucr.ac.cr'), 'Empleado');
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(119180741, 'Cocinero', 'Tiempo completo', 450000, '2024-01-15', 'Cocina', 3102234567);
+
+-- EMPLEADO 2: Emilio Romero  
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(205670889, 'Emilio', 'Romero Vargas', '1992-07-22', 'San José, Costa Rica', '8777-5678', '2444-5678', 
+ (SELECT PK_User FROM [User] WHERE email = 'emilio.romero@ucr.ac.cr'), 'Empleado');
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(205670889, 'Cajero', 'Medio tiempo', 320000, '2024-02-01', 'Ventas', 3102234567);
+
+-- EMPLEADO 3: Enrique Bermúdez
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(304560123, 'Enrique', 'Bermúdez López', '1988-11-15', 'Heredia, Costa Rica', '8555-9012', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'enrique.bermudez@ucr.ac.cr'), 'Empleado');
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(304560123, 'Supervisor', 'Tiempo completo', 600000, '2023-12-01', 'Administración', 3102234567);
+
+-- Verificar empleados de Taco Bell
+SELECT 
+    e.id AS EmpleadoID,
+    p.firstName + ' ' + p.secondName AS NombreCompleto,
+    e.position AS Posicion,
+    e.employmentType AS TipoEmpleo,
+    e.salary AS Salario,
+    e.hireDate AS FechaIngreso,
+    e.department AS Departamento,
+    emp.Nombre AS Empresa,
+    u.email AS Email
+FROM Empleado e
+JOIN Persona p ON e.id = p.id
+JOIN [User] u ON p.uniqueUser = u.PK_User
+JOIN Empresa emp ON e.idCompny = emp.CedulaJuridica
+WHERE e.idCompny = 3102234567
+ORDER BY e.hireDate;

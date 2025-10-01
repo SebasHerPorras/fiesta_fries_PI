@@ -30,5 +30,14 @@ namespace backend.Controllers
             // Retorna el empleado creado (puedes retornar solo el id si prefieres)
             return Ok(empleado);
         }
+
+        [HttpGet("empresa/{cedulaJuridica}")]
+        public ActionResult<List<EmpleadoListDto>> GetByEmpresa(long cedulaJuridica)
+        {
+            var empleados = empleadoService.GetByEmpresa(cedulaJuridica);
+            Console.WriteLine("\n\n\n\nEmpleados obtenidos:");
+            Console.Write(empleados);
+            return Ok(empleados);
+        }
     }
 }
