@@ -53,7 +53,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         public: false,
-        allowedRoles: ["admin", "empleador"],
+        allowedRoles: ["empleador"],
       },
     },
     {
@@ -176,7 +176,7 @@ function checkUserAuthentication() {
 function redirectLoggedInUser(userRole, next) {
   switch (userRole) {
     case "admin":
-      next("/PageEmpresaAdmin");
+      next("/Profile");
       break;
     case "empleador":
       next("/Profile");
@@ -193,7 +193,7 @@ function redirectLoggedInUser(userRole, next) {
 function redirectByRole(userRole, next) {
   switch (userRole) {
     case "admin":
-      next("/PageEmpresaAdmin");
+      next("/Profile");
       break;
     case "empleador":
       next("/Profile");
