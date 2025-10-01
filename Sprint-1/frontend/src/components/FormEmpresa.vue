@@ -1,132 +1,158 @@
 <template>
-  <div class="formulario-container">
-    <div class="container">
-      <div class="header">
-        <div class="logo">
-          <span class="logo-text">F</span>
+  <div class="wrap">
+    <!-- Sección principal -->
+    <main class="hero">
+      <!-- Logo + título -->
+      <div class="brand">
+        <!-- Logo de la aplicación -->
+        <div class="logo-box">
+          <span class="f">F</span>
         </div>
-        <div class="brand-text">
+        <!-- Título y subtítulo -->
+        <div class="texts">
           <h1>Fiesta Fries</h1>
           <p>Crear Nueva Empresa</p>
         </div>
       </div>
-      
-      <div class="form-card">
-        <h2 class="form-title">Crea Nueva Empresa</h2>
+
+      <!-- Card del formulario -->
+      <aside class="form-card">
+        <h2>Crea Nueva Empresa</h2>
         
-        <form id="companyForm" @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm">
           <div class="form-group">
-            <input 
-              type="text" 
-              id="ruc" 
-              v-model="formData.cedulaJuridica"
-              class="form-control" 
-              placeholder="Cédula jurídica *"
-              required
-              maxlength="10" 
-              @input="validateCedulaJuridica"
-            >
-            <div class="error" id="cedulaJuridicaError">{{ errors.cedulaJuridica }}</div>
+            <label class="input">
+              <input 
+                type="text" 
+                v-model="formData.cedulaJuridica"
+                placeholder="🪪Cédula jurídica *"
+                required
+                maxlength="10" 
+                @input="validateCedulaJuridica"
+              >
+            </label>
+            <div class="error">{{ errors.cedulaJuridica }}</div>
           </div>
           
           <div class="form-group">
-            <input 
-              type="text" 
-              id="name" 
-              v-model="formData.nombre"
-              class="form-control" 
-              placeholder="Nombre de la empresa *"
-              required
-              @input="validateNombre"
-            >
-            <div class="error" id="nombreError">{{ errors.nombre }}</div>
+            <label class="input">
+              <input 
+                type="text" 
+                v-model="formData.nombre"
+                placeholder="🏢Nombre de la empresa *"
+                required
+                @input="validateNombre"
+              >
+            </label>
+            <div class="error">{{ errors.nombre }}</div>
           </div>
           
           <div class="form-group">
-            <input 
-              type="text" 
-              id="direccion" 
-              v-model="formData.direccionEspecifica"
-              class="form-control" 
-              placeholder="Direccion especifica (opcional)"
-              @input="validateDireccion"
-            >
-            <div class="error" id="direccionError">{{ errors.direccionEspecifica }}</div>
+            <label class="input">
+              <input 
+                type="text" 
+                v-model="formData.direccionEspecifica"
+                placeholder="🌍Dirección específica (opcional)"
+                @input="validateDireccion"
+              >
+            </label>
+            <div class="error">{{ errors.direccionEspecifica }}</div>
           </div>
           
           <div class="form-group">
-            <input 
-              type="tel" 
-              id="phone" 
-              v-model="formData.telefono"
-              class="form-control" 
-              placeholder="Telefono (opcional)"
-              @input="validateTelefono"
-            >
-            <div class="error" id="telefonoError">{{ errors.telefono }}</div>
+            <label class="input">
+              <input 
+                type="tel" 
+                v-model="formData.telefono"
+                placeholder="📱Teléfono (opcional)"
+                @input="validateTelefono"
+              >
+            </label>
+            <div class="error">{{ errors.telefono }}</div>
           </div>
           
           <div class="form-group">
-            <input 
-              type="number" 
-              id="maxBenefits" 
-              v-model="formData.noMaxBeneficios"
-              class="form-control" 
-              placeholder="Numero maximo de beneficios (0 = sin limite) *"
-              required
-              min="0"
-              @input="validateMaxBenefits"
-            >
-            <div class="error" id="maxBenefitsError">{{ errors.noMaxBeneficios }}</div>
+            <label class="input">
+              <input 
+                type="number" 
+                v-model="formData.noMaxBeneficios"
+                placeholder="🙏Número máximo de beneficios (mínimo 1) *"
+                required
+                min="0"
+                @input="validateMaxBenefits"
+              >
+            </label>
+            <div class="error">{{ errors.noMaxBeneficios }}</div>
           </div>
           
           <div class="form-group">
-            <select 
-              id="paymentFrequency" 
-              v-model="formData.frecuenciaPago"
-              class="form-control" 
-              required
-              @change="validateFrecuenciaPago"
-            >
-              <option value="" disabled selected>Frecuencia de Pago *</option>
-              <option value="quincenal">Quincenal</option>
-              <option value="mensual">Mensual</option>
-            </select>
-            <div class="error" id="frecuenciaPagoError">{{ errors.frecuenciaPago }}</div>
+            <label class="input">
+              <select 
+                v-model="formData.frecuenciaPago"
+                required
+                @change="validateFrecuenciaPago"
+              >
+                <option value="" disabled selected>💵Frecuencia de Pago *</option>
+                <option value="quincenal">Quincenal</option>
+                <option value="mensual">Mensual</option>
+              </select>
+            </label>
+            <div class="error">{{ errors.frecuenciaPago }}</div>
           </div>
           
           <div class="form-group">
-            <input 
-              type="number" 
-              id="paymentDay" 
-              v-model="formData.diaPago"
-              class="form-control" 
-              placeholder="Dia de pago (1-30) *"
-              required
-              min="1"
-              max="31"
-              @input="validateDiaPago"
-            >
-            <div class="error" id="diaPagoError">{{ errors.diaPago }}</div>
+            <label class="input">
+              <input 
+                type="number" 
+                v-model="formData.diaPago"
+                placeholder="📅Día de pago (1-30) *"
+                required
+                min="1"
+                max="31"
+                @input="validateDiaPago"
+              >
+            </label>
+            <div class="error">{{ errors.diaPago }}</div>
           </div>
           
-          <button 
-            type="submit" 
-            class="btn-primary"
-            :disabled="loading"
-          >
-            <span v-if="loading">⏳ Registrando...</span>
-            <span v-else>Registrar Empresa</span>
-          </button>
+          <!-- BOTONES -->
+          <div class="buttons-row">
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              @click="volverAlHome"
+              :disabled="loading"
+            >
+              ← Volver
+            </button>
+            <button 
+              class="btn btn-primary" 
+              type="submit"
+              :disabled="loading"
+            >
+              <span v-if="loading">⏳ Registrando...</span>
+              <span v-else>Agregar Empresa</span>
+            </button>
+          </div>
           
-          <div class="success" id="successMessage" :class="{ error: messageType === 'error' }">{{ successMessage }}</div>
+          <div class="message" :class="{ error: messageType === 'error', success: messageType === 'success' }">
+            {{ successMessage }}
+          </div>
         </form>
-      </div>
-    </div>
-    
-    <div class="footer">
+      </aside>
+    </main>
+
+    <!-- Footer de la página con copyright y redes sociales -->
+    <footer>
       <div>©2025 Fiesta Fries</div>
-    </div>
+      <div class="socials">
+        <!-- Enlaces a redes sociales (solo íconos, no funcionales) -->
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="LinkedIn">in</a>
+        <a href="#" aria-label="YouTube">▶</a>
+        <a href="#" aria-label="Instagram">✶</a>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -134,7 +160,7 @@
 import axios from "axios";
 
 export default {
-  name: 'CompanyFormulario',
+  name: 'FormEmpresa',
   data() {
     return {
       formData: {
@@ -157,48 +183,38 @@ export default {
       },
       successMessage: '',
       messageType: 'success',
-      existingCompanies: [],
       userId: '',
       loading: false 
     }
   },
 
   mounted() {
-  this.obtenerUserId();
-},
+    this.obtenerUserId();
+  },
 
   methods: {
-  obtenerUserId() {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        this.userId = user.id;
-        console.log('UserId obtenido:', this.userId);
-      } catch (error) {
-        console.error('Error al parsear userData:', error);
-      }
-    }
-    
-    if (!this.userId) {
-      const sessionUser = sessionStorage.getItem('userData');
-      if (sessionUser) {
+    volverAlHome() {
+      this.$router.push('/Profile');
+    },
+
+    obtenerUserId() {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
         try {
-          const user = JSON.parse(sessionUser);
+          const user = JSON.parse(userData);
           this.userId = user.id;
-          console.log('UserId obtenido de sessionStorage:', this.userId);
+          console.log('UserId obtenido:', this.userId);
         } catch (error) {
-          console.error('Error al parsear session userData:', error);
+          console.error('Error al parsear userData:', error);
         }
       }
-    }
-    
-    if (!this.userId) {
-      console.error('No se pudo obtener el userId. El usuario debe estar logueado.');
-      this.successMessage = 'Error: Usuario no autenticado. Por favor, inicie sesión.';
-      this.messageType = 'error';
-    }
-  },
+      
+      if (!this.userId) {
+        console.error('No se pudo obtener el userId. El usuario debe estar logueado.');
+        this.successMessage = 'Error: Usuario no autenticado. Por favor, inicie sesión.';
+        this.messageType = 'error';
+      }
+    },
 
     validateCedulaJuridica() {
       const cedula = this.formData.cedulaJuridica.trim();
@@ -270,7 +286,7 @@ export default {
     },
     
     validateDiaPago() {
-      const dia = this.formData.diaPago.toString().trim();
+      const dia = this.formData.diaPago ? this.formData.diaPago.toString().trim() : '';
       
       if (!dia) {
         this.errors.diaPago = 'El dia de pago es obligatorio.';
@@ -320,7 +336,6 @@ export default {
         campo !== 0 && !campo  
       );
 
-
       console.log('=== DEBUG DETALLADO DE CAMPOS OBLIGATORIOS ===');
       console.log('cedulaJuridica:', this.formData.cedulaJuridica, '¿Vacío?:', !this.formData.cedulaJuridica);
       console.log('nombre:', this.formData.nombre, '¿Vacío?:', !this.formData.nombre);
@@ -365,19 +380,18 @@ export default {
         this.messageType = 'success';
         
         setTimeout(() => {
-          this.resetForm();
-          this.successMessage = '';
-        }, 2000);
+          this.volverAlHome();
+        }, 1000);
         
       } catch (error) {
         console.error('Error al guardar empresa:', error);
         if (error.message.includes('cédula jurídica')) {
-          this.successMessage =    error.message;
+          this.successMessage = error.message;
         } else {
           this.successMessage = 'Error: ' + error.message;
         }
         this.messageType = 'error';
-      }finally {
+      } finally {
         this.loading = false; 
       }
     },
@@ -443,149 +457,185 @@ export default {
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.formulario-container {
-  background-color: #1e1e1e;
-  color: whitesmoke;
+/* wrap es el contenedor principal (el fondo) */
+.wrap {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  background: #1e1e1e;
+  color: whitesmoke;
 }
 
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  width: 100%;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.logo {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
-  border-radius: 12px;
+/* Sección principal con flex para centrar contenido */
+.hero {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 15px;
+  color: whitesmoke;
+  padding: 48px 64px;
+  gap: 40px;
+  flex: 1 0 auto;
 }
 
-.logo-text {
+/* Contenedor de logo y textos */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 55%;
+  margin-bottom: 150px;
+}
+
+/* Caja del logo */
+.logo-box {
+  width: 84px;
+  height: 84px;
+  background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Letra F del logo */
+.logo-box .f {
   font-weight: 800;
-  font-size: 30px;
+  font-size: 44px;
   color: white;
+  line-height: 1;
 }
 
-.brand-text h1 {
-  font-size: 24px;
-  margin-bottom: 5px;
+/* Título principal */
+.texts h1 {
+  margin: 0;
+  font-size: 34px;
 }
 
-.brand-text p {
+/* Subtítulo */
+.texts p {
+  margin: 6px 0 0;
   color: #bdbdbd;
-  font-size: 14px;
 }
 
+/* Card del formulario */
 .form-card {
-  background: rgb(71,69,69);
-  border: 1px solid rgba(255,255,255,0.12);
+  width: 400px;
+  min-height: 220px;
+  background: rgb(71, 69, 69);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
-.form-title {
-  font-size: 22px;
-  margin-bottom: 20px;
+/* Título del card */
+.form-card h2 {
   color: #eee;
+  margin: 0 0 20px;
+  font-weight: 600;
+  font-size: 18px;
   text-align: center;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #ddd;
-}
-
-.form-control {
-  width: 100%;
-  padding: 12px 15px;
+/* Estilo de los campos de entrada */
+.input {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
   border-radius: 6px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: whitesmoke;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 12px;
+  color: #ece6e6ff;
+}
+
+/* Input dentro del formulario */
+.input input, .input select {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: rgb(255, 255, 255);
+  width: 100%;
   font-size: 14px;
-  transition: border-color 0.3s;
 }
 
-select.form-control {
-  color: #bdbdbd;
+.input select {
+  color: rgb(116, 116, 116);
 }
 
-select.form-control:valid,
-select.form-control:focus {
+.input select:valid,
+.input select:focus {
   color: whitesmoke;
 }
 
-select option {
+/* Estilos para el dropdown desplegado */
+.input select option {
+  background: rgb(71, 69, 69);
   color: whitesmoke;
-  background: rgb(71,69,69);
+  padding: 10px 12px;
+  border: none;
 }
 
-select option[disabled] {
-  color: #bdbdbd;
+.input select option:hover {
+  background: #1fb9b4;
+  color: white;
 }
 
-.form-control:focus {
-  outline: none;
-  border-color: #1fb9b4;
-  box-shadow: 0 0 0 2px rgba(31, 185, 180, 0.2);
+.input select option:checked {
+  background: #1fb9b4;
+  color: white;
 }
 
-.form-control::placeholder {
-  color: #bdbdbd;
+/* Estilos para los botones */
+.buttons-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
 }
 
+.buttons-row .btn {
+  width: 50%; 
+  padding: 10px 12px; 
+  font-size: 14px;
+}
+
+/* Estilos para botón primario */
 .btn-primary {
   background: #1fb9b4;
   color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  font-size: 16px;
-  margin-top: 10px;
-  transition: background 0.3s, transform 0.1s;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #1aa8a4;
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
+/* Estilos para botón secundario (Volver) */
+.btn-secondary {
+  background: #6c757d;
+  color: white;
 }
 
+.btn-secondary:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+/* Estilos comunes para botones */
+.btn {
+  border-radius: 6px;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensajes de error y éxito */
 .error {
   color: #ff6b6b;
   font-size: 13px;
@@ -593,44 +643,82 @@ select option[disabled] {
   min-height: 18px;
 }
 
-.success {
-  color: #9fe6cf;
-  font-size: 13px;
-  margin-top: 10px;
+.message {
+  margin-top: 15px;
   text-align: center;
-  min-height: 18px;
+  font-size: 14px;
+  padding: 0;
 }
 
-.success.error {
+.message.success {
+  color: #9fe6cf;
+}
+
+.message.error {
   color: #ff6b6b;
 }
 
-.footer {
-  background: #2c2c2c;
-  padding: 20px;
-  text-align: center;
-  margin-top: 40px;
+/* Footer de la página */
+footer {
+  background: #fff;
+  padding: 28px 64px;
+  border-top: 1px solid #eee;
   color: #8b8b8b;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-@media (max-width: 600px) {
-  .container {
-    padding: 15px;
-  }
-  
-  .form-card {
-    padding: 20px;
-  }
-  
-  .header {
+/* Contenedor de redes sociales */
+.socials {
+  display: flex;
+  gap: 12px;
+}
+
+/* Íconos de redes sociales */
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #e6e6e6;
+  text-decoration: none;
+  color: #bdbdbd;
+  font-size: 14px;
+}
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 900px) {
+  .hero {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
+    padding: 36px;
   }
-  
-  .logo {
-    margin-right: 0;
-    margin-bottom: 10px;
+
+  .brand {
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .form-card {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .buttons-row {
+    flex-direction: column;
+  }
+
+  .buttons-row .btn {
+    width: 100%;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
   }
 }
 </style>
