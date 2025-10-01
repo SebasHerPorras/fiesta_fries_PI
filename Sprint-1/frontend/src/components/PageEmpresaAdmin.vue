@@ -449,7 +449,7 @@ export default {
     },
 
     navigateToCreate() {
-      this.$router.push('/crear-empresa');
+      this.$router.push('/FormEmpresa');
     },
 
     viewDetails(empresa) {
