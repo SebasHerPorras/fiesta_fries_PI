@@ -221,6 +221,99 @@ VALUES
 (3102234567, 'Almuerzo', 'Monto Fijo', 'Empresa', 5000, 'Beneficio'),
 (3102234567, 'Capacitación', 'Monto Fijo', 'Empresa', 10000, 'Beneficio');
 
+-- 10 EMPLEADOS ADICIONALES PARA TACO BELL
+
+-- EMPLEADO 9: Gabriela Herrera
+INSERT INTO [User] (email, password, active) VALUES 
+('gabriela.herrera@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1001234575, 'Gabriela', 'Herrera Vega', '1996-01-12', 'San José, Costa Rica', '8888-9876', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'gabriela.herrera@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1001234575, 'Hostess', 'Medio tiempo', 290000, '2024-08-01', 'Servicio', 3102234567);
+
+-- EMPLEADO 10: Roberto Silva
+INSERT INTO [User] (email, password, active) VALUES 
+('roberto.silva@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1101234576, 'Roberto', 'Silva Montero', '1991-05-18', 'Cartago, Costa Rica', '8777-4567', '2333-7890', 
+ (SELECT PK_User FROM [User] WHERE email = 'roberto.silva@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1101234576, 'Gerente de Turno', 'Tiempo completo', 650000, '2024-01-10', 'Administración', 3102234567);
+
+-- EMPLEADO 11: Melissa Arias
+INSERT INTO [User] (email, password, active) VALUES 
+('melissa.arias@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1201234577, 'Melissa', 'Arias Cordero', '1998-09-03', 'Alajuela, Costa Rica', '8999-3456', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'melissa.arias@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1201234577, 'Preparadora de Alimentos', 'Tiempo completo', 380000, '2024-02-15', 'Cocina', 3102234567);
+
+-- EMPLEADO 12: Javier Ramírez
+INSERT INTO [User] (email, password, active) VALUES 
+('javier.ramirez@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1301234578, 'Javier', 'Ramírez Castro', '1994-12-25', 'Heredia, Costa Rica', '8666-5432', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'javier.ramirez@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1301234578, 'Cajero', 'Medio tiempo', 315000, '2024-03-12', 'Ventas', 3102234567);
+
+-- EMPLEADO 13: Carmen López
+INSERT INTO [User] (email, password, active) VALUES 
+('carmen.lopez@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1401234579, 'Carmen', 'López Gutierrez', '1992-06-08', 'San José, Costa Rica', '8555-6789', '2444-1122', 
+ (SELECT PK_User FROM [User] WHERE email = 'carmen.lopez@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1401234579, 'Encargada de Inventario', 'Tiempo completo', 480000, '2024-04-20', 'Logística', 3102234567);
+
+-- EMPLEADO 14: Alejandro Mora
+INSERT INTO [User] (email, password, active) VALUES 
+('alejandro.mora@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1501234580, 'Alejandro', 'Mora Picado', '1997-03-14', 'Puntarenas, Costa Rica', '8888-7654', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'alejandro.mora@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1501234580, 'Repartidor', 'Tiempo completo', 360000, '2024-05-05', 'Logística', 3102234567);
+
+-- EMPLEADO 15: Patricia Vásquez
+INSERT INTO [User] (email, password, active) VALUES 
+('patricia.vasquez@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1601234581, 'Patricia', 'Vásquez Alvarado', '1995-10-29', 'Cartago, Costa Rica', '8777-8901', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'patricia.vasquez@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1601234581, 'Mesera', 'Medio tiempo', 275000, '2024-06-10', 'Servicio', 3102234567);
+
+-- EMPLEADO 16: Fernando Solís
+INSERT INTO [User] (email, password, active) VALUES 
+('fernando.solis@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1701234582, 'Fernando', 'Solís Chaves', '1993-08-17', 'Alajuela, Costa Rica', '8999-2345', '2555-6677', 
+ (SELECT PK_User FROM [User] WHERE email = 'fernando.solis@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1701234582, 'Cocinero', 'Tiempo completo', 430000, '2024-07-18', 'Cocina', 3102234567);
+
+-- EMPLEADO 17: Natalia Rojas
+INSERT INTO [User] (email, password, active) VALUES 
+('natalia.rojas@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1801234583, 'Natalia', 'Rojas Quesada', '1999-02-28', 'Heredia, Costa Rica', '8666-1357', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'natalia.rojas@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1801234583, 'Cajera', 'Medio tiempo', 300000, '2024-08-25', 'Ventas', 3102234567);
+
+-- EMPLEADO 18: Ricardo Jiménez
+INSERT INTO [User] (email, password, active) VALUES 
+('ricardo.jimenez@ucr.ac.cr', 'Hola.2025', 1);
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType) VALUES 
+(1901234584, 'Ricardo', 'Jiménez Vargas', '1990-11-05', 'San José, Costa Rica', '8555-9876', NULL, 
+ (SELECT PK_User FROM [User] WHERE email = 'ricardo.jimenez@ucr.ac.cr'), 'Empleado');
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny) VALUES 
+(1901234584, 'Supervisor de Limpieza', 'Tiempo completo', 390000, '2024-09-01', 'Mantenimiento', 3102234567);
+
+
 select * from Beneficio
 
 -- Verificar empleados de Taco Bell
