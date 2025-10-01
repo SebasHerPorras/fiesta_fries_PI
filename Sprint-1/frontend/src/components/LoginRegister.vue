@@ -104,7 +104,8 @@ export default {
             userData = {
               id: res.data.id,           
               email: res.data.email,
-              isAdmin: true
+              isAdmin: true,
+              isLoggedIn: true 
             };
             console.log('Usuario ADMIN - datos básicos guardados');
           } else {
@@ -119,7 +120,8 @@ export default {
               secondName: res.data.secondName,
               firstLastName: res.data.firstLastName,
               secondLastName: res.data.secondLastName,
-              phoneNumber: res.data.phoneNumber
+              phoneNumber: res.data.phoneNumber,
+              isLoggedIn: true
             };
             console.log('Usuario EMPLEADO - datos completos guardados');
           }
