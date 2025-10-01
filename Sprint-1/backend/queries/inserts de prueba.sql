@@ -92,3 +92,12 @@ where email = 'sebastian.hernandezporras@ucr.ac.cr';
 --DROP TABLE IF EXISTS dbo.[User];
 
 
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
+VALUES (
+    3101123456,
+    'Seguro de Vida',
+    'Porcentual',
+    'Empresa',
+    10.50,
+    'Beneficio'
+);
