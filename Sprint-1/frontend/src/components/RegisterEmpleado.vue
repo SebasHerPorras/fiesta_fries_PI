@@ -1,36 +1,5 @@
 ﻿<template>
     <div class="wrap">
-        <header class="header">
-            <nav class="nav">
-                <div class="brand">
-                    <div class="logo-box">
-                        <span class="f">F</span>
-                    </div>
-                    <div class="texts">
-                        <h1>{{ userName }}</h1>
-                        <p>{{ userRole }}</p>
-                    </div>
-                </div>
-
-                <div class="company-dropdown">
-                    <label for="companySelect">Empresa :</label>
-                    <select id="companySelect" v-model="selectedCompany" @change="saveSelectedCompany">
-                        <option disabled value="">No tienes empresas registradas</option>
-                        <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
-                            {{ company.nombre }}
-                        </option>
-                    </select>
-                </div>
-
-                <ul class="nav-list">
-                    <li><router-link to="/home">Home</router-link></li>
-                    <li><router-link to="/FormEmpresa">Registrar Empresa</router-link></li>
-                    <li><router-link to="/RegEmpleado">Registrar Empleado</router-link></li>
-                    <li><router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link></li>
-                    <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-                </ul>
-            </nav>
-        </header>
         <main class="hero">
             <aside class="register-card">
                 <h2>Registrar Empleado</h2>
@@ -79,7 +48,8 @@
 
 
                     <div class="buttons">
-                        <button class="btn" type="submit">Registrar</button>
+                        <button class="btn btn-secondary" type="button" @click="this.$router.go(-1);"> Volver</button>
+                        <button class="btn btn-primary" type="submit">Registrar</button>
                     </div>
                 </form>
             </aside>
@@ -99,12 +69,13 @@
 
 <script>
 import axios from 'axios';
+
 export default {
     name: "RegistrarEmpleado",
     data() {
         return {
             userName: "Cargando...",
-            userRole: "Cargando...",
+            userRole: "",
             companies: [],
             selectedCompany: null,
             form: {
@@ -156,7 +127,6 @@ export default {
             }
             const userData = JSON.parse(stored);
 
-            // Aquí ajusta según cómo guardaste los datos en login
             this.userName = `${userData.firstName} ${userData.secondName}`;
             this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
         },
@@ -184,12 +154,15 @@ export default {
 
             console.log(cId);
 
-            //Primero llamamos a createe
-
             const fechaC = new Date().toISOString(); 
 
 
-            const createE = `http://localhost:5081/api/user/emailE?email=${encodeURIComponent(this.form.email)}&puesto=${encodeURIComponent(this.form.position)}&tipoEmpleo=${encodeURIComponent(this.form.employmentType)}&salario=${encodeURIComponent(this.form.salary)}&fechaC=${encodeURIComponent(fechaC)}&idC=${encodeURIComponent(cId)}&departamento=${encodeURIComponent(this.form.departament)}`;
+            const createE = `http://localhost:5081/api/user/emailE?email=${encodeURIComponent(this.form.email)}
+              &puesto=${encodeURIComponent(this.form.position)}&tipoEmpleo=${encodeURIComponent(this.form.employmentType)}
+              &salario=${encodeURIComponent(this.form.salary)}&fechaC=${encodeURIComponent(fechaC)}&idC=${encodeURIComponent(cId)}
+              &departamento=${encodeURIComponent(this.form.departament)}`;
+
+
             console.log("Justo va a entrar aquí\n");
             await axios.get(createE);
             alert("Empleado reclutado con éxito");
@@ -197,6 +170,15 @@ export default {
             this.clearAll();
 
         },
+
+        onCompanyChange() {
+          if (this.selectedCompany) {
+            this.saveSelectedCompany();
+            // Redirigir a la página de administración de empresas
+            this.$router.push('/PageEmpresaAdmin');
+          }
+        },
+
         handleReset() {
             this.form = { email: "", position: "", employmentType: "" };
             this.emailError = "";
@@ -298,6 +280,34 @@ export default {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: white;
             }
+            
+    /* Dropdown en header */
+    .company-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #bdbdbd;
+      padding: 0.5rem 1rem;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .company-select:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: rgb(0, 0, 0);
+    }
+
+    .company-select:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: rgb(0, 0, 0);
+    }
+
+    /* Asegurar que el select tenga el mismo alto que los otros enlaces */
+    .company-select {
+        height: 100%;
+    }
 
     /* Sección principal con flex para centrar contenido */
     .hero {
@@ -344,28 +354,50 @@ export default {
             font-size: 14px;
             margin-bottom: 20px;
             flex-grow: 1;
-        }
+          }
 
-    /* Botón */
-    .btn {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 6px;
-        border: 0;
-        font-weight: 600;
-        cursor: pointer;
-        background: #1fb9b4;
-        color: white;
-        text-align: center;
-        text-decoration: none;
-        font-size: 14px;
-        display: block;
-        transition: background-color 0.3s;
-    }
+  .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      width: 100%;
+      justify-content: center; /* Centra los botones horizontalmente */
+  }
 
-        .btn:hover {
-            background: #1aa19c;
-        }
+  .buttons .btn {
+      flex: 1; /* Ambos botones ocupan el mismo espacio */
+      padding: 12px 20px; /* Tamaño más adecuado */
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-align: center;
+      min-height: 40px; /* Altura mínima consistente */
+  }
+
+  /* Botón Registrar (usará btn-primary) */
+  .buttons .btn-primary {
+      background: #1fb9b4;
+      color: white;
+  }
+
+  .buttons .btn-primary:hover {
+      background: #1aa19c;
+  }
+
+  /* Botón Volver (usará btn-secondary) */
+  .buttons .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #bdbdbd;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .buttons .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+  }
 
     /* Estilo footer *Compartido entre rutas* */
     footer {
