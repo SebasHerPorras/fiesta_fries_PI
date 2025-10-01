@@ -9,6 +9,7 @@ import RegisterEmpleado from './components/RegisterEmpleado.vue';
 import LogINE from './components/LogInEmpleadores.vue';
 import LogE from './components/LoginEmpleado.vue';
 import PersonalProfile from './components/DatosPersonales.vue';
+import FormBeneficios from './components/FormBeneficios.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +22,7 @@ const router = createRouter({
     // { path: "/Home", name: "Home", component: Homepage },
     { path: "/RegEmpleado", name: "RegEmpleado", component: RegisterEmpleado },
     { path: "/Profile", name: "Profile", component: PersonalProfile },
+    { path: "/FormBeneficios", name: "FormBeneficios", component: FormBeneficios },
   ],
 });
 
