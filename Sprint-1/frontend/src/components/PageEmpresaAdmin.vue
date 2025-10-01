@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-container">
+  <div class="wrap">
     <div class="header">
       <div class="logo">
         <span class="logo-text">F</span>
@@ -11,11 +11,17 @@
     </div>
 
     <div class="actions-bar">
-      <button @click="navigateToCreate" class="btn-primary">
-        ＋ Agregar Nueva Empresa
+      <button @click="volverAtras" class="btn-primary">
+        ← Volver
       </button>
-      <button @click="refreshList" class="btn-secondary" :disabled="loading">
-        🔄 Actualizar
+      <button @click="agregarEmpleado" class="btn-secondary" :disabled="loading">
+        ➕ Agregar Empleado
+      </button>
+      <button @click="agregarBeneficios" class="btn-secondary" :disabled="loading">
+        ➕ Agregar Beneficios
+      </button>
+      <button @click="verListaBeneficios" class="btn-secondary" :disabled="loading">
+        🙏 Lista de Beneficios
       </button>
       <button @click="toggleEmpleados" class="btn-info">
         👥 {{ mostrandoEmpleados ? 'Ver Empresas' : 'Lista de Empleados' }}
@@ -106,17 +112,25 @@
           </div>
         </div>
       </div>
+
+      <!-- Mensajes de éxito/error -->
+      <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
+        {{ message }}
+      </div>
     </div>
 
-    <!-- Mensajes de éxito/error -->
-    <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
-      {{ message }}
-    </div>
-
-    <div class="footer">
+    <!-- Footer de la página con copyright y redes sociales -->
+    <footer>
       <div>©2025 Fiesta Fries</div>
-    </div>
-  </div>
+      <div class="socials">
+        <!-- Enlaces a redes sociales (solo íconos, no funcionales) -->
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="LinkedIn">in</a>
+        <a href="#" aria-label="YouTube">▶</a>
+        <a href="#" aria-label="Instagram">✶</a>
+      </div>
+    </footer>
+  </div> 
 </template>
 
 <script>
@@ -173,19 +187,24 @@ export default {
         
         // Usar la cédula de la empresa para obtener empleados
         const response = await axios.get(`http://localhost:5081/api/Empleado/empresa/${this.selectedCompanyCedula}`);
-        // Taco Bell
+
         console.log('Respuesta empleados:', response.data);
         
+        let empleados = [];
+
         if (response.data && Array.isArray(response.data)) {
-          this.empleadosQuemados = response.data;
-          this.showMessage(`Se cargaron ${response.data.length} empleados de ${this.selectedCompany.nombre}`, 'success');
+          empleados = response.data;
         } else if (response.data.success && Array.isArray(response.data.empleados)) {
-          this.empleadosQuemados = response.data.empleados;
-          this.showMessage(`Se cargaron ${response.data.empleados.length} empleados de ${this.selectedCompany.nombre}`, 'success');
-        } else {
-          this.empleadosQuemados = [];
-          this.showMessage('No se encontraron empleados para esta empresa', 'info');
+          empleados = response.data.empleados;
         }
+
+        this.empleadosQuemados = empleados;
+        
+        if (this.empresas.length > 0 && this.empresas[0].cedulaJuridica === this.selectedCompanyCedula) {
+          this.empresas[0].cantidadEmpleados = empleados.length;
+        }
+
+        this.showMessage(`Se cargaron ${empleados.length} empleados de ${this.selectedCompany.nombre}`, 'success');
       } catch (error) {
         console.error('Error cargando empleados:', error);
         this.empleadosQuemados = [];
@@ -231,27 +250,23 @@ export default {
     async loadEmpresas() {
       this.loading = true;
       try {
-        const userData = localStorage.getItem('userData');
-        if (!userData) {
-          throw new Error('Usuario no autenticado');
-        }
+        const hasSelectedCompany = this.loadSelectedCompany();
         
-        const user = JSON.parse(userData);
-        const userId = user.id;
-        
-        console.log('UserId obtenido para empresas:', userId);
-        
-        const response = await axios.get(`https://localhost:7056/api/Empresa/mis-empresas/${userId}`);
-        
-        if (response.data.success) {
-          this.empresas = response.data.empresas;
-          this.showMessage(`Se cargaron ${response.data.count} empresas`, 'success');
+        if (hasSelectedCompany && this.selectedCompany) {
+           this.empresas = [this.selectedCompany];
+      
+           await this.loadEmpleadosReales();
+      
+           this.showMessage(`Empresa seleccionada: ${this.selectedCompany.nombre}`, 'success');
         } else {
-          throw new Error(response.data.message);
+          this.showMessage('No hay empresa seleccionada. Redirigiendo a Datos Personales...', 'error');
+          setTimeout(() => {
+            this.$router.push('/Profile');
+          }, 2000);
         }
       } catch (error) {
         console.error('Error cargando empresas:', error);
-        this.showMessage('Error al cargar las empresas: ' + (error.response?.data?.message || error.message), 'error');
+        this.showMessage('Error al cargar la empresa: ' + (error.response?.data?.message || error.message), 'error');
       } finally {
         this.loading = false;
       }
@@ -277,6 +292,22 @@ export default {
 
     editEmpresa(empresa) {
       this.$router.push(`/editar-empresa/${empresa.id}`);
+    },
+
+     volverAtras() {
+      this.$router.go(-1);
+    },
+
+     agregarEmpleado() {
+      this.$router.push('/RegEmpleado');
+    },
+
+    agregarBeneficios() {
+      this.$router.push('/FormBeneficios');
+    },
+
+    verListaBeneficios() {
+      this.$router.push('/lista-beneficios'); 
     },
 
     formatFrecuenciaPago(frecuencia) {
@@ -323,11 +354,13 @@ export default {
 </script>
 
 <style scoped>
-.admin-container {
-  background-color: #1e1e1e;
-  color: whitesmoke;
+.wrap {
   min-height: 100vh;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  color: whitesmoke;
+  justify-content: space-between;
 }
 
 .header {
@@ -379,17 +412,17 @@ export default {
 }
 
 .btn-primary {
-  background: #1fb9b4;
-  color: white;
-}
-
-.btn-secondary {
   background: #6c757d;
   color: white;
 }
 
+.btn-secondary {
+  background:  #1fb9b4;
+  color: white;
+}
+
 .btn-info {
-  background: #17a2b8;
+  background: #1fb9b4;;
   color: white;
 }
 
@@ -410,6 +443,8 @@ export default {
   border-radius: 10px;
   padding: 25px;
   border: 1px solid rgba(255,255,255,0.12);
+  flex: 1;
+  margin-bottom: 20px; 
 }
 
 .section-header {
@@ -580,26 +615,67 @@ export default {
   border: 1px solid #ff6b6b;
 }
 
-.footer {
-  background: #2c2c2c;
-  padding: 20px;
-  text-align: center;
-  margin-top: 40px;
+/* Footer de la página */
+footer {
+  background: #fff;
+  padding: 28px 64px;
+  border-top: 1px solid #eee;
   color: #8b8b8b;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-@media (max-width: 768px) {
-  .actions-bar {
+/* Contenedor de redes sociales */
+.socials {
+  display: flex;
+  gap: 12px;
+}
+
+/* Íconos de redes sociales */
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #e6e6e6;
+  text-decoration: none;
+  color: #bdbdbd;
+  font-size: 14px;
+}
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 36px;
+  }
+
+  .brand {
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .form-card {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .buttons-row {
     flex-direction: column;
   }
-  
-  .empresas-table, .empleados-table {
-    font-size: 14px;
+
+  .buttons-row .btn {
+    width: 100%;
   }
-  
-  .actions {
+
+  footer {
     flex-direction: column;
+    gap: 10px;
+    text-align: center;
   }
 }
 </style>
