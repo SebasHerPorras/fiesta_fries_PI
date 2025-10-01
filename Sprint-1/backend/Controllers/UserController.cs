@@ -85,6 +85,7 @@ namespace backend.Controllers
                 secondName = persona.secondName,
                 phoneNumber = persona.personalPhone
             });
+        
         }
 
         [HttpPost("create")]
@@ -216,7 +217,7 @@ namespace backend.Controllers
 
             connection.Execute(query, verificationDate);
 
-            return Ok("Correo verificado con éxito");
+            return Redirect($"http://localhost:8080/");
         }
 
         [HttpGet("emailverify")]
@@ -231,6 +232,90 @@ namespace backend.Controllers
 
         }
 
+
+        [HttpGet("emailE")]
+        public ActionResult SendE([FromQuery] string email, string puesto, string tipoEmpleo, int salario, string fechaC, long idC, string departamento)
+        {
+            var token = Guid.NewGuid().ToString();
+            DateTime expiration = DateTime.UtcNow.AddDays(3); 
+            var mailTokenVerificationE = new EmailModelE
+            { 
+                token = token,
+                expirationDate = expiration,
+            };
+
+
+            //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
+            var mailRepository = new EmailRepositoryE();
+
+
+            mailRepository.insertMailNoty(mailTokenVerificationE);
+
+            Console.WriteLine("Query realizado con éxito\n");
+
+            //preparamos el link al api donde vamos a manejar la vaina
+            var verificationLink = $"http://localhost:5081/api/user/verifye?token={token}&email={email}&puesto={puesto}&tipoEmpleo={tipoEmpleo}&salario={salario}&fechaC={fechaC}&idC={idC}&departamento={departamento}";
+
+            // vamo a enviar el correo
+            var mailAddr = new MailAddress("pruebadisenosoft@gmail.com", "Fiesta Fries");
+
+            var sendTo = new MailAddress(email);
+
+            const string password = "rxhd qmzc uvxi sxmg";
+
+            const string subject = "Invitación a ser parte de la empresa";
+
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
+
+            // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                //Estos son la credenciales que generamos anteriormente 
+                Credentials = new NetworkCredential(mailAddr.Address, password)
+            };
+
+            //Aquí vamos a enviar la vaina
+            //Le indicamos que vamos a enviar 
+            using (var message = new MailMessage(mailAddr, sendTo)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                smtp.Send(message);
+            }
+
+            return Ok();
+        } 
+
+        [HttpGet("verifyE")]
+        public ActionResult VerifyE([FromQuery] string token, string email, string puesto, string tipoEmpleo, int salario, string fechaC, long idC, string departamento)
+        {
+
+            var repo = new EmailRepositoryE();
+
+            Console.WriteLine(token);
+
+            var verificationMail = repo.getByToken(token);
+
+            /// Aquí hacemos las validaciones para el token
+            /// 
+            if (verificationMail == null || verificationMail.expirationDate < DateTime.UtcNow)
+            {
+                return BadRequest("El token es nulo o ya caducó");
+            }
+
+            string redirectingUrl = $"http://localhost:8080/LogInEmpleado/?email={email}&puesto={puesto}&tipoEmpleo={tipoEmpleo}&salario={salario}&fechaC={fechaC}&idC={idC}&departamento={departamento}";
+
+            return Redirect(redirectingUrl);
+
+        }
+       
     }
 
 }

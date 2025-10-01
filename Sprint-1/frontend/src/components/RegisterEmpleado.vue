@@ -36,15 +36,15 @@
                 <h2>Registrar Empleado</h2>
                 <form id="EmployeeRegister" @submit.prevent="handleSubmit" @reset="handleReset">
 
-                <label class="input">
-                    <input type="email"
-                        v-model="form.email"
-                        placeholder="Correo del empleado"
-                        @blur="validateEmail"
-                        required />
-                </label>
-                
-                <div v-if="emailError" class="error-msg">{{ emailError }}</div>
+                    <label class="input">
+                        <input type="email"
+                               v-model="form.email"
+                               placeholder="Correo del empleado"
+                               @blur="validateEmail"
+                               required />
+                    </label>
+
+                    <div v-if="emailError" class="error-msg">{{ emailError }}</div>
 
                     <label class="input">
                         <input type="text"
@@ -61,6 +61,22 @@
                             <option value="Por Horas">Por Horas</option>
                         </select>
                     </label>
+
+                    <label class="input">
+                        <input type="text"
+                               v-model="form.salary"
+                               placeholder="Salario"
+                               required />
+                    </label>
+
+
+                    <label class="input">
+                        <input type="text"
+                               v-model="form.departament"
+                               placeholder="Departamento"
+                               required />
+                    </label>
+
 
                     <div class="buttons">
                         <button class="btn" type="submit">Registrar</button>
@@ -82,6 +98,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
     name: "RegistrarEmpleado",
     data() {
@@ -93,15 +110,44 @@ export default {
             form: {
                 email: "",
                 position: "",
-                employmentType: ""
+                employmentType: "",
+                salary: "",
+                hireDate: "",
+                departament: "",
+                idCompny: "",
         },
         emailError: ""
         };
     },
     mounted() {
         this.loadUserFromLocalStorage();
+        this.obtenerEmpresaSeleccionada();
     },
-    methods: {
+        methods: {
+            clearAll() {
+                this.form.email = "";
+                this.position = "";
+                this.employmentType = "";
+                this.form.salary = "";
+                this.form.departament = "";
+            },
+            obtenerEmpresaSeleccionada() {
+                const empresaData = localStorage.getItem('selectedCompany');
+                if (empresaData) {
+                    try {
+                        this.selectedCompany = JSON.parse(empresaData);
+                        console.log('Empresa seleccionada:', this.selectedCompany);
+                    } catch (error) {
+                        console.error('Error al parsear empresa seleccionada:', error);
+                        this.mostrarError('Error al obtener empresa seleccionada');
+                    }
+                } else {
+                    this.mostrarError('No hay empresa seleccionada. Volviendo a Inicio...');
+                    setTimeout(() => {
+                        this.$router.push('/Profile');
+                    }, 2000);
+                }
+            },
         loadUserFromLocalStorage() {
             const stored = localStorage.getItem("userData");
             if (!stored) {
@@ -122,7 +168,7 @@ export default {
                 this.emailError = "";
             }
         },
-        handleSubmit() {
+        async handleSubmit() {
             this.validateEmail();
             if (this.emailError) return;
 
@@ -132,9 +178,24 @@ export default {
             let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
             empleados.push(this.form);
             localStorage.setItem("empleados", JSON.stringify(empleados));
+            console.log("Entra");
 
-            alert("Empleado guardado en LocalStorage (modo prueba)");
-            this.handleReset();
+            const cId = this.selectedCompany.cedulaJuridica;
+
+            console.log(cId);
+
+            //Primero llamamos a createe
+
+            const fechaC = new Date().toISOString(); 
+
+
+            const createE = `http://localhost:5081/api/user/emailE?email=${encodeURIComponent(this.form.email)}&puesto=${encodeURIComponent(this.form.position)}&tipoEmpleo=${encodeURIComponent(this.form.employmentType)}&salario=${encodeURIComponent(this.form.salary)}&fechaC=${encodeURIComponent(fechaC)}&idC=${encodeURIComponent(cId)}&departamento=${encodeURIComponent(this.form.departament)}`;
+            console.log("Justo va a entrar aquí\n");
+            await axios.get(createE);
+            alert("Empleado reclutado con éxito");
+            
+            this.clearAll();
+
         },
         handleReset() {
             this.form = { email: "", position: "", employmentType: "" };

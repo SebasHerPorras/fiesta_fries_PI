@@ -39,6 +39,7 @@
                                required />
                     </label>
                     <div v-if="idError" class="error-msg">{{ idError }}</div>
+                    <div v-if="idFormatError" class="error-msg">{{ idFormatError }}</div>
 
                     <label class="input">
                         <input type="email"
@@ -66,12 +67,16 @@
                                required />
                     </label>
 
+                    <div v-if="numberError" class="error-msg">{{numberError}}</div>
+
                     <label class="input">
                         <input type="text"
                                id="Home Number"
                                v-model="form.homePhone"
                                placeholder="☎ Teléfono casa" />
                     </label>
+
+                   <div v-if="numberError" class="error-msg">{{numberError}}</div>
 
                     <label class="input">
                         <input type="password"
@@ -104,7 +109,7 @@
 
                     <div class="buttons">
                         <button class="btn" type="submit">Enviar</button>
-                        <button class="btn cancel" type="reset">Cancelar</button>
+                        <button class="btn cancel" @click="returnLogin()">Regresar</button>
                     </div>
                 </form>
             </aside>
@@ -150,10 +155,36 @@
                directionError: "",
                passwordConfirmationError: "",
                emailError: "",
+               idFormatError: "",
+               numberError: "",
            };
         },
 
         methods: {
+            returnLogin() {
+                this.$router.push({ path: "/" });
+            },
+            validateNumberFormat() {
+                if ((this.form.homePhone && /^\d+$/.test(this.form.homePhone))&& (this.form.personalPhone &&  /^\d+$/.test(this.form.personalPhone))&&(this.form.homePhone.length === 8 && this.form.personalPhone.length === 8)) {
+
+                    return true;
+                }
+                return false;
+            },
+            ShowNumberError(message) {
+                this.numberError = message;
+            },
+            validateIDFormat() {
+                const id = this.form.id;
+
+                if (id && /^\d+$/.test(id) && (id.length === 9 || id.length === 12)) {
+                    return true;
+                }
+                return false;
+            },
+            ShowIDFomratError(message) {
+                this.idFormatError = message;
+            },
             validatePassword(password) {
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
@@ -208,6 +239,9 @@
                 this.idError = "";
                 this.directionError = "";
                 this.passwordConfirmationError = "";
+                this.idFormatError = "";
+                this.emailError = ""
+                this.numberError = "";
             },
             showbirthdateError(message) {
                 this.birthdateError = message;
@@ -257,6 +291,7 @@
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
                 //Ojito qe primero vamos 
                try {
+                   this.clearErrors();
                    const createUserUrl = "http://localhost:5081/api/user/create";
                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
                    const userData = {
@@ -271,12 +306,23 @@
                        return;
                    }
 
+                   if (!this.validateIDFormat()) {
+                       console.log("Entra aquí pepe\n");
+                       this.ShowIDFomratError("El formato de la cédula no es correcto");
+                       return;
+                   } 
+
+                   if (!this.validateNumberFormat()) {
+                       this.ShowNumberError("Número no sigue el formato adecuado");
+                       return;
+                   }
 
 
                    if (!(this.isNameValid(this.form.firstName))) {
                        this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
                        return;
                    }
+
 
                    const event = await this.validateID();
                    if (!event) {
@@ -297,6 +343,7 @@
                        this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
                        return;
                    }
+
 
                    if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
                         this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");

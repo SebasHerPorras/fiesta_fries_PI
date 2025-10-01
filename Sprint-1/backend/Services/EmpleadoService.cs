@@ -4,6 +4,7 @@ using backend.Repositories;
 using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Services
 {
@@ -59,23 +60,31 @@ namespace backend.Services
                 // 2) insertar Empleado usando el id de la persona
                 using var connection = new SqlConnection(_connectionString);
                 connection.Open();
-
-                const string insertEmpleado = @"INSERT INTO dbo.Empleado (id, position, employmentType) VALUES (@Id, @Position, @EmploymentType)";
-                connection.Execute(insertEmpleado, new { Id = personaUsed.id, Position = req.position, EmploymentType = req.employmentType });
-                Console.WriteLine($"Empleado creado para persona id={personaUsed.id}");
-
-                return new EmpleadoModel
+                var empleadoD = new EmpleadoModel
                 {
                     id = personaUsed.id,
                     position = req.position,
-                    employmentType = req.employmentType
+                    employmentType = req.employmentType,
+                    salary = req.salary,
+                    hireDate = req.hireDate,
+                    department = req.departament,
+                    idCompny = req.idCompny
                 };
+
+                const string insertEmpleado = @"INSERT INTO dbo.Empleado (id, position, employmentType,salary,hireDate,department,idCompny) VALUES (@id, @position, @employmentType, @salary,@hireDate,@department,@idCompny)";
+                connection.Execute(insertEmpleado, empleadoD);
+                Console.WriteLine($"Empleado creado para persona id={personaUsed.id}");
+
+                return empleadoD;
+            
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error en CreateEmpleadoWithPersonaAndUser: " + ex);
                 throw;
             }
+
+
         }
 
         public List<EmpleadoListDto> GetByEmpresa(long cedulaJuridica)

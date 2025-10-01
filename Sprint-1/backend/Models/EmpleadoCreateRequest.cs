@@ -22,5 +22,12 @@ namespace backend.Models
         // Datos de empleado
         public string position { get; set; } = string.Empty;
         public string employmentType { get; set; } = "Tiempo completo";
+
+        public int salary { get; set; }
+
+        public DateTime hireDate { get; set; }
+
+        public string departament { get; set; }
+        public long idCompny { get; set; }
     }
 }
