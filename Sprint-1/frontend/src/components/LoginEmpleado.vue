@@ -32,11 +32,11 @@
                     </label>
 
                     <div class="input">
-                            <select id="role" name="role" v-model="payMethod" required>
-                                <option value="" disabled selected style="color: #ece6e6ff">Método de pago</option>
-                                <option value="cash"  style="color: #ece6e6ff"> Efectivo</option>
-                                <option value=" bankAccount" style="color: #ece6e6ff">Cuenta de Banco</option>
-                            </select>
+                        <select id="role" name="role" v-model="payMethod" required>
+                            <option value="" disabled selected style="color: #ece6e6ff">Método de pago</option>
+                            <option value="cash" style="color: #ece6e6ff"> Efectivo</option>
+                            <option value=" bankAccount" style="color: #ece6e6ff">Cuenta de Banco</option>
+                        </select>
                     </div>
 
                     <label class="input">
@@ -47,6 +47,7 @@
                                required />
                     </label>
                     <div v-if="idError" class="error-msg">{{ idError }}</div>
+                    <div v-if="idFormatError" class="error-msg">{{ idFormatError }}</div>
 
 
                     <label class="input">
@@ -64,6 +65,7 @@
                                placeholder="📱 Teléfono"
                                required />
                     </label>
+                    <div v-if="numberError" class="error-msg">{{numberError}}</div>
 
                     <label class="input">
                         <input type="text"
@@ -71,6 +73,8 @@
                                v-model="form.homePhone"
                                placeholder="☎ Teléfono casa" />
                     </label>
+
+                    <div v-if="numberError" class="error-msg">{{numberError}}</div>
 
                     <label class="input">
                         <input type="password"
@@ -153,11 +157,33 @@
                 employmentType: "",
                 password: "",
                 passwordConfirmation: "",
-
+                idFormatError: "",
+                numberError: "",
             };
         },
 
         methods: {
+            validateNumberFormat() {
+                if ((this.form.homePhone && /^\d+$/.test(this.form.homePhone)) && (this.form.personalPhone && /^\d+$/.test(this.form.personalPhone)) && (this.form.homePhone.length === 8 && this.form.personalPhone.length === 8)) {
+
+                    return true;
+                }
+                return false;
+            },
+            ShowNumberError(message) {
+                this.numberError = message;
+            },
+            validateIDFormat() {
+                const id = this.form.id;
+
+                if (id && /^\d+$/.test(id) && (id.length === 9 || id.length === 12)) {
+                    return true;
+                }
+                return false;
+            },
+            ShowIDFomratError(message) {
+                this.idFormatError = message;
+            },
             getType() {
                 const getTypeUrl = this.$route.query.tipoEmpleo || "";
                 this.employmentType = getTypeUrl;
@@ -213,6 +239,9 @@
                 this.idError = "";
                 this.directionError = "";
                 this.passwordConfirmationError = "";
+                this.idFormatError = "";
+                this.emailError = ""
+                this.numberError = "";
             },
             showbirthdateError(message) {
                 this.birthdateError = message;
@@ -267,6 +296,7 @@
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
                 //Ojito qe primero vamos
                 try {
+                    this.clearErrors();
                     const createUserUrl = "http://localhost:5081/api/user/create";
                     //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
                     console.log(this.password);
@@ -285,6 +315,16 @@
 
                     const event = await this.validateID();
                     if (!event) {
+                        return;
+                    }
+                    if (!this.validateIDFormat()) {
+                        console.log("Entra aquí pepe\n");
+                        this.ShowIDFomratError("El formato de la cédula no es correcto");
+                        return;
+                    }
+
+                    if (!this.validateNumberFormat()) {
+                        this.ShowNumberError("Número no sigue el formato adecuado");
                         return;
                     }
 

@@ -82,6 +82,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
     name: "RegistrarEmpleado",
     data() {
@@ -122,7 +123,7 @@ export default {
                 this.emailError = "";
             }
         },
-        handleSubmit() {
+        async handleSubmit() {
             this.validateEmail();
             if (this.emailError) return;
 
@@ -133,8 +134,13 @@ export default {
             empleados.push(this.form);
             localStorage.setItem("empleados", JSON.stringify(empleados));
 
-            alert("Empleado guardado en LocalStorage (modo prueba)");
-            this.handleReset();
+            //Primero llamamos a createe
+
+
+            const createE = `http://localhost:5081/api/user/emailE?email=${encodeURIComponent(this.form.email)}&puesto=${encodeURIComponent(this.form.position)}&tipoEmpleo=${encodeURIComponent(this.form.employmentType)}`;
+            console.log("Justo va a entrar aquí\n");
+            await axios.get(createE);
+
         },
         handleReset() {
             this.form = { email: "", position: "", employmentType: "" };

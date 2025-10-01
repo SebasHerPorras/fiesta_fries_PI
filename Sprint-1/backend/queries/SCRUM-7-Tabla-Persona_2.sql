@@ -38,8 +38,3 @@ CREATE TABLE EmailVerification(
 
 INSERT INTO EmailVerification(userID,token,experationDate) VALUES
 ('039CE7D8-9109-4D13-9CC7-201211C3CA85','pepe','2025-10-10')
-
-
-DELETE FROM Persona;
-DELETE FROM EmailVerification;
-DELETE FROM [USER];
