@@ -29,10 +29,10 @@
           <label class="input">
             <input v-model="password" type="password" placeholder="🔒Contraseña" required />
           </label>
-          <!-- v if por si hay un error en la contraseña -->
-          <div v-if="passwordError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">
+            <!-- v if por si hay un error en la contraseña -->
+            <div v-if="passwordError" style="color: #ff6b6b; font-size: 13px; margin-bottom: 8px">
             {{ passwordError }}
-          </div>
+            </div>
 
           <!-- Botón para enviar el login -->
           <button class="btn" type="submit">Iniciar Sesión</button>
@@ -42,7 +42,7 @@
         <div class="login-footer">
           <p>
             ¿No tienes una cuenta de Empleador?
-            <a href="/country">Regístrate</a>
+            <a href="/LogINEmpleadores">Regístrate</a>
           </p>
         </div>
       </aside>
@@ -74,6 +74,7 @@ export default {
       email: "", // Estado para el email del login
       password: "", // Estado para la contraseña del login
       passwordError: "", // Estado para el mensaje de error de la contraseña
+      loading: false
     };
   },
   methods: {
@@ -95,9 +96,55 @@ export default {
 
         // Acepta cualquier 200 OK como login correcto y/o valida la respuesta
         if (res.status === 200 && res.data && (res.data.id || res.data.email)) {
-          // login exitoso
-          alert("Login exitoso!");
-          this.$router.push({ path: "/country" });
+          //Guardar datos en LocalStorage
+          let userData;
+          
+          // Si es admin, solo guardar datos básicos
+          if (res.data.isAdmin) {
+            userData = {
+              id: res.data.id,           
+              email: res.data.email,
+              isAdmin: true,
+              isLoggedIn: true 
+            };
+            console.log('Usuario ADMIN - datos básicos guardados');
+          } else {
+            // Si NO es admin, guardar datos completos de la persona
+            userData = {
+              id: res.data.id,           
+              email: res.data.email,
+              isAdmin: false,
+              personaId: res.data.personaId,
+              personType: res.data.personType,
+              firstName: res.data.firstName,
+              secondName: res.data.secondName,
+              firstLastName: res.data.firstLastName,
+              secondLastName: res.data.secondLastName,
+              phoneNumber: res.data.phoneNumber,
+              isLoggedIn: true
+            };
+            console.log('Usuario EMPLEADO - datos completos guardados');
+          }
+      
+          // Guardar en LocalStorage
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          console.log('Datos de usuario guardados:', userData);
+          console.log('UserId guardado:', userData.id);
+
+          console.log('Datos guardados en localStorage:');
+          console.log('- UserId:', userData.id);
+          console.log('- Email:', userData.email);
+          console.log('- PersonType:', userData.personType);
+          console.log('- PersonaId:', userData.personaId);
+          console.log('- Nombre completo:', userData.firstName, userData.secondName);
+
+          // Verificá que se guardó correctmente
+          const storedData = localStorage.getItem('userData');
+          console.log('✅ Verificación - Datos en localStorage:', storedData);
+          
+          // Redirigir a la página principal después del login exitoso
+          this.$router.push({ path: "/Profile" });
 
         } else {
           this.showPasswordError("Credenciales inválidas.");

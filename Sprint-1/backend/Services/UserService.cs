@@ -59,5 +59,18 @@ namespace backend.Services
             Console.WriteLine("[DEBUG] Password mismatch");
             return null;
         }
+
+        public bool EmailConfirmation(string email)
+        {
+            UserModel? user = this.userRepository.EmailVerification(email);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            return true;
+            
+        }
     }
 }

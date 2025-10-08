@@ -13,5 +13,7 @@ namespace backend.Models
         // En la base de datos el campo es [password]; aquí se guarda el hash.
         // NO almacenar contraseñas en texto plano: usa PasswordHash y genera el hash antes de guardar.
         public string PasswordHash { get; set; } = string.Empty;
+        public int active { get; set; } = 0;
+        public bool admin { get; set; } = false;
     }
 }
