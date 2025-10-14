@@ -10,7 +10,7 @@ import LogE from "./components/LoginEmpleado.vue";
 import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
 
-const DEVELOPMENT_MODE = false;
+const DEVELOPMENT_MODE = true;
 
 const router = createRouter({
   history: createWebHistory(),
