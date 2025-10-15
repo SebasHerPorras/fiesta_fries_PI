@@ -22,7 +22,6 @@ namespace backend.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Service GetActiveContributions: {ex.Message}");
                 return new List<EmployerSocialSecurityContributions>();
             }
         }
@@ -35,7 +34,6 @@ namespace backend.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Service GetAllContributions: {ex.Message}");
                 return new List<EmployerSocialSecurityContributions>();
             }
         }

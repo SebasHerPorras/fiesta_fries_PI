@@ -16,11 +16,8 @@ namespace backend.Services
 
             if (cargasSociales == null || !cargasSociales.Any())
             {
-                Console.WriteLine("[WARNING] No se recibieron cargas sociales para el calculo");
                 throw new ArgumentException("La lista de cargas sociales es requerida y no puede estar vacia");
             }
-
-            Console.WriteLine($"[INFO] Calculando deducciones con {cargasSociales.Count} cargas sociales");
 
             var deducciones = new List<DeductionEmployerDto>();
             decimal totalDeducciones = 0;
@@ -40,7 +37,6 @@ namespace backend.Services
                 totalDeducciones += monto;
                 porcentajeTotalEmpleador += cargaSocial.Percentage;
 
-                Console.WriteLine($"[INFO] {cargaSocial.Name}: {cargaSocial.Percentage * 100:F4}% = {monto:F2}");
             }
 
             var resultado = new ResultadoDeduccionesEmpleadorDto
@@ -51,9 +47,6 @@ namespace backend.Services
                 TotalDeduccionesEmpleador = Math.Round(totalDeducciones, 2),
                 PorcentajeTotalEmpleador = Math.Round(porcentajeTotalEmpleador * 100, 4)
             };
-
-            Console.WriteLine($"[INFO] Total deducciones empleador: {resultado.TotalDeduccionesEmpleador:F2} ({resultado.PorcentajeTotalEmpleador:F4}%)");
-
             return resultado;
         }
     }

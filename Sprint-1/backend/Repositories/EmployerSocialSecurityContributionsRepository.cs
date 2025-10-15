@@ -32,7 +32,6 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] GetActiveContributions: {ex.Message}");
                 return new List<EmployerSocialSecurityContributions>();
             }
         }
@@ -54,7 +53,7 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] GetAll: {ex.Message}");
+               
                 return new List<EmployerSocialSecurityContributions>();
             }
         }
