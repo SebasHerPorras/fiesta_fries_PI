@@ -232,7 +232,7 @@ namespace backend.Controllers
 
         }
 
-
+        
         [HttpGet("emailE")]
         public ActionResult SendE([FromQuery] string email, string puesto, string tipoEmpleo, int salario, string fechaC, long idC, string departamento)
         {
@@ -254,8 +254,19 @@ namespace backend.Controllers
             Console.WriteLine("Query realizado con éxito\n");
 
             //preparamos el link al api donde vamos a manejar la vaina
-            var verificationLink = $"http://localhost:5081/api/user/verifye?token={token}&email={email}&puesto={puesto}&tipoEmpleo={tipoEmpleo}&salario={salario}&fechaC={fechaC}&idC={idC}&departamento={departamento}";
+    
 
+            var verificationLink = $"http://localhost:5081/api/user/verifye" +
+                       $"?token={Uri.EscapeDataString(token)}" +
+                       $"&email={Uri.EscapeDataString(email)}" +
+                       $"&puesto={Uri.EscapeDataString(puesto)}" +
+                       $"&tipoEmpleo={Uri.EscapeDataString(tipoEmpleo)}" +
+                       
+                       $"&salario={Uri.EscapeDataString("pepe")}" +
+                       $"&fechaC={Uri.EscapeDataString(fechaC)}" +
+                       $"&idC={Uri.EscapeDataString("goku")}" +
+                       $"&departamento={Uri.EscapeDataString(departamento)}";
+                       
             // vamo a enviar el correo
             var mailAddr = new MailAddress("pruebadisenosoft@gmail.com", "Fiesta Fries");
 
@@ -315,7 +326,96 @@ namespace backend.Controllers
             return Redirect(redirectingUrl);
 
         }
+
+        [HttpPost("createEmployer")]
+        public ActionResult CreateEmployer([FromBody] UserModel request)
+        {
+            Console.WriteLine("Entro en el método de creación de usuario\n");
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.PasswordHash))
+            {
+                return BadRequest("Email y password son requeridos");
+            }
+
+           
+            Guid userId = Guid.NewGuid();
+            var userEmail = request.Email.Trim();
+            var userPasswordHash = request.PasswordHash.Trim();
+            
+
+            this.userService.CreateUser(userId,userEmail,userPasswordHash);
+
+
+
+
+            //Ojito pq aquí vamos a añadir la vara del correo electrónico 
+
+            // vamos a generar el token 
+
+            var token = Guid.NewGuid().ToString();
+
+            // La expiración va a ser cada 3 días
+
+            DateTime expiration = DateTime.Now.AddDays(3);
+
+            var mailTokenVerification = new MailModel
+            {
+                userID = userId,
+                token = token,
+                experationDate = expiration
+            };
+
+
+            //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
+            var mailRepository = new MailRepository();
+
+
+
+            mailRepository.insertMailNoty(mailTokenVerification);
+
+            Console.WriteLine("Query realizado con éxito\n");
+
+            //preparamos el link al api donde vamos a manejar la vaina
+            var verificationLink = $"http://localhost:5081/api/user/verify?token={token}";
+
+            // vamo a enviar el correo
+            var mailAddr = new MailAddress("pruebadisenosoft@gmail.com", "Fiesta Fries");
+
+            var sendTo = new MailAddress(userEmail);
+
+            const string password = "rxhd qmzc uvxi sxmg";
+
+            const string subject = "Verificación de invitacón de empleado Fiesta Fries";
+
        
+
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de Empleado para finalizar el proceso de creación de tu cuenta: {verificationLink} tus credenciales de inicio de sesión son las siguientes: email: {userEmail} constraseña:{userPasswordHash}";
+
+            // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                //Estos son la credenciales que generamos anteriormente 
+                Credentials = new NetworkCredential(mailAddr.Address, password)
+            };
+
+            //Aquí vamos a enviar la vaina
+            //Le indicamos que vamos a enviar 
+            using (var message = new MailMessage(mailAddr, sendTo)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                smtp.Send(message);
+            }
+
+            return Ok(new { id = userId, email = userEmail });
+        }
+
     }
 
 }
