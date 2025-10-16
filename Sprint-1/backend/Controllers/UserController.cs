@@ -388,7 +388,7 @@ namespace backend.Controllers
 
        
 
-            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de Empleado para finalizar el proceso de creación de tu cuenta: {verificationLink} tus credenciales de inicio de sesión son las siguientes: email: {userEmail} constraseña:{userPasswordHash}";
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de Empleado para finalizar el proceso de creación de tu cuenta: {verificationLink} tus credenciales de inicio de sesión son las siguientes: email: git{userEmail} constraseña:{userPasswordHash}";
 
             // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
             var smtp = new SmtpClient

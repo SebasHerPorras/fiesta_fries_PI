@@ -56,7 +56,7 @@ const router = createRouter({
       },
     },
     {
-      path: "/SingInEmpleadores",
+      path: "/SignInEmpleadores",
         name: "SignInEmpleador",
        component: SignInEmpleador,
       meta: {
