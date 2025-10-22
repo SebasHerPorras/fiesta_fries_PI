@@ -213,7 +213,7 @@ export default {
  
       // Buscar empresas del Empleador específico
       console.log('Usuario es Empleador, cargando sus empresas');
-      const empresasRes = await axios.get(API_ENDPOINTS.MIS_EMPRESAS(userId));
+      const empresasRes = await axios.get(API_ENDPOINTS.MIS_EMPRESAS_ID(userId));
       
       // Verificar la estructura de la respuesta
       if (empresasRes.data && empresasRes.data.success) {

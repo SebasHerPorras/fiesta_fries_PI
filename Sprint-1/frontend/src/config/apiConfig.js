@@ -32,18 +32,18 @@ const buildApiUrl = (endpoint) => {
 
 // Endpoints específicos
 export const API_ENDPOINTS = {
-
   USER_LOGIN: buildApiUrl("user/login"),
   MIS_EMPRESAS: (userId) => buildApiUrl(`empresa/misEmpresas/${userId}`),
-
+  MIS_EMPRESAS_ID: (userId) => buildApiUrl(`empresa/mis-empresas/${userId}`),
   EMPLEADOS: (cedulaEmpresa) =>
-    buildApiUrl(`Person/empleados/${cedulaEmpresa}`),
+    buildApiUrl(`Empleado/empresa/${cedulaEmpresa}`),
   CREATE_EMPRESA: buildApiUrl("empresa"),
   CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
 
-  CREATE_BENEFICIO: buildApiUrl("beneficio"),
+  CREATE_BENEFICIO: buildApiUrl("Beneficio"),
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
-  USER_EMAIL_VERIFY: (email) => `${buildApiUrl("user/emailverify")}?email=${encodeURIComponent(email)}`,
+  USER_EMAIL_VERIFY: (email) =>
+    `${buildApiUrl("user/emailverify")}?email=${encodeURIComponent(email)}`,
   USER_CREATE_EMPLOYER: buildApiUrl("user/createEmployer"),
   PERSON_CREATE: buildApiUrl("person/create"),
   EMPLEADO_CREATE_WITH_PERSON: buildApiUrl("Empleado/create-with-person"),
@@ -51,11 +51,11 @@ export const API_ENDPOINTS = {
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),
   EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
-  BENEFICIOS_POR_EMPRESA: (cedulaEmpresa) => buildApiUrl(`Beneficio/por-empresa/${cedulaEmpresa}`),
+
+  BENEFICIOS_POR_EMPRESA: (cedulaEmpresa) =>
+    buildApiUrl(`Beneficio/por-empresa/${cedulaEmpresa}`),
   USER_CREATE: buildApiUrl("user/create"),
   EMPLEADO_CREATE: buildApiUrl("Empleado/create"),
-
-
 };
 
 // Log de configuración (solo en desarrollo)

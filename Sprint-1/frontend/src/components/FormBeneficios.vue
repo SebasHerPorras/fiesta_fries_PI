@@ -363,7 +363,7 @@ export default {
         console.log('Datos completos a enviar:', requestData);
         console.log('JSON completo request:', JSON.stringify(requestData));
         
-        const response = await axios.post(API_ENDPOINTS.CREATE_BENEFICIO, beneficioData,  
+        const response = await axios.post(API_ENDPOINTS.CREATE_BENEFICIO, requestData,  
           {
             headers: { "Content-Type": "application/json" }
           }
