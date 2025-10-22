@@ -72,5 +72,18 @@ namespace backend.Services
                 return null;
             }
         }
+
+        public EmpresaModel GetEmpresaByEmployeeUserId(string userId)
+        {
+            try
+            {
+                return _empresaRepository.GetByEmployeeUserId(userId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Service GetEmpresaByEmployeeUserId: {ex.Message}");
+                return null;
+            }
+        }
     }
 }
