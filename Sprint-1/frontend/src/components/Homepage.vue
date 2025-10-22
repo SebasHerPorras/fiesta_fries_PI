@@ -73,6 +73,7 @@
 
 <script>
     import axios from "axios";
+    import { API_ENDPOINTS } from "@/config/apiConfig";
 
     export default {
         name: "HomePage",
@@ -105,8 +106,8 @@
                     const stored = JSON.parse(localStorage.getItem("userData"));
                     const personaId = stored?.personaId; // DueñoEmpresa
                     if (!personaId) return;
-
-                    const res = await axios.get(`http://localhost:7056/api/empresa/byUser/${personaId}`);
+                    
+                    const res = await axios.get(API_ENDPOINTS.EMPRESAS_BY_USER(personaId));
                     this.companies = res.data;
 
                     if (this.companies.length > 0) {
