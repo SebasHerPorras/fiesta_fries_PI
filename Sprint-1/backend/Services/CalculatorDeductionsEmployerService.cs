@@ -4,9 +4,18 @@ namespace backend.Services
 {
     public class CalculatorDeductionsEmployerService
     {
-        public ResultadoDeduccionesEmpleadorDto CalcularDeduccionesEmpleador(
-            EmployeeCalculationDto empleado,
-            List<EmployerSocialSecurityContributions> cargasSociales)
+        private readonly List<EmployerSocialSecurityContributions> _cargasSociales;
+        private readonly EmployerSocialSecurityContributionsService _cargasSocialesService;
+        private readonly EmployerSocialSecurityByPayrollService _payrollService;
+
+        public CalculatorDeductionsEmployerService()
+        {
+            _cargasSocialesService = new EmployerSocialSecurityContributionsService();
+            _cargasSociales = _cargasSocialesService.GetActiveContributions();
+            _payrollService = new EmployerSocialSecurityByPayrollService();
+        }
+
+        public decimal CalculateEmployerDeductions(EmployeeCalculationDto empleado, int idReporte, long cedulaJuridicaEmpresa)
         {
             if (empleado == null)
                 throw new ArgumentException("Los datos del empleado son requeridos");
@@ -14,40 +23,39 @@ namespace backend.Services
             if (empleado.SalarioBruto <= 0)
                 throw new ArgumentException("El salario bruto debe ser mayor a cero");
 
-            if (cargasSociales == null || !cargasSociales.Any())
+            if (_cargasSociales == null || !_cargasSociales.Any())
             {
                 throw new ArgumentException("La lista de cargas sociales es requerida y no puede estar vacia");
             }
 
-            var deducciones = new List<DeductionEmployerDto>();
+            var deducciones = new List<EmployerSocialSecurityByPayrollDto>();
             decimal totalDeducciones = 0;
-            decimal porcentajeTotalEmpleador = 0;
 
-            foreach (var cargaSocial in cargasSociales)
+            foreach (var cargaSocial in _cargasSociales)
             {
                 var monto = Math.Round(empleado.SalarioBruto * cargaSocial.Percentage, 2);
 
-                deducciones.Add(new DeductionEmployerDto
+                deducciones.Add(new EmployerSocialSecurityByPayrollDto
                 {
-                    Nombre = cargaSocial.Name,
-                    Porcentaje = Math.Round(cargaSocial.Percentage * 100, 4),
-                    Monto = monto
+                    ReportId = idReporte,
+                    EmployeeId = empleado.CedulaEmpleado,
+                    ChargeName = cargaSocial.Name,
+                    Amount = monto,
+                    Percentage = cargaSocial.Percentage,
+                    CedulaJuridicaEmpresa = cedulaJuridicaEmpresa
                 });
 
                 totalDeducciones += monto;
-                porcentajeTotalEmpleador += cargaSocial.Percentage;
-
             }
 
-            var resultado = new ResultadoDeduccionesEmpleadorDto
-            {
-                NombreEmpleado = empleado.NombreEmpleado,
-                SalarioBruto = empleado.SalarioBruto,
-                DeduccionesEmpleador = deducciones,
-                TotalDeduccionesEmpleador = Math.Round(totalDeducciones, 2),
-                PorcentajeTotalEmpleador = Math.Round(porcentajeTotalEmpleador * 100, 4)
-            };
-            return resultado;
+            _payrollService.SaveEmployerDeductions(deducciones);
+
+            return Math.Round(totalDeducciones, 2);
+        }
+
+        public List<EmployerSocialSecurityContributions> ObtenerCargasSocialesActuales()
+        {
+            return _cargasSociales.ToList();
         }
     }
 }

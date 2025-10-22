@@ -9,49 +9,30 @@ namespace backend.Controllers
     public class PruebasCargasSocialesController : ControllerBase
     {
         private readonly CalculatorDeductionsEmployerService _calculadoraService;
-        private readonly EmployerSocialSecurityContributionsService _cargasSocialesService;
 
         public PruebasCargasSocialesController()
         {
             _calculadoraService = new CalculatorDeductionsEmployerService();
-            _cargasSocialesService = new EmployerSocialSecurityContributionsService();
         }
 
         [HttpPost("calcular-deducciones")]
-        public ActionResult<ResultadoDeduccionesEmpleadorDto> CalcularDeducciones([FromBody] EmployeeCalculationDto empleado)
+        public ActionResult<decimal> CalcularDeducciones([FromBody] CalcularDeduccionesRequest request)
         {
             try
             {
-                var cargasSociales = _cargasSocialesService.GetActiveContributions();
-
-                if (cargasSociales == null || !cargasSociales.Any())
-                {
-                    return BadRequest(new
-                    {
-                        error = "No se encontraron cargas sociales activas en la base de datos",
-                        mensaje = "Verifique que existan registros activos en la tabla EmployerSocialSecurityContributions"
-                    });
-                }
-
-                var resultado = _calculadoraService.CalcularDeduccionesEmpleador(empleado, cargasSociales);
-
-                return Ok(resultado);
+                var totalDeductions = _calculadoraService.CalculateEmployerDeductions(
+                    request.Empleado, 
+                    request.IdReporte, 
+                    request.CedulaJuridicaEmpresa);
+                return Ok(totalDeductions);
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new
-                {
-                    error = "Error de validación",
-                    detalle = ex.Message
-                });
+                return BadRequest(new { error = "Error de validación", detalle = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new
-                {
-                    error = "Error interno del servidor",
-                    mensaje = "Consulte los logs para más detalles"
-                });
+                return StatusCode(500, new { error = "Error interno del servidor" });
             }
         }
 
@@ -60,13 +41,20 @@ namespace backend.Controllers
         {
             try
             {
-                var cargasSociales = _cargasSocialesService.GetActiveContributions();
+                var cargasSociales = _calculadoraService.ObtenerCargasSocialesActuales();
                 return Ok(cargasSociales);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { error = "Error al consultar cargas sociales" });
             }
         }
+    }
+
+    public class CalcularDeduccionesRequest
+    {
+        public required EmployeeCalculationDto Empleado { get; set; }
+        public int IdReporte { get; set; }
+        public long CedulaJuridicaEmpresa { get; set; }
     }
 }

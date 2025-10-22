@@ -12,8 +12,6 @@ namespace backend.Services
             _repository = new EmployerSocialSecurityContributionsRepository();
         }
 
-        // solo devuelve las cargas sociales activas
-        // NOMBRE y MONTO
         public List<EmployerSocialSecurityContributions> GetActiveContributions()
         {
             try
