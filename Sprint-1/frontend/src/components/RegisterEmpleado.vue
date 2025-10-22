@@ -542,6 +542,7 @@
                 this.userName = `${userData.firstName} ${userData.secondName}`;
                 this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
             },
+
             async validateEmail() {
                 const validateEmailUrl = `http://localhost:5081/api/user/emailverify?email=${encodeURIComponent(this.form.email)}`;
 
@@ -553,99 +554,165 @@
                 return response.data.result === true;
 
             },
+            async tryValdations() {
+                let status = true;
+                const emailVEvent = await this.validateEmail();
+                if (!emailVEvent) {
+                    console.log("Entra aquí\n");
+                    this.showEmailError("Este correo elctrónico ya está registrado, ingrese otro");
+                    status = false;
+                }
+
+                if (!this.validateSalary()) {
+                    status = false;
+                }
+
+                if (!this.validateSecondNumberFormat()) {
+                    this.showSecondNumberError("El formato del teléfono no es válido");
+                    status = false;
+                }
+
+                if (!this.validateIDFormat()) {
+                    console.log("Entra aquí pepe\n");
+                    this.ShowIDFomratError("El formato de la cédula no es correcto");
+                    status = false;
+                }
+
+
+                if (!this.validateNumberFormat()) {
+                    this.ShowNumberError("Número no sigue el formato adecuado");
+                    status = false;
+                }
+
+                if (!(this.isNameValid(this.form.firstName))) {
+                    status = false;
+                }
+
+                const idVerification = await this.validateID();
+                if (!idVerification) {
+                    status = false;
+                }
+
+                if (!(this.isAdult(this.form.birthdate))) {
+                    this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
+                    console.log("Entra aquí4\n");
+                    status = false;
+                }
+                if (!this.validateDirectionLength()) {
+                    this.showDirectionError("La dirección no puede exceder los 200 carácteres");
+                    status = false;
+                }
+
+                if (!this.validatePassword(this.form.password)) {
+                    this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
+                    status = false;
+                }
+
+                if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
+                    this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
+                    status = false;
+                }
+
+                if (!this.validateDepartamentError()) {
+                    status = false;
+                }
+
+                if (!this.validateSecondName()) {
+                    status = false;
+                }
+
+                if (!this.validatePosition()) {
+                    status = false;
+                }
+
+                return status;
+            },
+            async createUserEmployer() {
+
+                const userData = {
+                    Email: this.form.email.trim(),
+                    PasswordHash: this.form.password
+                };
+                const userUrl = "http://localhost:5081/api/user/createEmployer";
+
+                let userResponse = await axios.post(userUrl, userData);
+
+                let userID = userResponse.data.id;
+
+                return userID;
+            },
+            async createPersona(userId) {
+
+                const personData = {
+                    uniqueUser: userId,
+                    id: this.form.id,
+                    firstName: this.form.firstName,
+                    secondName: this.form.secondName,
+                    email: this.form.email,
+                    personalPhone: this.form.personalPhone,
+                    homePhone: this.form.homePhone,
+                    birthdate: this.form.birthdate,
+                    personType: "Empleado",
+                    direction: this.form.direction,
+                };
+
+                const personUrl = "http://localhost:5081/api/person/create";
+
+                await axios.post(personUrl, personData);
+
+            },
+            async createPersonaEmployer() {
+
+                const cId = this.selectedCompany.cedulaJuridica;
+
+                const fechaC = new Date().toISOString();
+
+                const empleado = {
+                    personaId: parseInt(this.form.id),
+                    firstName: this.form.firstName,
+                    secondName: this.form.secondName,
+                    birthdate: this.form.birthdate,
+                    direction: this.form.direction,
+                    personalPhone: this.form.personalPhone,
+                    homePhone: this.form.homePhone,
+                    personType: this.form.personType,
+                    userEmail: this.form.email,
+                    userPassword: this.form.password,
+                    position: this.form.position,
+                    employmentType: this.form.employmentType,
+                    salary: parseInt(this.form.salary),
+                    hireDate: fechaC,
+                    idCompny: parseInt(cId),
+                    departament: this.form.departament,
+                };
+
+                const empleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
+
+                await axios.post(empleadoUrl, empleado);
+
+            },
+            async notifyEmail(userId) {
+
+                 const userData = {
+                    Email: this.form.email.trim(),
+                    PasswordHash: this.form.password,
+                    Id: userId
+                };
+
+                const emailUrl = "http://localhost:5081/api/user/notifyEmployer";
+
+                await axios.post(emailUrl, userData);
+            },
             async handleSubmit() {
-                this.clearErrors();
-                this.validateEmail();
-                if (this.emailError) return;
-
-                console.log("Datos del empleado a registrar:", this.form);
-
-                // Simulación de guardado
                 let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
                 empleados.push(this.form);
                 localStorage.setItem("empleados", JSON.stringify(empleados));
-                console.log("Entra");
-
                 try {
                     this.clearErrors();
                     this.isError = false;
 
-                     const userData = {
-                       Email: this.form.email.trim(),
-                       PasswordHash: this.form.password
-                    };
-
-                    let status = true;
-                    const emailVEvent = await this.validateEmail();
-                    if (!emailVEvent) {
-                        console.log("Entra aquí\n");
-                        this.showEmailError("Este correo elctrónico ya está registrado, ingrese otro");
-                        status = false;
-                    }
-
-                    if (!this.validateSalary()) {
-                        status = false;
-                    }
-
-                    if (!this.validateSecondNumberFormat()) {
-                        this.showSecondNumberError("El formato del teléfono no es válido");
-                        status = false;
-                    }
-
-                    if (!this.validateIDFormat()) {
-                        console.log("Entra aquí pepe\n");
-                        this.ShowIDFomratError("El formato de la cédula no es correcto");
-                        status = false;
-                    }
-
-
-                    if (!this.validateNumberFormat()) {
-                        this.ShowNumberError("Número no sigue el formato adecuado");
-                        status = false;
-                    }
-
-                    if (!(this.isNameValid(this.form.firstName))) {
-                        status = false;
-                    }
-
-                    const idVerification = await this.validateID();
-                    if (!idVerification) {
-                        status = false;
-                    }
-
-                    if (!(this.isAdult(this.form.birthdate))) {
-                        this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
-                        console.log("Entra aquí4\n");
-                        status = false;
-                    }
-                    if (!this.validateDirectionLength()) {
-                        this.showDirectionError("La dirección no puede exceder los 200 carácteres");
-                        status = false;
-                    }
-
-                    if (!this.validatePassword(this.form.password)) {
-                        this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
-                        status = false;
-                    }
-
-                    if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
-                        this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
-                        status = false;
-                    }
-
-                    if (!this.validateDepartamentError()) {
-                        status = false;
-                    }
-
-                    if (!this.validateSecondName()) {
-                        status = false;
-                    }
-
-                    if (!this.validatePosition()) {
-                        status = false;
-                    }
-
-                    if (!status) {
+                    let validationStatus = await this.tryValdations();
+                    if (!validationStatus) {
                         const error_message = "Ocurrió un error Verifique los mensajes de error e intentelo de nuevo";
                         this.succesMessageD(error_message);
                         setTimeout(() => {
@@ -656,61 +723,14 @@
 
                     this.clearErrors();
 
-                    const userUrl = "http://localhost:5081/api/user/createEmployer";
+                    const userId = await this.createUserEmployer();
 
-                    let userResponse = await axios.post(userUrl, userData);
+                    await this.createPersona(userId);
 
-                    let userID = userResponse.data.id;
+                    await this.createPersonaEmployer();
 
-                    const personData = {
-                        uniqueUser: userID,
-                        id: this.form.id,
-                        firstName: this.form.firstName,
-                        secondName: this.form.secondName,
-                        email: this.form.email,
-                        personalPhone: this.form.personalPhone,
-                        homePhone: this.form.homePhone,
-                        birthdate: this.form.birthdate,
-                        personType: "Empleado",
-                        direction: this.form.direction,
-                    };
-                    const personUrl = "http://localhost:5081/api/person/create";
+                    await this.notifyEmail(userId);
 
-                    const persRes = await axios.post(personUrl, personData);
-                    console.log(persRes.data);
-
-                    const cId = this.selectedCompany.cedulaJuridica;
-
-                    console.log(cId);
-
-                    const fechaC = new Date().toISOString();
-
-                    console.log(fechaC);
-
-                    const empleado = {
-                        personaId: parseInt(this.form.id),
-                        firstName: this.form.firstName,
-                        secondName: this.form.secondName,
-                        birthdate: this.form.birthdate,
-                        direction: this.form.direction,
-                        personalPhone: this.form.personalPhone,
-                        homePhone: this.form.homePhone,
-                        personType: this.form.personType,
-                        userEmail: this.form.email,
-                        userPassword: this.form.password,
-                        position: this.form.position,
-                        employmentType: this.form.employmentType,
-                        salary: parseInt(this.form.salary),
-                        hireDate: fechaC,
-                        idCompny: parseInt(cId),
-                        departament: this.form.departament,
-                    };
-
-                    const EmpleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
-
-                    const EmpleadoRes = await axios.post(EmpleadoUrl, empleado);
-                    console.log("Usuario y Persona creados correctamente:");
-                    console.log("Persona:", EmpleadoRes.data);
                     this.isError = true;
                     const SuccessM = "El Empleado fue registrado con éxito";
                     this.succesMessageD(SuccessM);
@@ -729,7 +749,6 @@
             onCompanyChange() {
                 if (this.selectedCompany) {
                     this.saveSelectedCompany();
-                    // Redirigir a la página de administración de empresas
                     this.$router.push('/PageEmpresaAdmin');
                 }
             },
@@ -752,251 +771,4 @@
 
 
 
-<style scoped>
-
-
-    .wrap {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        background: #1e1e1e;
-        color: whitesmoke;
-    }
-
-    .hero {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        gap: 40px;
-        padding: 48px 64px;
-        flex: 1 0 auto;
-    }
-
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        max-width: 55%;
-        margin-bottom: 150px;
-        margin-top: 220px;
-    }
-
-    #EmployerLogIn {
-        width: 400px;
-        min-height: 220px;
-        background: rgb(71, 69, 69);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 25px;
-        border-radius: 8px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-    }
-
-
-    .buttons-row {
-        display: flex;
-        gap: 12px;
-        margin-top: 10px;
-    }
-
-        .buttons-row .btn {
-            width: 50%;
-            padding: 10px 12px;
-            font-size: 14px;
-        }
-
-    .btn-primary {
-        background: #1fb9b4;
-        color: white;
-    }
-
-        .btn-primary:hover:not(:disabled) {
-            background: #1aa8a4;
-        }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-            background: #5a6268;
-    }
-
-
-    .btn {
-        border-radius: 6px;
-        border: 0;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.3s;
-        text-align: center;
-    }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-    .logo-box {
-        width: 84px;
-        height: 84px;
-        background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-        .logo-box .f {
-            font-weight: 800;
-            font-size: 44px;
-            color: white;
-        }
-
-    .texts h1 {
-        margin: 0;
-        font-size: 34px;
-    }
-
-    .texts p {
-        margin: 6px 0 0;
-        color: #bdbdbd;
-    }
-
-    .register-card {
-        width: 410px;
-        background: rgb(71, 69, 69);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 24px;
-        border-radius: 10px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        height: 800px;
-    }
-
-        .register-card h2 {
-            color: #eee;
-            margin: 0 0 16px;
-            font-weight: 600;
-            font-size: 18px;
-            text-align: center;
-        }
-
-    .input {
-        display: flex;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        margin-bottom: 30px;
-        color: #ece6e6ff;
-    }
-
-        .input input {
-            background: transparent;
-            border: 0;
-            outline: 0;
-            color: whitesmoke;
-            width: 100%;
-            font-size: 14px;
-        }
-
-    footer {
-        background: #fff;
-        padding: 28px 64px;
-        border-top: 1px solid #eee;
-        color: #8b8b8b;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .socials {
-        display: flex;
-        gap: 12px;
-    }
-
-    .message {
-        margin-top: 15px;
-        text-align: center;
-        font-size: 14px;
-        padding: 0;
-        color: #9fe6cf;
-    }
-
-        .message.success {
-            color: #9fe6cf;
-        }
-        .message.error {
-            color: #ff6b6b;
-        }
-    .socials a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        border: 1px solid #e6e6e6;
-        text-decoration: none;
-        color: #bdbdbd;
-        font-size: 14px;
-    }
-
-    .input select {
-        background: transparent;
-        border: 0;
-        outline: 0;
-        color: whitesmoke;
-        width: 100%;
-        font-size: 14px;
-        appearance: none;
-        cursor: pointer;
-    }
-
-        .input select option {
-            background: #1e1e1e;
-            color: whitesmoke;
-        }
-
-    .error-msg {
-        margin-top: 6px; 
-        color: #ff6b6b;
-        font-size: 13px;
-        text-align: left;
-        min-height: 16px;
-        transition: opacity 0.3s ease;
-    }
-
-    .field-group {
-        margin-bottom: 30px; 
-    }
-    .input {
-        margin-bottom: 0;
-    }
-
-    @media (max-width: 900px) {
-        .hero {
-            flex-direction: column;
-            align-items: center;
-            padding: 36px;
-        }
-
-        .brand {
-            margin-bottom: 20px;
-            max-width: 100%;
-        }
-
-        .register-card {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        footer {
-            flex-direction: column;
-            gap: 10px;
-            text-align: center;
-        }
-    }
-</style>
+<style src="@/assets/style/RegisterEmpleado.css" scoped> </style>

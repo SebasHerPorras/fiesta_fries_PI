@@ -8,6 +8,7 @@ import RegisterEmpleado from "./components/RegisterEmpleado.vue";
 import SignInEmpleador from "./components/SignInEmpleadores.vue";
 import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
+import RegisterHoras from "./components/RegisterHoras.vue";
 
 const DEVELOPMENT_MODE = false;
 
@@ -85,7 +86,17 @@ const router = createRouter({
         public: false,
         allowedRoles: ["empleador"],
       },
-    },
+      },
+    {
+      path: "/RegisterHoras",
+      name: "RegisterHoras",
+      component: RegisterHoras,
+      meta: {
+       requieresAuth: false,
+       public: true,
+       allowedRoles: ["empleado"],
+      },
+    }, 
   ],
 });
 

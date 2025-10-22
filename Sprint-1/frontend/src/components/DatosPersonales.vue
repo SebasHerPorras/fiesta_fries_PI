@@ -22,6 +22,11 @@
                   <router-link to="/FormEmpresa">Registrar Empresa</router-link>
               </li>
 
+              <!--Solo Empleado: Añadir horas-->
+              <li v-f="userRole === 'Empleado'">
+                  <router-link to="/RegisterHoras">Registrar Horas</router-link>
+              </li>
+
               <!-- Dropdown de empresas SOLO para Empleador -->
               <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
                   <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
