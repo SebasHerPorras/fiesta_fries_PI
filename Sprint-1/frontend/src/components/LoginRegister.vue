@@ -42,7 +42,7 @@
         <div class="login-footer">
           <p>
             ¿No tienes una cuenta de Empleador?
-            <a href="/LogINEmpleadores">Regístrate</a>
+            <a href="/SignInEmpleadores">Regístrate</a>
           </p>
         </div>
       </aside>

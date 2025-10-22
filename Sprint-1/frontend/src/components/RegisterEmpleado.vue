@@ -1,27 +1,87 @@
 ﻿<template>
     <div class="wrap">
         <main class="hero">
-            <aside class="register-card">
-                <h2>Registrar Empleado</h2>
-                <form id="EmployeeRegister" @submit.prevent="handleSubmit" @reset="handleReset">
+            <div class="brand">
+                <div class="logo-box">
+                    <span class="f">F</span>
+                </div>
+                <div class="texts">
+                    <h1>Fiesta Fries</h1>
+                    <p>Gestor de Planillas</p>
+                </div>
+            </div>
+            <form id="EmployerLogIn" @submit.prevent="handleSubmit" @reset="handleReset">
+                <h2 style="color: #eee; margin: 0 0 20px; font-weight: 600; font-size: 18px; text-align: center;">Formulario Empleado</h2>
 
+                <div class="field-group">
                     <label class="input">
-                        <input type="email"
-                               v-model="form.email"
-                               placeholder="Correo del empleado"
-                               @blur="validateEmail"
+                        <input type="text"
+                               id="Name"
+                               v-model="form.firstName"
+                               placeholder="👤 Nombre*"
                                required />
                     </label>
+                    <div v-if="firstNameError" class="error-msg">{{ firstNameError }}</div>
+                </div>
 
-                    <div v-if="emailError" class="error-msg">{{ emailError }}</div>
+                <div class="field-group">
+                    <label class="input">
+                        <input type="text"
+                               id="SecondNames"
+                               v-model="form.secondName"
+                               placeholder="👥 Apellidos*"
+                               required />
+                    </label>
+                    <div v-if="secondNameError" class="error-msg">{{ secondNameError }}</div>
+                </div>
 
+                <div class="field-group">
+                    <label class="input">
+                        <input type="text"
+                               id="Id"
+                               v-model="form.id"
+                               placeholder="🆔 Cédula*"
+                               required />
+                    </label>
+                    <div v-show="idError" class="error-msg">{{ idError }}</div>
+                    <div v-show="idFormatError" class="error-msg">{{ idFormatError }}</div>
+
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="date"
+                               v-model="form.birthdate"
+                               id="BirthDate"
+                               required />
+                    </label>
+                    <div v-show="birthdateError" class="error-msg">{{ birthdateError }}</div>
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="text"
+                               id="email"
+                               v-model="form.email"
+                               placeholder="📧 Email*"
+                               required />
+                    </label>
+                    <div v-show="emailError" class="error-msg">{{ emailError }}</div>
+                </div>
+
+
+                <div class="field-group">
                     <label class="input">
                         <input type="text"
                                v-model="form.position"
-                               placeholder="Puesto"
+                               placeholder="👔 Puesto*"
                                required />
                     </label>
 
+                    <div v-show="positionError" class="error-msg">{{ positionError }}</div>
+                </div>
+
+                <div class="field-group">
                     <label class="input">
                         <select v-model="form.employmentType" required>
                             <option disabled value="">Tipo de Contrato</option>
@@ -30,31 +90,110 @@
                             <option value="Por Horas">Por Horas</option>
                         </select>
                     </label>
+                </div>
 
+                <div class="field-group">
+                    <div class="input">
+                        <select id="role" name="role" v-model="payMethod" required>
+                            <option value="" disabled selected style="color: #ece6e6ff">Método de pago</option>
+                            <option value="cash" style="color: #ece6e6ff"> Efectivo</option>
+                            <option value=" bankAccount" style="color: #ece6e6ff">Cuenta de Banco</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="text" v-model="form.departament" placeholder="🧑‍💼 Departamento*" required />
+                    </label>
+                    <div v-show="departamentError" class="error-msg">{{ departamentError }}</div>
+                </div>
+
+                <div class="field-group">
                     <label class="input">
                         <input type="text"
                                v-model="form.salary"
-                               placeholder="Salario"
+                               placeholder="💵 Salario Colones*"
                                required />
                     </label>
+                    <div v-show="salaryError" class="error-msg">{{ salaryError }}</div>
+                </div>
 
+                <div class="field-group">
+                    <label class="input">
+                        <input type="tel"
+                               id="Phone_Number"
+                               v-model="form.personalPhone"
+                               placeholder="📱 Teléfono*"
+                               required />
+                    </label>
+                    <div v-show="numberError" class="error-msg">{{numberError}}</div>
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="text"
+                               id="Home Number"
+                               v-model="form.homePhone"
+                               placeholder="☎ Teléfono casa" />
+                    </label>
+
+                    <div v-show="secondPhoneError" class="error-msg">{{secondPhoneError}}</div>
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="password"
+                               id="Password"
+                               v-model="form.password"
+                               placeholder="🔒 Contraseña*"
+                               required />
+                    </label>
+                    <div v-show="passwordError" class="error-msg">{{ passwordError }}</div>
+                </div>
+
+                <div class="field-group">
+                    <label class="input">
+                        <input type="password"
+                               id="Password_Confirm"
+                               v-model="form.passwordConfirm"
+                               placeholder="🔒 Confirmar Contraseña*"
+                               required />
+                    </label>
+                    <div v-show="passwordConfirmationError" class="error-msg">
+                        {{ passwordConfirmationError }}
+                    </div>
+
+                </div>
+
+                <div class="field-group">
 
                     <label class="input">
                         <input type="text"
-                               v-model="form.departament"
-                               placeholder="Departamento"
+                               v-model="form.direction"
+                               id="Direction"
+                               placeholder="📍 Dirección*"
                                required />
                     </label>
+                    <div v-if="directionError" class="error-msg">{{ directionError }}</div>
+                </div>
 
+                <div class="buttons-row">
+                    <button class="btn btn-secondary" @click="volverAlHome"> ← Volver</button>
+                    <button class="btn btn-primary" type="submit">Crear</button>
+                </div>
 
-                    <div class="buttons">
-                        <button class="btn btn-secondary" type="button" @click="this.$router.go(-1);"> Volver</button>
-                        <button class="btn btn-primary" type="submit">Registrar</button>
+                <div class="field-group">
+                    <div class="message"
+                         v-if="successMessage"
+                         :class="{ 'error': !isError, 'succes': isError }">
+                        {{ successMessage }}
                     </div>
-                </form>
-            </aside>
+                </div>
+</form>
         </main>
 
+        <!-- Aquí vamo a dejar el footer -->
         <footer>
             <div>©2025 Fiesta Fries</div>
             <div class="socials">
@@ -68,40 +207,313 @@
 </template>
 
 <script>
-import axios from 'axios';
+    import axios from 'axios';
 
-export default {
-    name: "RegistrarEmpleado",
-    data() {
-        return {
-            userName: "Cargando...",
-            userRole: "",
-            companies: [],
-            selectedCompany: null,
-            form: {
+    export default {
+        name: "RegistrarEmpleado",
+        data() {
+            return {
+                userName: "Cargando...",
+                userRole: "",
+                companies: [],
+                selectedCompany: null,
+                form: {
+                    email: "",
+                    position: "",
+                    employmentType: "",
+                    salary: "",
+                    hireDate: "",
+                    departament: "",
+                    idCompny: "",
+                    uniqueUser: "",
+                    id: "",
+                    firstName: "",
+                    secondName: "",
+                    personalPhone: "",
+                    homePhone: "",
+                    birthdate: "",
+                    personType: "Empleado",
+                    direction: "",
+                    password: "",
+                    passwordConfirmation:"",
+                },
+                emailError: "",
+                payMethod: "",
+                passwordError: "",
+                firstNameError: "",
+                birthdateError: "",
+                idError: "",
+                directionError: "",
+                passwordConfirmationError: "",
                 email: "",
-                position: "",
+                workstation: "",
                 employmentType: "",
-                salary: "",
-                hireDate: "",
+                idFormatError: "",
+                numberError: "",
+                salaryError: "",
+                date: "",
+                idC: "",
                 departament: "",
-                idCompny: "",
+                secondPhoneError: "",
+                positionError: "",
+                departamentError: "",
+                secondNameError: "",
+                successMessage: "",
+                isError: false,
+            };
         },
-        emailError: ""
-        };
-    },
-    mounted() {
-        this.loadUserFromLocalStorage();
-        this.obtenerEmpresaSeleccionada();
-    },
+        mounted() {
+            this.loadUserFromLocalStorage();
+            this.obtenerEmpresaSeleccionada();
+        },
         methods: {
+            volverAlHome() {
+              this.$router.go(-1)
+            },
+            succesMessageD(message) {
+                this.successMessage = message;
+            },
+            validateSecondName() {
+                if (this.form.secondName.length > 30) {
+                    const message = "Los apellidos no pueden exceder los 30 carácteres";
+                    this.showSecondNameError(message);
+                    return false;
+                }
+                return true;
+            },
+            showSecondNameError(message) {
+                this.secondNameError = message;
+            },
+            validatePosition() {
+                if (this.form.position.length > 30) {
+                    const message = "La longitud del puesto no debe de exceder los 30 carácteres";
+                    this.showPositionErrorMessage(message);
+                    return false;
+                }
+
+                return true;
+            },
+            showPositionErrorMessage(message) {
+                this.positionError = message;
+            },
+            validateDepartamentError() {
+                if (this.form.departament.length > 30) {
+                    const message = "La longitud del departamento no debe de exceder los 30 caracteres";
+                    this.showDepartamentError(message);
+                    return false;
+                }
+                return true;
+            },
+            showDepartamentError(message) {
+                this.departamentError = message;
+            },
             clearAll() {
                 this.form.email = "";
-                this.position = "";
-                this.employmentType = "";
+                this.form.position = "";
+                this.form.employmentType = "";
                 this.form.salary = "";
+                this.form.hireDate = "";
                 this.form.departament = "";
+                this.form.idCompny = "";
+                this.form.uniqueUser = "";
+                this.form.id = "";
+                this.form.firstName = "";
+                this.form.secondName = "",
+                this.form.personalPhone = "";
+                this.form.homePhone = "";
+                this.form.birthdate = "";
+                this.form.personType = "Empleado";
+                this.form.direction = "";
+                this.form.password = "";
+                this.form.passwordConfirmation = "";
             },
+            validateNumberFormat() {
+                if ((this.form.personalPhone && /^\d+$/.test(this.form.personalPhone)) && (this.form.personalPhone.length === 8)) {
+
+                    return true;
+                }
+                return false;
+            },
+            validateSecondNumberFormat() {
+                if ((this.form.homePhone && /^\d+$/.test(this.form.homePhone)) && (this.form.homePhone.length === 8)){
+                   return true;
+                }
+                return false;
+            },
+            validateSalary() {
+                console.log(this.form.salary);
+                if (!isNaN(this.form.salary)) {
+                    const salaryN = parseInt(this.form.salary);
+                    if ((salaryN >= 368000) ) {
+                        return true;
+                    }else {
+                      const message = "El salario no es permitido ya que no cumple con lo establecido con la ley costarricense";
+                       this.showErrorSalary(message);
+                        return false;
+                    }
+                }else {
+                  const message = "El salario debe de ser un valor númerico";
+                   this.showErrorSalary(message);
+                    return false;
+                }
+            },
+        showErrorSalary(message) {
+            this.salaryError = message;
+        },
+        ShowNumberError(message) {
+                this.numberError = message;
+         },
+        showSecondNumberError(message) {
+          this.secondPhoneError = message;
+        },
+            validateIDFormat() {
+                const id = this.form.id;
+
+                if (id && /^\d+$/.test(id) && (id.length === 9 || id.length === 12)) {
+                    return true;
+                }
+                return false;
+            },
+            ShowIDFomratError(message) {
+                this.idFormatError = message;
+            },
+            getDepartament() {
+                const get = this.$route.query.departamento || "";
+                this.departament = get;
+                console.log(this.departament);
+            },
+            getIdcrl() {
+                const get = this.$route.query.idC || "";
+                this.idC = get;
+                console.log(this.idC);
+            },
+            getDateUrl() {
+                const getDateFromUrl = this.$route.query.fechaC || "";
+                this.date = getDateFromUrl;
+                console.log(this.date);
+            },
+            getSalaryUrl() {
+                const getSalaryUrl = this.$route.query.salario || "";
+                this.salary = getSalaryUrl;
+                console.log(this.salary);
+            },
+            getType() {
+                const getTypeUrl = this.$route.query.tipoEmpleo || "";
+                this.employmentType = getTypeUrl;
+                console.log(getTypeUrl);
+            },
+            getEmailUrl() {
+                const getEmailFromUrl = this.$route.query.email || "";
+                this.email = getEmailFromUrl;
+                console.log(this.email);
+            },
+            getPuestoURL() {
+                const getPuestoFromUrl = this.$route.query.puesto || "";
+                this.workstation = getPuestoFromUrl;
+                console.log(getPuestoFromUrl);
+            },
+            validatePassword(password) {
+                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
+                return regex.test(password);
+            },
+            showpasswordError(message) {
+                this.passwordError = message;
+            },
+            validateConfirmationPassword(firstPassword, secondPassword) {
+                if (firstPassword == secondPassword) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            showpasswordConfirmationError(message) {
+                this.passwordConfirmationError = message;
+            },
+            isAdult(birthDate) {
+                //El día de hoy
+
+                const today = new Date();
+                const birth = new Date(birthDate);
+                console.log(today);
+                console.log(birth);
+                let age = today.getFullYear() - birth.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+                console.log(age);
+                return age >= 18;
+
+            },
+            clearErrors() {
+                this.passwordError = "";
+                this.firstNameError = "";
+                this.birthdateError = "";
+                this.idError = "";
+                this.directionError = "";
+                this.passwordConfirmationError = "";
+                this.idFormatError = "";
+                this.emailError = "";
+                this.numberError = "";
+                this.salaryError = "";
+                this.secondPhoneError = "";
+                this.secondPhoneError = "";
+                this.departamentError = "";
+                this.positionError = "";
+            },
+            showEmailError(message) {
+                this.emailError = message;
+            },
+            showbirthdateError(message) {
+                this.birthdateError = message;
+            },
+            validateDirectionLength() {
+                return this.form.direction.length < 148;
+            },
+            showDirectionError(message) {
+                this.directionError = message;
+            },
+            async validateID() {
+                // tengo que llamar aquí a la api
+                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
+                console.log("Entra aquí jijij");
+                let ageInt = parseInt(this.form.id, 10);
+                console.log(ageInt);
+                const response = await axios.post(validateidurl, ageInt, { headers: { "Content-Type": "application/json" } });
+                console.log("pasa de aquí\n");
+
+                console.log(response);
+                if (response.data.result) {
+                    // tengo que llamar al método que haga return ojito
+                    this.showidError();
+
+                    return false;
+                }
+
+                return true;
+            },
+            showidError() {
+                this.idError = "Este id ya está registrado, ingrse otro";
+            },
+
+            isNameValid(name) {
+                name = name.trim();
+                if (name.length > 30) {
+                    const messageL = "El nombre no debe de exceder una longitud de 30 caracteres";
+                    this.showfisrtNameError(messageL);
+                    return false;
+                } else if (name.length< 2) {
+                    const message = "El nombre debe de contener al menos 2 caracteres";
+                    this.showfisrtNameError(message);
+                    return false;
+                }
+                return true;
+                
+            },
+            showfisrtNameError(errorMessage) {
+                this.firstNameError = errorMessage;
+            },
+
             obtenerEmpresaSeleccionada() {
                 const empresaData = localStorage.getItem('selectedCompany');
                 if (empresaData) {
@@ -119,460 +531,244 @@ export default {
                     }, 2000);
                 }
             },
-        loadUserFromLocalStorage() {
-            const stored = localStorage.getItem("userData");
-            if (!stored) {
-                this.$router.push("/"); // si no hay sesión, redirige
-                return;
-            }
-            const userData = JSON.parse(stored);
+            loadUserFromLocalStorage() {
+                const stored = localStorage.getItem("userData");
+                if (!stored) {
+                    this.$router.push("/"); // si no hay sesión, redirige
+                    return;
+                }
+                const userData = JSON.parse(stored);
 
-            this.userName = `${userData.firstName} ${userData.secondName}`;
-            this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
-        },
-        validateEmail() {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!regex.test(this.form.email)) {
-                this.emailError = "Formato de correo incorrecto";
-            } else {
+                this.userName = `${userData.firstName} ${userData.secondName}`;
+                this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
+            },
+
+            async validateEmail() {
+                const validateEmailUrl = `http://localhost:5081/api/user/emailverify?email=${encodeURIComponent(this.form.email)}`;
+
+                const response = await axios.get(validateEmailUrl);
+
+                console.log("Respuesta importante\n");
+                console.log(response.data.result)
+
+                return response.data.result === true;
+
+            },
+            async tryValdations() {
+                let status = true;
+                const emailVEvent = await this.validateEmail();
+                if (!emailVEvent) {
+                    console.log("Entra aquí\n");
+                    this.showEmailError("Este correo elctrónico ya está registrado, ingrese otro");
+                    status = false;
+                }
+
+                if (!this.validateSalary()) {
+                    status = false;
+                }
+
+                if (!this.validateSecondNumberFormat()) {
+                    this.showSecondNumberError("El formato del teléfono no es válido");
+                    status = false;
+                }
+
+                if (!this.validateIDFormat()) {
+                    console.log("Entra aquí pepe\n");
+                    this.ShowIDFomratError("El formato de la cédula no es correcto");
+                    status = false;
+                }
+
+
+                if (!this.validateNumberFormat()) {
+                    this.ShowNumberError("Número no sigue el formato adecuado");
+                    status = false;
+                }
+
+                if (!(this.isNameValid(this.form.firstName))) {
+                    status = false;
+                }
+
+                const idVerification = await this.validateID();
+                if (!idVerification) {
+                    status = false;
+                }
+
+                if (!(this.isAdult(this.form.birthdate))) {
+                    this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
+                    console.log("Entra aquí4\n");
+                    status = false;
+                }
+                if (!this.validateDirectionLength()) {
+                    this.showDirectionError("La dirección no puede exceder los 200 carácteres");
+                    status = false;
+                }
+
+                if (!this.validatePassword(this.form.password)) {
+                    this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
+                    status = false;
+                }
+
+                if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
+                    this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
+                    status = false;
+                }
+
+                if (!this.validateDepartamentError()) {
+                    status = false;
+                }
+
+                if (!this.validateSecondName()) {
+                    status = false;
+                }
+
+                if (!this.validatePosition()) {
+                    status = false;
+                }
+
+                return status;
+            },
+            async createUserEmployer() {
+
+                const userData = {
+                    Email: this.form.email.trim(),
+                    PasswordHash: this.form.password
+                };
+                const userUrl = "http://localhost:5081/api/user/createEmployer";
+
+                let userResponse = await axios.post(userUrl, userData);
+
+                let userID = userResponse.data.id;
+
+                return userID;
+            },
+            async createPersona(userId) {
+
+                const personData = {
+                    uniqueUser: userId,
+                    id: this.form.id,
+                    firstName: this.form.firstName,
+                    secondName: this.form.secondName,
+                    email: this.form.email,
+                    personalPhone: this.form.personalPhone,
+                    homePhone: this.form.homePhone,
+                    birthdate: this.form.birthdate,
+                    personType: "Empleado",
+                    direction: this.form.direction,
+                };
+
+                const personUrl = "http://localhost:5081/api/person/create";
+
+                await axios.post(personUrl, personData);
+
+            },
+            async createPersonaEmployer() {
+
+                const cId = this.selectedCompany.cedulaJuridica;
+
+                const fechaC = new Date().toISOString();
+
+                const empleado = {
+                    personaId: parseInt(this.form.id),
+                    firstName: this.form.firstName,
+                    secondName: this.form.secondName,
+                    birthdate: this.form.birthdate,
+                    direction: this.form.direction,
+                    personalPhone: this.form.personalPhone,
+                    homePhone: this.form.homePhone,
+                    personType: this.form.personType,
+                    userEmail: this.form.email,
+                    userPassword: this.form.password,
+                    position: this.form.position,
+                    employmentType: this.form.employmentType,
+                    salary: parseInt(this.form.salary),
+                    hireDate: fechaC,
+                    idCompny: parseInt(cId),
+                    departament: this.form.departament,
+                };
+
+                const empleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
+
+                await axios.post(empleadoUrl, empleado);
+
+            },
+            async notifyEmail(userId) {
+
+                 const userData = {
+                    Email: this.form.email.trim(),
+                    PasswordHash: this.form.password,
+                    Id: userId
+                };
+
+                const emailUrl = "http://localhost:5081/api/user/notifyEmployer";
+
+                await axios.post(emailUrl, userData);
+            },
+            async handleSubmit() {
+                let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
+                empleados.push(this.form);
+                localStorage.setItem("empleados", JSON.stringify(empleados));
+                try {
+                    this.clearErrors();
+                    this.isError = false;
+
+                    let validationStatus = await this.tryValdations();
+                    if (!validationStatus) {
+                        const error_message = "Ocurrió un error Verifique los mensajes de error e intentelo de nuevo";
+                        this.succesMessageD(error_message);
+                        setTimeout(() => {
+                            this.succesMessageD("");
+                        }, 4000);
+                        return;
+                    }
+
+                    this.clearErrors();
+
+                    const userId = await this.createUserEmployer();
+
+                    await this.createPersona(userId);
+
+                    await this.createPersonaEmployer();
+
+                    await this.notifyEmail(userId);
+
+                    this.isError = true;
+                    const SuccessM = "El Empleado fue registrado con éxito";
+                    this.succesMessageD(SuccessM);
+
+                    setTimeout(() => {
+                        this.volverAlHome();
+                    }, 2000);
+
+                    this.clearAll();
+
+                } catch (error) {
+                    console.log("Error Creando al nuevo empleador", error);
+                }
+            },
+
+            onCompanyChange() {
+                if (this.selectedCompany) {
+                    this.saveSelectedCompany();
+                    this.$router.push('/PageEmpresaAdmin');
+                }
+            },
+
+            handleReset() {
+                this.form = { email: "", position: "", employmentType: "" };
                 this.emailError = "";
+            },
+            saveSelectedCompany() {
+                localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+            },
+            logout() {
+                localStorage.removeItem("userData");
+                localStorage.removeItem("selectedCompany");
+                this.$router.push("/");
             }
-        },
-        async handleSubmit() {
-            this.validateEmail();
-            if (this.emailError) return;
-
-            console.log("Datos del empleado a registrar:", this.form);
-
-            // Simulación de guardado
-            let empleados = JSON.parse(localStorage.getItem("empleados")) || [];
-            empleados.push(this.form);
-            localStorage.setItem("empleados", JSON.stringify(empleados));
-            console.log("Entra");
-
-            const cId = this.selectedCompany.cedulaJuridica;
-
-            console.log(cId);
-
-            const fechaC = new Date().toISOString(); 
-
-
-            const createE = `http://localhost:5081/api/user/emailE?email=${encodeURIComponent(this.form.email)}
-              &puesto=${encodeURIComponent(this.form.position)}&tipoEmpleo=${encodeURIComponent(this.form.employmentType)}
-              &salario=${encodeURIComponent(this.form.salary)}&fechaC=${encodeURIComponent(fechaC)}&idC=${encodeURIComponent(cId)}
-              &departamento=${encodeURIComponent(this.form.departament)}`;
-
-
-            console.log("Justo va a entrar aquí\n");
-            await axios.get(createE);
-            alert("Empleado reclutado con éxito");
-            
-            this.clearAll();
-
-        },
-
-        onCompanyChange() {
-          if (this.selectedCompany) {
-            this.saveSelectedCompany();
-            // Redirigir a la página de administración de empresas
-            this.$router.push('/PageEmpresaAdmin');
-          }
-        },
-
-        handleReset() {
-            this.form = { email: "", position: "", employmentType: "" };
-            this.emailError = "";
-        },
-        saveSelectedCompany() {
-            localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
-        },
-        logout() {
-            localStorage.removeItem("userData");
-            localStorage.removeItem("selectedCompany");
-            this.$router.push("/");
         }
-    }
     };
 </script>
 
 
 
-<style scoped>
-    /* wrap es el contenedor principal (el fondo) */
-    .wrap {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        background: #1e1e1e;
-        color: whitesmoke;
-    }
-
-    .header {
-        background: rgba(0, 0, 0, 0.25);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 16px 64px;
-    }
-
-    .nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-    }
-
-    .logo-box {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
-        /* Degradado azul */
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-        .logo-box .f {
-            font-weight: 800;
-            font-size: 24px;
-            color: white;
-            line-height: 1;
-        }
-
-    /* Estilo Nombre Usuario */
-    .texts h1 {
-        margin: 0;
-        font-size: 24px;
-    }
-
-    /* Estilo Rol Usuario */
-    .texts p {
-        margin: 6px 0 0;
-        color: #bdbdbd;
-        font-size: 14px;
-    }
-
-    /* Lista de botones */
-    .nav-list {
-        list-style: none;
-        display: flex;
-        gap: 2rem;
-        margin: 0;
-        padding: 0;
-    }
-
-        .nav-list a {
-            color: #bdbdbd;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-            .nav-list a:hover,
-            .nav-list a.router-link-active {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: white;
-            }
-            
-    /* Dropdown en header */
-    .company-select {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-      color: #bdbdbd;
-      padding: 0.5rem 1rem;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .company-select:hover {
-        background-color: rgba(255, 255, 255, 0.15);
-        color: rgb(0, 0, 0);
-    }
-
-    .company-select:focus {
-        outline: none;
-        background-color: rgba(255, 255, 255, 0.2);
-        color: rgb(0, 0, 0);
-    }
-
-    /* Asegurar que el select tenga el mismo alto que los otros enlaces */
-    .company-select {
-        height: 100%;
-    }
-
-    /* Sección principal con flex para centrar contenido */
-    .hero {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: whitesmoke;
-        padding: 48px 64px;
-        gap: 40px;
-        flex: 1 0 auto;
-    }
-
-    .features-container {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .login-card {
-        width: 280px;
-        min-height: 180px;
-        background: rgb(71, 69, 69);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 22px;
-        border-radius: 8px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-        /* Título del card */
-        .login-card h2 {
-            color: #eee;
-            margin: 0 0 12px;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        /* Texto del card */
-        .login-card p {
-            color: #bdbdbd;
-            font-size: 14px;
-            margin-bottom: 20px;
-            flex-grow: 1;
-          }
-
-  .buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      width: 100%;
-      justify-content: center; /* Centra los botones horizontalmente */
-  }
-
-  .buttons .btn {
-      flex: 1; /* Ambos botones ocupan el mismo espacio */
-      padding: 12px 20px; /* Tamaño más adecuado */
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-      font-size: 14px;
-      text-align: center;
-      min-height: 40px; /* Altura mínima consistente */
-  }
-
-  /* Botón Registrar (usará btn-primary) */
-  .buttons .btn-primary {
-      background: #1fb9b4;
-      color: white;
-  }
-
-  .buttons .btn-primary:hover {
-      background: #1aa19c;
-  }
-
-  /* Botón Volver (usará btn-secondary) */
-  .buttons .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #bdbdbd;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .buttons .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-  }
-
-    /* Estilo footer *Compartido entre rutas* */
-    footer {
-        background: #fff;
-        padding: 28px 64px;
-        border-top: 1px solid #eee;
-        color: #8b8b8b;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .footer-text p {
-        margin: 0;
-        font-size: 14px;
-    }
-
-    .socials {
-        display: flex;
-        gap: 12px;
-    }
-
-        /* Íconos de redes sociales */
-        .socials a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            border: 1px solid #e6e6e6;
-            text-decoration: none;
-            color: #bdbdbd;
-            font-size: 14px;
-        }
-
-    /* Adaptar según resolución */
-    @media (max-width: 900px) {
-        .hero {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 36px;
-            gap: 30px;
-        }
-
-        .header {
-            padding: 16px 36px;
-        }
-
-        .nav {
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .nav-list {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .features-container {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 100%;
-        }
-
-        footer {
-            flex-direction: column;
-            gap: 10px;
-            text-align: center;
-            padding: 20px 36px;
-        }
-    }
-
-    @media (max-width: 600px) {
-        .hero {
-            padding: 24px;
-        }
-
-        .brand {
-            flex-direction: column;
-            text-align: center;
-            gap: 10px;
-        }
-
-        .texts h1 {
-            font-size: 20px;
-        }
-    }
-
-    .wrap {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        background: #1e1e1e;
-        color: whitesmoke;
-    }
-
-    .hero {
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        gap: 40px;
-        padding: 48px 64px;
-        flex: 1 0 auto;
-    }   
-
-    .input {
-        display: flex;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        margin-bottom: 12px;
-        color: #ece6e6ff;
-    }
-
-        .input input {
-            background: transparent;
-            border: 0;
-            outline: 0;
-            color: whitesmoke;
-            width: 100%;
-            font-size: 14px;
-        }
-
-    .error-msg {
-        color: #ff6b6b;
-        font-size: 13px;
-        margin: -6px 0 10px 4px;
-        text-align: left;
-    }
-
-    .input select {
-        background: transparent;
-        border: 0;
-        outline: 0;
-        color: whitesmoke;
-        width: 100%;
-        font-size: 14px;
-        appearance: none;
-        cursor: pointer;
-    }
-
-        .input select option {
-            background: #1e1e1e;
-            color: whitesmoke;
-        }
-
-    @media (max-width: 900px) {
-        .hero {
-            flex-direction: column;
-            align-items: center;
-            padding: 36px;
-        }
-
-        .brand {
-            margin-bottom: 20px;
-            max-width: 100%;
-        }
-
-        .register-card {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        footer {
-            flex-direction: column;
-            gap: 10px;
-            text-align: center;
-        }
-    }
-</style>
-
+<style src="@/assets/style/RegisterEmpleado.css" scoped> </style>
