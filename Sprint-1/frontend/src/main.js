@@ -9,6 +9,7 @@ import SignInEmpleador from "./components/SignInEmpleadores.vue";
 import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
 import RegisterHoras from "./components/RegisterHoras.vue";
+import SelectBeneficios from "./components/SelectBeneficios.vue";
 
 const DEVELOPMENT_MODE = false;
 
@@ -44,6 +45,16 @@ const router = createRouter({
         requiresAuth: true,
         public: false,
         allowedRoles: ["admin", "empleador"],
+      },
+    },
+        {
+      path: "/SelectBeneficios",
+      name: "SelectBeneficios",
+      component: SelectBeneficios,
+      meta: {
+        requiresAuth: true,
+        public: false,
+        allowedRoles: ["empleado"],
       },
     },
     {

@@ -42,6 +42,11 @@
                   <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
               </li>
 
+              <!-- Solo Empleado: Seleccionar Beneficios -->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/FormEmpresa">Seleccionar Beneficio</router-link>
+              </li>
+
               <!-- Siempre visible -->
               <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
           </ul>
