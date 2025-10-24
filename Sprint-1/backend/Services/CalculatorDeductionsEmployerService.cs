@@ -1,8 +1,9 @@
 using backend.Models;
+using backend.Interfaces;
 
 namespace backend.Services
 {
-    public class CalculatorDeductionsEmployerService
+    public class CalculatorDeductionsEmployerService : ICalculatorDeductionsEmployerService
     {
         private readonly List<EmployerSocialSecurityContributions> _cargasSociales;
         private readonly EmployerSocialSecurityContributionsService _cargasSocialesService;
