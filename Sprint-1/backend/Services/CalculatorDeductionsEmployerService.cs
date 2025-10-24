@@ -6,14 +6,16 @@ namespace backend.Services
     public class CalculatorDeductionsEmployerService : ICalculatorDeductionsEmployerService
     {
         private readonly List<EmployerSocialSecurityContributions> _cargasSociales;
-        private readonly EmployerSocialSecurityContributionsService _cargasSocialesService;
-        private readonly EmployerSocialSecurityByPayrollService _payrollService;
+        private readonly IEmployerSocialSecurityContributionsService _cargasSocialesService;
+        private readonly IEmployerSocialSecurityByPayrollService _payrollService;
 
-        public CalculatorDeductionsEmployerService()
+        public CalculatorDeductionsEmployerService(
+            IEmployerSocialSecurityContributionsService cargasSocialesService,
+            IEmployerSocialSecurityByPayrollService payrollService)
         {
-            _cargasSocialesService = new EmployerSocialSecurityContributionsService();
+            _cargasSocialesService = cargasSocialesService;
             _cargasSociales = _cargasSocialesService.GetActiveContributions();
-            _payrollService = new EmployerSocialSecurityByPayrollService();
+            _payrollService = payrollService;
         }
 
         public decimal CalculateEmployerDeductions(EmployeeCalculationDto empleado, int idReporte, long cedulaJuridicaEmpresa)
