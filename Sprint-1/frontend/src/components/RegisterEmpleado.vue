@@ -207,7 +207,8 @@
 </template>
 
 <script>
-    import axios from 'axios';
+    import axios from "axios";
+    import { API_ENDPOINTS } from '../config/apiConfig';
 
     export default {
         name: "RegistrarEmpleado",
@@ -475,7 +476,7 @@
             },
             async validateID() {
                 // tengo que llamar aquí a la api
-                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
+                const validateidurl = API_ENDPOINTS.ID_VALIDATE;
                 console.log("Entra aquí jijij");
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
@@ -544,7 +545,7 @@
             },
 
             async validateEmail() {
-                const validateEmailUrl = `http://localhost:5081/api/user/emailverify?email=${encodeURIComponent(this.form.email)}`;
+                const validateEmailUrl = API_ENDPOINTS.USER_EMAIL_VERIFY(this.form.email);
 
                 const response = await axios.get(validateEmailUrl);
 
@@ -633,7 +634,7 @@
                     Email: this.form.email.trim(),
                     PasswordHash: this.form.password
                 };
-                const userUrl = "http://localhost:5081/api/user/createEmployer";
+                const userUrl = API_ENDPOINTS.USER_CREATE_EMPLOYER;
 
                 let userResponse = await axios.post(userUrl, userData);
 
@@ -655,8 +656,8 @@
                     personType: "Empleado",
                     direction: this.form.direction,
                 };
-
-                const personUrl = "http://localhost:5081/api/person/create";
+                
+                const personUrl = API_ENDPOINTS.PERSON_CREATE;
 
                 await axios.post(personUrl, personData);
 
@@ -686,7 +687,7 @@
                     departament: this.form.departament,
                 };
 
-                const empleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
+                const empleadoUrl = API_ENDPOINTS.EMPLEADO_CREATE_WITH_PERSON;
 
                 await axios.post(empleadoUrl, empleado);
 
@@ -699,7 +700,7 @@
                     Id: userId
                 };
 
-                const emailUrl = "http://localhost:5081/api/user/notifyEmployer";
+                const emailUrl = API_ENDPOINTS.USER_NOTIFY_EMPLOYER;
 
                 await axios.post(emailUrl, userData);
             },

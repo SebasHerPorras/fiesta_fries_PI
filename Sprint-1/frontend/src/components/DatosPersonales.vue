@@ -89,6 +89,7 @@
 
 <script>
 import axios from "axios";
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: "PerfilUsuario",
@@ -160,7 +161,7 @@ export default {
   }
 
   try {
-    const profileRes = await axios.get(`http://localhost:5081/api/person/profile/${userId}`);
+    const profileRes = await axios.get(API_ENDPOINTS.PERSON_PROFILE(userId));
     const p = profileRes.data || {};
 
     this.userName = `${p.firstName || ""} ${p.secondName || ""}`.trim() || (userData?.email || "Usuario");
@@ -186,7 +187,7 @@ export default {
       // Si es ADMIN, cargar TODAS las empresas
       if (this.isAdmin || stored.isAdmin) {
         console.log('Usuario es admin, cargando TODAS las empresas');
-        const empresasRes = await axios.get(`http://localhost:5081/api/empresa/todas`);
+        const empresasRes = await axios.get(API_ENDPOINTS.EMPRESAS_TODAS);
         
         // Verificar estructura de respuesta
         if (empresasRes.data && empresasRes.data.success) {
@@ -212,7 +213,7 @@ export default {
  
       // Buscar empresas del Empleador específico
       console.log('Usuario es Empleador, cargando sus empresas');
-      const empresasRes = await axios.get(`http://localhost:5081/api/empresa/mis-empresas/${userId}`);
+      const empresasRes = await axios.get(API_ENDPOINTS.MIS_EMPRESAS_ID(userId));
       
       // Verificar la estructura de la respuesta
       if (empresasRes.data && empresasRes.data.success) {
