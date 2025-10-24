@@ -1,5 +1,6 @@
 ﻿using backend.Models;
 using backend.Services;
+using backend.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -8,11 +9,11 @@ namespace backend.Controllers
     [ApiController]
     public class PruebasCargasSocialesController : ControllerBase
     {
-        private readonly CalculatorDeductionsEmployerService _calculadoraService;
+        private readonly ICalculatorDeductionsEmployerService _calculadoraService;
 
-        public PruebasCargasSocialesController()
+        public PruebasCargasSocialesController(ICalculatorDeductionsEmployerService calculadoraService)
         {
-            _calculadoraService = new CalculatorDeductionsEmployerService();
+            _calculadoraService = calculadoraService;
         }
 
         [HttpPost("calcular-deducciones")]

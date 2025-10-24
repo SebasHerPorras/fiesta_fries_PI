@@ -1,9 +1,10 @@
 using backend.Models;
 using backend.Repositories;
+using backend.Interfaces;
 
 namespace backend.Services
 {
-    public class EmployerSocialSecurityContributionsService
+    public class EmployerSocialSecurityContributionsService : IEmployerSocialSecurityContributionsService
     {
         private readonly EmployerSocialSecurityContributionsRepository _repository;
 
@@ -24,7 +25,7 @@ namespace backend.Services
             }
         }
 
-               public List<EmployerSocialSecurityContributions> GetAllContributions()
+        public List<EmployerSocialSecurityContributions> GetAllContributions()
         {
             try
             {

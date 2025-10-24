@@ -1,9 +1,10 @@
 using backend.Models;
 using backend.Repositories;
+using backend.Interfaces;
 
 namespace backend.Services
 {
-    public class EmployerSocialSecurityByPayrollService
+    public class EmployerSocialSecurityByPayrollService : IEmployerSocialSecurityByPayrollService
     {
         private readonly EmployerSocialSecurityByPayrollRepository _repository;
 
