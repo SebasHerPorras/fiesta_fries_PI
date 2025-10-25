@@ -1,7 +1,8 @@
-﻿using backend.Models.Payroll;
+﻿using backend.Models;
+using backend.Models.Payroll;
 using backend.Models.Payroll.Requests;
 using backend.Models.Payroll.Results;
-using backend.Interfaces.Repositories;
+using backend.Interfaces;
 using backend.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
@@ -54,10 +55,10 @@ namespace backend.Services
                 return validationResult.ErrorResult!;
 
             var payroll = await CreatePayrollAsync(request);
-            var processingResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
-            await SavePayrollResultsAsync(payroll, processingResult);
+            var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId); 
+            await SavePayrollResultsAsync(payroll, calculationResult); 
 
-            return _resultBuilder.CreateSuccessResult(payroll.PayrollId, processingResult);
+            return _resultBuilder.CreateSuccessResult(payroll.PayrollId, calculationResult.TotalAmount, calculationResult.ProcessedEmployees);
         }
 
         private async Task<Payroll> CreatePayrollAsync(PayrollProcessRequest request)
@@ -78,28 +79,74 @@ namespace backend.Services
             return payroll;
         }
 
-        private async Task<PayrollProcessingResult> ProcessEmployeesAsync(PayrollProcessRequest request, int payrollId)
+        private async Task<PayrollCalculationResult> ProcessEmployeesAsync(PayrollProcessRequest request, int payrollId)
         {
             var empleados = _employeeService.GetByEmpresa(request.CompanyId);
-            var processor = new EmployeeProcessor(_calculationService, _logger);
+            var result = new PayrollCalculationResult();
 
-            return await processor.ProcessAllAsync(empleados, request.CompanyId, payrollId);
+            _logger.LogInformation("Procesando {EmployeeCount} empleados", empleados.Count);
+
+            foreach (var empleado in empleados)
+            {
+                var calculation = await ProcessSingleEmployeeAsync(empleado, request.CompanyId, payrollId);
+                result.AddEmployeeCalculation(calculation);
+            }
+
+            return result;
         }
 
-        private async Task SavePayrollResultsAsync(Payroll payroll, PayrollProcessingResult processingResult)
+        private async Task<EmployeeCalculation> ProcessSingleEmployeeAsync( 
+            EmpleadoListDto empleado, long companyId, int payrollId)
         {
-            var payments = processingResult.ToPayrollPayments(payroll.PayrollId);
+            var empleadoDto = new EmployeeCalculationDto
+            {
+                CedulaEmpleado = empleado.Cedula,
+                NombreEmpleado = empleado.Nombre,
+                SalarioBruto = await ObtenerSalarioEmpleado(empleado.Cedula),
+                TipoEmpleado = empleado.TipoContrato
+            };
+
+            var deductions = await _calculationService.CalculateDeductionsAsync(empleadoDto, companyId, payrollId);
+            var benefits = await _calculationService.CalculateBenefitsAsync(empleadoDto, companyId, payrollId);
+            var tax = await _calculationService.CalculateIncomeTaxAsync(empleadoDto, companyId, payrollId);
+
+            var empleadoModel = new EmpleadoModel
+            {
+                id = empleado.Cedula,
+                name = empleado.Nombre,
+                salary = (int)empleadoDto.SalarioBruto,
+                employmentType = empleado.TipoContrato,
+                department = "",
+                idCompny = companyId
+            };
+
+            _logger.LogDebug(
+                "Empleado {Nombre} procesado - Bruto: {Bruto}",
+                empleado.Nombre, empleadoDto.SalarioBruto);
+
+            return new EmployeeCalculation(empleadoModel, deductions, benefits, tax);
+        }
+
+        private async Task SavePayrollResultsAsync(Payroll payroll, PayrollCalculationResult calculationResult)
+        {
+            var payments = calculationResult.ToPayments(payroll.PayrollId); 
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
             payroll.IsCalculated = true;
-            payroll.TotalAmount = processingResult.TotalAmount;
+            payroll.TotalAmount = calculationResult.TotalAmount;
             payroll.LastModified = DateTime.Now;
 
             await _payrollRepository.UpdatePayrollAsync(payroll);
 
             _logger.LogInformation(
                 "Planilla {PayrollId} guardada - Total: {TotalAmount}, Empleados: {EmployeeCount}",
-                payroll.PayrollId, payroll.TotalAmount, processingResult.ProcessedEmployees);
+                payroll.PayrollId, payroll.TotalAmount, calculationResult.ProcessedEmployees);
+        }
+
+        private async Task<decimal> ObtenerSalarioEmpleado(int cedula)
+        {
+            //Implementar para obtener salario real
+            return 500000;
         }
     }
 }
