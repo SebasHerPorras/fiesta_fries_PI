@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using backend.Models.Payroll;
 using backend.Interfaces;
 using Microsoft.Extensions.Configuration;
