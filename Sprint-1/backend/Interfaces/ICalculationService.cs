@@ -1,4 +1,6 @@
-﻿namespace backend.Interfaces.Services
+﻿using backend.Models;
+
+namespace backend.Interfaces.Services
 {
     public interface ICalculationService
     {
