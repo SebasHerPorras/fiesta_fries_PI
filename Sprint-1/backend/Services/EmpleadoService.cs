@@ -1,7 +1,7 @@
 using System;
 using backend.Models;
 using backend.Repositories;
-using backend.Interfaces;
+using backend.Interfaces.Services;
 using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
