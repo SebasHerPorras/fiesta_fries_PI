@@ -46,7 +46,7 @@ namespace backend.Controllers
         {
             EmailEmployeeNotificationService service = new EmailEmployeeNotificationService();
 
-            service.sendEmail(request);
+            service.buildEmail(request);
 
             return Ok();
         }
