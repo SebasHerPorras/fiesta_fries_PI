@@ -1,6 +1,6 @@
 ﻿using backend.Models.Payroll.Requests;
 using backend.Models.Payroll.Results;
-using backend.Interfaces.Repositories;
+using backend.Interfaces;
 using backend.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
