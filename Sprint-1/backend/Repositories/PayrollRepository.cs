@@ -1,29 +1,29 @@
-﻿using Dapper;
-using Microsoft.Data.SqlClient;
+﻿using backend.Interfaces;
 using backend.Models.Payroll;
-using backend.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Dapper;
 using Microsoft.Extensions.Logging;
+using System.Data;
+using System.Data.Common;
+using System.Data.SqlClient;
 
 namespace backend.Repositories
 {
     public class PayrollRepository : IPayrollRepository
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
         private readonly ILogger<PayrollRepository> _logger;
 
         public PayrollRepository(
-            IConfiguration configuration,
+            IDbConnectionFactory connectionFactory,
             ILogger<PayrollRepository> logger)
         {
-            _connectionString = configuration.GetConnectionString("UserContext")
-                ?? throw new ArgumentNullException(nameof(configuration), "Connection string not found");
+            _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Payroll?> GetByPeriodAndCompanyAsync(DateTime periodDate, long companyId)
         {
-            using var connection = CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
                 SELECT 
@@ -60,7 +60,7 @@ namespace backend.Repositories
 
         public async Task<int> CreatePayrollAsync(Payroll payroll)
         {
-            using var connection = CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
                 INSERT INTO Payroll (PeriodDate, CompanyId, ApprovedBy, LastModified)
@@ -92,7 +92,7 @@ namespace backend.Repositories
 
         public async Task UpdatePayrollAsync(Payroll payroll)
         {
-            using var connection = CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
                 UPDATE Payroll 
@@ -129,23 +129,24 @@ namespace backend.Repositories
                 return new List<PayrollPayment>();
             }
 
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
+            using var connection = _connectionFactory.CreateConnection();
 
-            using var transaction = await connection.BeginTransactionAsync();
+            var sqlConnection = (SqlConnection)connection;
+            await sqlConnection.OpenAsync();
+
+            using var transaction = await sqlConnection.BeginTransactionAsync();
 
             try
             {
-                const string procedureName = "sp_CreatePayrollPayment";
                 var result = new List<PayrollPayment>();
 
-                _logger.LogInformation("Iniciando creación de {PaymentCount} pagos mediante procedure {ProcedureName}",
-                    payments.Count, procedureName);
+                _logger.LogInformation("Iniciando creación de {PaymentCount} pagos mediante procedure sp_CreatePayrollPayment",
+                    payments.Count);
 
                 foreach (var payment in payments)
                 {
                     var createdPayment = await ExecutePaymentProcedureAsync(
-                        connection, transaction, procedureName, payment);
+                        sqlConnection, transaction, payment);
 
                     result.Add(createdPayment);
                 }
@@ -165,7 +166,7 @@ namespace backend.Repositories
 
         public async Task<List<PayrollPayment>> GetPayrollDetailsAsync(int payrollId)
         {
-            using var connection = CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
                 SELECT 
@@ -201,7 +202,7 @@ namespace backend.Repositories
 
         public async Task<bool> VerifyProcedureExistsAsync()
         {
-            using var connection = CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
                 SELECT COUNT(*) 
@@ -225,6 +226,43 @@ namespace backend.Repositories
             }
         }
 
- 
+        #region Private Methods
+
+        private async Task<PayrollPayment> ExecutePaymentProcedureAsync(
+            SqlConnection connection,
+            DbTransaction transaction,
+            PayrollPayment payment)
+        {
+            const string query = "EXEC sp_CreatePayrollPayment @PayrollId, @EmployeeId, @GrossSalary, @DeductionsAmount, @BenefitsAmount, @NetSalary";
+
+            try
+            {
+                var parameters = new
+                {
+                    payment.PayrollId,
+                    payment.EmployeeId,
+                    payment.GrossSalary,
+                    payment.DeductionsAmount,
+                    payment.BenefitsAmount,
+                    payment.NetSalary
+                };
+
+                var createdPayment = await connection.QuerySingleAsync<PayrollPayment>(
+                    query, parameters, transaction);
+
+                _logger.LogDebug("Pago creado exitosamente - Planilla: {PayrollId}, Empleado: {EmployeeId}, Neto: {NetSalary}",
+                    payment.PayrollId, payment.EmployeeId, payment.NetSalary);
+
+                return createdPayment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error ejecutando procedure para pago - Planilla: {PayrollId}, Empleado: {EmployeeId}",
+                    payment.PayrollId, payment.EmployeeId);
+                throw;
+            }
+        }
+
+        #endregion
     }
 }
