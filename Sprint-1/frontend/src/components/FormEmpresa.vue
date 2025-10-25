@@ -158,6 +158,7 @@
 
 <script>
 import axios from "axios";
+import { API_ENDPOINTS } from "../config/apiConfig";
 
 export default {
   name: 'FormEmpresa',
@@ -413,9 +414,10 @@ export default {
         
         console.log('Datos completos a enviar:', requestData);
         
+
         const response = await axios.post(
-          "https://localhost:7056/api/Empresa", 
-          requestData,  
+          API_ENDPOINTS.CREATE_EMPRESA,
+          requestData,
           {
             headers: { "Content-Type": "application/json" }
           }

@@ -44,7 +44,6 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] GetByEmpresa: {ex.Message}");
                 return new List<EmpleadoListDto>();
             }
         }

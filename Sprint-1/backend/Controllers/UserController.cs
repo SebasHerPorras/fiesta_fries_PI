@@ -85,7 +85,7 @@ namespace backend.Controllers
                 secondName = persona.secondName,
                 phoneNumber = persona.personalPhone
             });
-        
+
         }
 
         [HttpPost("create")]
@@ -232,42 +232,61 @@ namespace backend.Controllers
 
         }
 
+        [HttpPost("createEmployer")]
+        public ActionResult CreateEmployer([FromBody] UserModel request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.PasswordHash))
+            {
+                return BadRequest("Email y password son requeridos");
+            }
 
-        [HttpGet("emailE")]
-        public ActionResult SendE([FromQuery] string email, string puesto, string tipoEmpleo, int salario, string fechaC, long idC, string departamento)
+
+            Guid userId = Guid.NewGuid();
+            var userEmail = request.Email.Trim();
+            var userPasswordHash = request.PasswordHash.Trim();
+
+
+            this.userService.CreateUser(userId, userEmail, userPasswordHash);
+
+            return Ok(new { id = userId, email = userEmail });
+        }
+
+        [HttpPost("notifyEmployer")]
+        public ActionResult notifyEmployer([FromBody] UserModel request)
         {
             var token = Guid.NewGuid().ToString();
-            DateTime expiration = DateTime.UtcNow.AddDays(3); 
-            var mailTokenVerificationE = new EmailModelE
-            { 
+
+            DateTime expiration = DateTime.Now.AddDays(3);
+
+            var mailTokenVerification = new MailModel
+            {
+                userID = request.Id,
                 token = token,
-                expirationDate = expiration,
+                experationDate = expiration
             };
 
-
-            //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
-            var mailRepository = new EmailRepositoryE();
+            var mailRepository = new MailRepository();
 
 
-            mailRepository.insertMailNoty(mailTokenVerificationE);
+
+            mailRepository.insertMailNoty(mailTokenVerification);
 
             Console.WriteLine("Query realizado con éxito\n");
 
-            //preparamos el link al api donde vamos a manejar la vaina
-            var verificationLink = $"http://localhost:5081/api/user/verifye?token={token}&email={email}&puesto={puesto}&tipoEmpleo={tipoEmpleo}&salario={salario}&fechaC={fechaC}&idC={idC}&departamento={departamento}";
+            var verificationLink = $"http://localhost:5081/api/user/verify?token={token}";
 
-            // vamo a enviar el correo
             var mailAddr = new MailAddress("pruebadisenosoft@gmail.com", "Fiesta Fries");
 
-            var sendTo = new MailAddress(email);
+            var sendTo = new MailAddress(request.Email.Trim());
 
             const string password = "rxhd qmzc uvxi sxmg";
 
-            const string subject = "Invitación a ser parte de la empresa";
+            const string subject = "Verificación de invitacón de empleado Fiesta Fries";
 
-            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
 
-            // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
+
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de Empleado para finalizar el proceso de creación de tu cuenta: {verificationLink} tus credenciales de inicio de sesión son las siguientes: email: {request.Email.Trim()} constraseña:{request.PasswordHash.Trim()}";
+
             var smtp = new SmtpClient
             {
                 Host = "smtp.gmail.com",
@@ -275,12 +294,9 @@ namespace backend.Controllers
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
                 UseDefaultCredentials = false,
-                //Estos son la credenciales que generamos anteriormente 
                 Credentials = new NetworkCredential(mailAddr.Address, password)
             };
 
-            //Aquí vamos a enviar la vaina
-            //Le indicamos que vamos a enviar 
             using (var message = new MailMessage(mailAddr, sendTo)
             {
                 Subject = subject,
@@ -289,33 +305,8 @@ namespace backend.Controllers
             {
                 smtp.Send(message);
             }
-
             return Ok();
-        } 
-
-        [HttpGet("verifyE")]
-        public ActionResult VerifyE([FromQuery] string token, string email, string puesto, string tipoEmpleo, int salario, string fechaC, long idC, string departamento)
-        {
-
-            var repo = new EmailRepositoryE();
-
-            Console.WriteLine(token);
-
-            var verificationMail = repo.getByToken(token);
-
-            /// Aquí hacemos las validaciones para el token
-            /// 
-            if (verificationMail == null || verificationMail.expirationDate < DateTime.UtcNow)
-            {
-                return BadRequest("El token es nulo o ya caducó");
-            }
-
-            string redirectingUrl = $"http://localhost:8080/LogInEmpleado/?email={email}&puesto={puesto}&tipoEmpleo={tipoEmpleo}&salario={salario}&fechaC={fechaC}&idC={idC}&departamento={departamento}";
-
-            return Redirect(redirectingUrl);
-
         }
-       
     }
 
 }

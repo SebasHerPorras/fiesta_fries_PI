@@ -1,4 +1,7 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using backend.Interfaces;
+using backend.Services;
+
+var builder = WebApplication.CreateBuilder(args);
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -18,7 +21,21 @@ builder.Services.AddCors(options =>
 // Añadir controladores
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+    { 
+        Title = "Fiesta Fries API", 
+        Version = "v1",
+        Description = "API para el cálculo de deducciones patronales y gestión de empleados"
+    });
+});
+
+// ===== REGISTRO DE DEPENDENCIAS =====
+// Registrar interfaces y sus implementaciones
+builder.Services.AddScoped<IEmployerSocialSecurityContributionsService, EmployerSocialSecurityContributionsService>();
+builder.Services.AddScoped<IEmployerSocialSecurityByPayrollService, EmployerSocialSecurityByPayrollService>();
+builder.Services.AddScoped<ICalculatorDeductionsEmployerService, CalculatorDeductionsEmployerService>();
 
 var app = builder.Build();
 
@@ -26,19 +43,17 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fiesta Fries API v1");
+        c.RoutePrefix = "swagger";
+    });
 }
 
-// Comentamos HTTPS redirection en desarrollo
-// app.UseHttpsRedirection();
-
 app.UseCors(MyAllowSpecificOrigins);
-
 app.UseAuthorization();
-
 app.MapControllers();
 
-// Escuchar solo en HTTP
 app.Urls.Clear();
 app.Urls.Add("http://localhost:5081");
 app.Urls.Add("https://localhost:7056");
