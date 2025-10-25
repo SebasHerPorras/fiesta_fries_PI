@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Services
 {
-    public class EmpleadoService
+    public class EmpleadoService : IEmployeeService
     {
         private readonly string _connectionString;
         private readonly PersonService _personService;
