@@ -23,18 +23,18 @@
     }
 
     public record EmployeeCalculation(
-        Employee Employee,
+        EmpleadoModel Employee,
         decimal Deductions,
         decimal Benefits,
         decimal Tax)
     {
-        public decimal NetSalary => Employee.Salary - Deductions + Benefits - Tax;
+        public decimal NetSalary => Employee.salary - Deductions + Benefits - Tax;
 
         public PayrollPayment ToPayment(int payrollId) => new()
         {
             PayrollId = payrollId,
-            EmployeeId = Employee.Id,
-            GrossSalary = Employee.Salary,
+            EmployeeId = Employee.id,
+            GrossSalary = Employee.salary,
             DeductionsAmount = Deductions,
             BenefitsAmount = Benefits,
             NetSalary = NetSalary,
