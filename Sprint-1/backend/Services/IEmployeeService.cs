@@ -4,6 +4,6 @@ namespace backend.Interfaces.Services
 {
     public interface IEmployeeService
     {
-        List<EmpleadoListDto> GetByEmpresa(long cedulaJuridica);
+        List<EmployeeCalculationDto> GetByEmpresa(long cedulaJuridica);
     }
 }
