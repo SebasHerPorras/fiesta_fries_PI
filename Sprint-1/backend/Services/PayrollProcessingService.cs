@@ -59,8 +59,8 @@ namespace backend.Services
                 return PayrollValidationResult.AsError(existingPayroll, details);
             }
 
-            var employees = await _employeeService.GetEmployeesByCompanyAsync(request.CompanyId);
-            if (!employees.Any())
+            var empleados = _employeeService.GetByEmpresa(request.CompanyId);
+            if (!empleados.Any())
                 return PayrollValidationResult.AsError("No hay empleados para procesar la planilla.");
 
             return PayrollValidationResult.AsValid();
@@ -86,12 +86,12 @@ namespace backend.Services
 
         private async Task<PayrollProcessingResult> ProcessEmployeesAsync(PayrollProcessRequest request, int payrollId)
         {
-            var employees = await _employeeService.GetEmployeesByCompanyAsync(request.CompanyId);
+            var empleados = _employeeService.GetByEmpresa(request.CompanyId);
             var result = new PayrollProcessingResult();
 
-            _logger.LogDebug("Procesando {EmployeeCount} empleados", employees.Count);
+            _logger.LogDebug("Procesando {EmployeeCount} empleados", empleados.Count);
 
-            foreach (var employee in employees)
+            foreach (var empleado in empleados)
             {
                 var employeeResult = await ProcessSingleEmployeeAsync(employee, request.CompanyId, payrollId);
                 result.AddEmployeeResult(employeeResult);
@@ -101,18 +101,18 @@ namespace backend.Services
         }
 
         private async Task<EmployeeProcessingResult> ProcessSingleEmployeeAsync(
-            Employee employee, long companyId, int payrollId)
+             EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            var deductions = await _calculationService.CalculateDeductionsAsync(employee.Id, companyId, payrollId);
-            var benefits = await _calculationService.CalculateBenefitsAsync(employee.Id, companyId, payrollId);
-            var tax = await _calculationService.CalculateIncomeTaxAsync(employee.Id, companyId, payrollId);
-            var netSalary = employee.Salary - deductions + benefits - tax;
+            var deductions = await _calculationService.CalculateDeductionsAsync(empleado, companyId, payrollId);
+            var benefits = await _calculationService.CalculateBenefitsAsync(empleado, companyId, payrollId);
+            var tax = await _calculationService.CalculateIncomeTaxAsync(empleado, companyId, payrollId);
+            var netSalary = empleado.SalarioBruto - deductions + benefits - tax;
 
             _logger.LogDebug(
-                "Empleado {EmployeeId}: Salario={Salary}, Deducciones={Deductions}, Beneficios={Benefits}, Tax={Tax}, Neto={Net}",
-                employee.Id, employee.Salary, deductions, benefits, tax, netSalary);
+                "Empleado {Nombre}: Bruto={SalarioBruto}, Deducciones={Deductions}, Beneficios={Benefits}, Tax={Tax}, Neto={Neto}",
+                empleado.NombreEmpleado, empleado.SalarioBruto, deductions, benefits, tax, netSalary);
 
-            return new EmployeeProcessingResult(employee, deductions, benefits, tax, netSalary);
+            return new EmployeeProcessingResult(empleado, deductions, benefits, tax, netSalary);
         }
 
         private async Task SavePayrollResultsAsync(Payroll payroll, PayrollProcessingResult processingResult)
@@ -173,7 +173,7 @@ namespace backend.Services
     }
 
     public record EmployeeProcessingResult(
-        Employee Employee,
+        EmployeeCalculationDto Empleado,
         decimal Deductions,
         decimal Benefits,
         decimal Tax,
@@ -182,8 +182,8 @@ namespace backend.Services
         public PayrollPayment ToPayrollPayment(int payrollId) => new()
         {
             PayrollId = payrollId,
-            EmployeeId = Employee.Id,
-            GrossSalary = Employee.Salary,
+            EmployeeId = (int)Empleado.CedulaEmpleado,
+            GrossSalary = Empleado.SalarioBruto,
             DeductionsAmount = Deductions,
             BenefitsAmount = Benefits,
             NetSalary = NetSalary,
