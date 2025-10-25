@@ -1,4 +1,5 @@
 ﻿using backend.Models.Payroll.Results;
+using backend.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
 namespace backend.Services
@@ -12,20 +13,20 @@ namespace backend.Services
             _logger = logger;
         }
 
-        public PayrollProcessResult CreateSuccessResult(int payrollId, PayrollProcessingResult processingResult)
+        public PayrollProcessResult CreateSuccessResult(int payrollId, decimal totalAmount, int processedEmployees)
         {
             _logger.LogDebug("Creando resultado exitoso para planilla {PayrollId}", payrollId);
 
             return new PayrollProcessResult
             {
                 Success = true,
-                Message = "Cálculo de nómina completado.",
+                Message = $"Cálculo de nómina completado - Empleados: {processedEmployees}, Total: {totalAmount:C}",
                 PayrollId = payrollId,
-                TotalAmount = processingResult.TotalAmount,
-                ProcessedEmployees = processingResult.ProcessedEmployees,
-                TotalDeductions = processingResult.TotalDeductions,
-                TotalBenefits = processingResult.TotalBenefits,
-                TotalTax = processingResult.TotalTax
+                TotalAmount = totalAmount,
+                ProcessedEmployees = processedEmployees,
+                TotalDeductions = 0, 
+                TotalBenefits = 0,
+                TotalTax = 0
             };
         }
 
