@@ -1,5 +1,8 @@
 ﻿using backend.Interfaces;
+using backend.Interfaces.Services;
+using backend.Repositories;
 using backend.Services;
+using backend.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,12 +39,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IEmployerSocialSecurityContributionsService, EmployerSocialSecurityContributionsService>();
 builder.Services.AddScoped<IEmployerSocialSecurityByPayrollService, EmployerSocialSecurityByPayrollService>();
 builder.Services.AddScoped<ICalculatorDeductionsEmployerService, CalculatorDeductionsEmployerService>();
+
 builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 builder.Services.AddScoped<ICalculationService, CalculationService>();
 builder.Services.AddScoped<IEmployeeService, EmpleadoService>();
 builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>();
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
+
+builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
 var app = builder.Build();
 
