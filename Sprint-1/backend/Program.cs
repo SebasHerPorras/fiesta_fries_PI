@@ -36,6 +36,12 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IEmployerSocialSecurityContributionsService, EmployerSocialSecurityContributionsService>();
 builder.Services.AddScoped<IEmployerSocialSecurityByPayrollService, EmployerSocialSecurityByPayrollService>();
 builder.Services.AddScoped<ICalculatorDeductionsEmployerService, CalculatorDeductionsEmployerService>();
+builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
+builder.Services.AddScoped<ICalculationService, CalculationService>();
+builder.Services.AddScoped<IEmployeeService, EmpleadoService>();
+builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>();
+builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
+builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 
 var app = builder.Build();
 
