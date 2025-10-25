@@ -1,7 +1,7 @@
 ﻿using Dapper;
-using Microsoft.Data.SqlClient;
+using System.Data.SqlClient;
 using backend.Models.Payroll;
-using backend.Interfaces.Repositories;
+using backend.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -225,49 +225,6 @@ namespace backend.Repositories
             }
         }
 
-        #region Private Methods
-
-        private SqlConnection CreateConnection()
-        {
-            return new SqlConnection(_connectionString);
-        }
-
-        private async Task<PayrollPayment> ExecutePaymentProcedureAsync(
-            SqlConnection connection,
-            SqlTransaction transaction,
-            string procedureName,
-            PayrollPayment payment)
-        {
-            const string query = "EXEC sp_CreatePayrollPayment @PayrollId, @EmployeeId, @GrossSalary, @DeductionsAmount, @BenefitsAmount, @NetSalary";
-
-            try
-            {
-                var parameters = new
-                {
-                    payment.PayrollId,
-                    payment.EmployeeId,
-                    payment.GrossSalary,
-                    payment.DeductionsAmount,
-                    payment.BenefitsAmount,
-                    payment.NetSalary
-                };
-
-                var createdPayment = await connection.QuerySingleAsync<PayrollPayment>(
-                    query, parameters, transaction);
-
-                _logger.LogDebug("Pago creado exitosamente - Planilla: {PayrollId}, Empleado: {EmployeeId}, Neto: {NetSalary}",
-                    payment.PayrollId, payment.EmployeeId, payment.NetSalary);
-
-                return createdPayment;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error ejecutando procedure para pago - Planilla: {PayrollId}, Empleado: {EmployeeId}",
-                    payment.PayrollId, payment.EmployeeId);
-                throw;
-            }
-        }
-
-        #endregion
+ 
     }
 }
