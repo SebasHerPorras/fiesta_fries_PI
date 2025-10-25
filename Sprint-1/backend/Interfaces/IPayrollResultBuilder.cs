@@ -4,7 +4,7 @@ namespace backend.Interfaces.Services
 {
     public interface IPayrollResultBuilder
     {
-        PayrollProcessResult CreateSuccessResult(int payrollId, PayrollProcessingResult processingResult);
+        PayrollProcessResult CreateSuccessResult(int payrollId, PayrollProcessResult processingResult);
         PayrollProcessResult CreateErrorResult(string message);
     }
 }
