@@ -1,4 +1,6 @@
-﻿public interface IPayrollRepository
+﻿using backend.Models.Payroll;
+
+public interface IPayrollRepository
 {
     Task<Payroll?> GetByPeriodAndCompanyAsync(DateTime periodDate, long companyId);
     Task<int> CreatePayrollAsync(Payroll payroll);
