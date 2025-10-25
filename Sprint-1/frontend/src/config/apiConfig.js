@@ -44,10 +44,10 @@ export const API_ENDPOINTS = {
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
   USER_EMAIL_VERIFY: (email) =>
     `${buildApiUrl("user/emailverify")}?email=${encodeURIComponent(email)}`,
-  USER_CREATE_EMPLOYER: buildApiUrl("user/createEmployer"),
+  USER_CREATE_EMPLOYER: buildApiUrl("user/createUserEmployer"),
   PERSON_CREATE: buildApiUrl("person/create"),
   EMPLEADO_CREATE_WITH_PERSON: buildApiUrl("Empleado/create-with-person"),
-  USER_NOTIFY_EMPLOYER: buildApiUrl("user/notifyEmployer"),
+  USER_NOTIFY_EMPLOYER: buildApiUrl("Empleado/EmailNotificationMessage"),
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),
   EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),

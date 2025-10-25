@@ -39,5 +39,18 @@ namespace backend.Controllers
             Console.Write(empleados);
             return Ok(empleados);
         }
+
+
+        [HttpPost("EmailNotificationMessage")]
+        public ActionResult notyfyEmployer(UserModel request)
+        {
+            EmailEmployeeNotificationService service = new EmailEmployeeNotificationService();
+
+            service.sendEmail(request);
+
+            return Ok();
+        }
+
+
     }
 }
