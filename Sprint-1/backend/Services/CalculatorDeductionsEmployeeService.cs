@@ -38,8 +38,6 @@ namespace backend.Services
             // Verificar si es empleado "Por horas" (servicio profesional) - NO aplican deducciones
             if (string.Equals(empleado.TipoEmpleado?.Trim(), "Por horas", StringComparison.OrdinalIgnoreCase))
             {
-                // Para empleados por horas no se aplican deducciones de CCSS ni impuesto sobre la renta
-                // Solo guardamos un registro informativo
                 deducciones.Add(new EmployeeDeductionsByPayrollDto
                 {
                     ReportId = idReporte,
@@ -54,7 +52,6 @@ namespace backend.Services
                 return 0;
             }
 
-            // 1. Calcular deducciones CCSS (5.5% salud + 4% pensiones) - Solo para empleados regulares
             foreach (var deduccionSocial in _deduccionesSociales)
             {
                 var monto = Math.Round(empleado.SalarioBruto * deduccionSocial.Percentage, 2);
@@ -88,8 +85,6 @@ namespace backend.Services
 
                 totalDeducciones += impuestoRenta;
             }
-
-            // 3. Guardar en base de datos
             _payrollService.SaveEmployeeDeductions(deducciones);
 
             return Math.Round(totalDeducciones, 2);
