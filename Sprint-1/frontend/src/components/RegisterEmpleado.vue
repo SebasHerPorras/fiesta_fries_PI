@@ -193,7 +193,6 @@
 </form>
         </main>
 
-        <!-- Aquí vamo a dejar el footer -->
         <footer>
             <div>©2025 Fiesta Fries</div>
             <div class="socials">
@@ -378,41 +377,6 @@
             ShowIDFomratError(message) {
                 this.idFormatError = message;
             },
-            getDepartament() {
-                const get = this.$route.query.departamento || "";
-                this.departament = get;
-                console.log(this.departament);
-            },
-            getIdcrl() {
-                const get = this.$route.query.idC || "";
-                this.idC = get;
-                console.log(this.idC);
-            },
-            getDateUrl() {
-                const getDateFromUrl = this.$route.query.fechaC || "";
-                this.date = getDateFromUrl;
-                console.log(this.date);
-            },
-            getSalaryUrl() {
-                const getSalaryUrl = this.$route.query.salario || "";
-                this.salary = getSalaryUrl;
-                console.log(this.salary);
-            },
-            getType() {
-                const getTypeUrl = this.$route.query.tipoEmpleo || "";
-                this.employmentType = getTypeUrl;
-                console.log(getTypeUrl);
-            },
-            getEmailUrl() {
-                const getEmailFromUrl = this.$route.query.email || "";
-                this.email = getEmailFromUrl;
-                console.log(this.email);
-            },
-            getPuestoURL() {
-                const getPuestoFromUrl = this.$route.query.puesto || "";
-                this.workstation = getPuestoFromUrl;
-                console.log(getPuestoFromUrl);
-            },
             validatePassword(password) {
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
@@ -431,8 +395,6 @@
                 this.passwordConfirmationError = message;
             },
             isAdult(birthDate) {
-                //El día de hoy
-
                 const today = new Date();
                 const birth = new Date(birthDate);
                 console.log(today);
@@ -475,9 +437,7 @@
                 this.directionError = message;
             },
             async validateID() {
-                // tengo que llamar aquí a la api
                 const validateidurl = API_ENDPOINTS.ID_VALIDATE;
-                console.log("Entra aquí jijij");
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
                 const response = await axios.post(validateidurl, ageInt, { headers: { "Content-Type": "application/json" } });
@@ -485,9 +445,7 @@
 
                 console.log(response);
                 if (response.data.result) {
-                    // tengo que llamar al método que haga return ojito
                     this.showidError();
-
                     return false;
                 }
 
@@ -535,13 +493,13 @@
             loadUserFromLocalStorage() {
                 const stored = localStorage.getItem("userData");
                 if (!stored) {
-                    this.$router.push("/"); // si no hay sesión, redirige
+                    this.$router.push("/"); 
                     return;
                 }
                 const userData = JSON.parse(stored);
 
                 this.userName = `${userData.firstName} ${userData.secondName}`;
-                this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
+                this.userRole = userData.personType;
             },
 
             async validateEmail() {
