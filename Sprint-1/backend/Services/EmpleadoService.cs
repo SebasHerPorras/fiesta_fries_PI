@@ -93,5 +93,13 @@ namespace backend.Services
             var empleadoRepository = new EmpleadoRepository();
             return empleadoRepository.GetByEmpresa(cedulaJuridica);
         }
+
+        public async Task<decimal> GetSalarioBrutoAsync(int cedulaEmpleado)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = "SELECT salary FROM Empleado WHERE id = @Cedula";
+            var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
+            return salario ?? 0;
+        }
     }
 }
