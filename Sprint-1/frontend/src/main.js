@@ -11,7 +11,7 @@ import FormBeneficios from "./components/FormBeneficios.vue";
 import RegisterHoras from "./components/RegisterHoras.vue";
 import SelectBeneficios from "./components/SelectBeneficios.vue";
 
-const DEVELOPMENT_MODE = false;
+const DEVELOPMENT_MODE = true;
 
 const router = createRouter({
   history: createWebHistory(),

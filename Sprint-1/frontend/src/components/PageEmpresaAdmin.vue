@@ -190,7 +190,8 @@
 
 
 <script>
-import axios from 'axios';
+import axios from "axios";
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: 'EmpresaAdmin',
@@ -243,7 +244,7 @@ export default {
         console.log('Cargando empleados para empresa:', this.selectedCompanyCedula);
         
         // Usar la cédula de la empresa para obtener empleados
-        const response = await axios.get(`http://localhost:5081/api/Empleado/empresa/${this.selectedCompanyCedula}`);
+        const response = await axios.get(API_ENDPOINTS.EMPLEADOS(this.selectedCompanyCedula));
 
         console.log('Respuesta empleados:', response.data);
         
@@ -308,8 +309,8 @@ export default {
   this.loading = true;
   try {
     console.log('Cargando beneficios para empresa:', this.selectedCompanyCedula);
-    
-    const response = await axios.get(`http://localhost:5081/api/Beneficio/por-empresa/${this.selectedCompanyCedula}`);
+
+    const response = await axios.get(API_ENDPOINTS.BENEFICIOS_POR_EMPRESA(this.selectedCompanyCedula));
 
     console.log('Respuesta completa:', response);
     console.log('Datos de beneficios:', response.data);

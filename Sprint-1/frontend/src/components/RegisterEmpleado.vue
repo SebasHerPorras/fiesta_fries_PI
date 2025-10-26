@@ -193,7 +193,6 @@
 </form>
         </main>
 
-        <!-- Aquí vamo a dejar el footer -->
         <footer>
             <div>©2025 Fiesta Fries</div>
             <div class="socials">
@@ -207,7 +206,8 @@
 </template>
 
 <script>
-    import axios from 'axios';
+    import axios from "axios";
+    import { API_ENDPOINTS } from '../config/apiConfig';
 
     export default {
         name: "RegistrarEmpleado",
@@ -377,41 +377,6 @@
             ShowIDFomratError(message) {
                 this.idFormatError = message;
             },
-            getDepartament() {
-                const get = this.$route.query.departamento || "";
-                this.departament = get;
-                console.log(this.departament);
-            },
-            getIdcrl() {
-                const get = this.$route.query.idC || "";
-                this.idC = get;
-                console.log(this.idC);
-            },
-            getDateUrl() {
-                const getDateFromUrl = this.$route.query.fechaC || "";
-                this.date = getDateFromUrl;
-                console.log(this.date);
-            },
-            getSalaryUrl() {
-                const getSalaryUrl = this.$route.query.salario || "";
-                this.salary = getSalaryUrl;
-                console.log(this.salary);
-            },
-            getType() {
-                const getTypeUrl = this.$route.query.tipoEmpleo || "";
-                this.employmentType = getTypeUrl;
-                console.log(getTypeUrl);
-            },
-            getEmailUrl() {
-                const getEmailFromUrl = this.$route.query.email || "";
-                this.email = getEmailFromUrl;
-                console.log(this.email);
-            },
-            getPuestoURL() {
-                const getPuestoFromUrl = this.$route.query.puesto || "";
-                this.workstation = getPuestoFromUrl;
-                console.log(getPuestoFromUrl);
-            },
             validatePassword(password) {
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
@@ -430,8 +395,6 @@
                 this.passwordConfirmationError = message;
             },
             isAdult(birthDate) {
-                //El día de hoy
-
                 const today = new Date();
                 const birth = new Date(birthDate);
                 console.log(today);
@@ -474,9 +437,7 @@
                 this.directionError = message;
             },
             async validateID() {
-                // tengo que llamar aquí a la api
-                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
-                console.log("Entra aquí jijij");
+                const validateidurl = API_ENDPOINTS.ID_VALIDATE;
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
                 const response = await axios.post(validateidurl, ageInt, { headers: { "Content-Type": "application/json" } });
@@ -484,9 +445,7 @@
 
                 console.log(response);
                 if (response.data.result) {
-                    // tengo que llamar al método que haga return ojito
                     this.showidError();
-
                     return false;
                 }
 
@@ -534,17 +493,17 @@
             loadUserFromLocalStorage() {
                 const stored = localStorage.getItem("userData");
                 if (!stored) {
-                    this.$router.push("/"); // si no hay sesión, redirige
+                    this.$router.push("/"); 
                     return;
                 }
                 const userData = JSON.parse(stored);
 
                 this.userName = `${userData.firstName} ${userData.secondName}`;
-                this.userRole = userData.personType; // Ej: "Empleador" o "Empleado"
+                this.userRole = userData.personType;
             },
 
             async validateEmail() {
-                const validateEmailUrl = `http://localhost:5081/api/user/emailverify?email=${encodeURIComponent(this.form.email)}`;
+                const validateEmailUrl = API_ENDPOINTS.USER_EMAIL_VERIFY(this.form.email);
 
                 const response = await axios.get(validateEmailUrl);
 
@@ -633,7 +592,7 @@
                     Email: this.form.email.trim(),
                     PasswordHash: this.form.password
                 };
-                const userUrl = "http://localhost:5081/api/user/createEmployer";
+                const userUrl = API_ENDPOINTS.USER_CREATE_EMPLOYER;
 
                 let userResponse = await axios.post(userUrl, userData);
 
@@ -655,8 +614,8 @@
                     personType: "Empleado",
                     direction: this.form.direction,
                 };
-
-                const personUrl = "http://localhost:5081/api/person/create";
+                
+                const personUrl = API_ENDPOINTS.PERSON_CREATE;
 
                 await axios.post(personUrl, personData);
 
@@ -686,7 +645,7 @@
                     departament: this.form.departament,
                 };
 
-                const empleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
+                const empleadoUrl = API_ENDPOINTS.EMPLEADO_CREATE_WITH_PERSON;
 
                 await axios.post(empleadoUrl, empleado);
 
@@ -699,7 +658,7 @@
                     Id: userId
                 };
 
-                const emailUrl = "http://localhost:5081/api/user/notifyEmployer";
+                const emailUrl = API_ENDPOINTS.USER_NOTIFY_EMPLOYER;
 
                 await axios.post(emailUrl, userData);
             },

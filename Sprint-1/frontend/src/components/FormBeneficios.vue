@@ -122,6 +122,7 @@
 
 <script>
 import axios from "axios";
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: 'FormBeneficios',
@@ -362,9 +363,7 @@ export default {
         console.log('Datos completos a enviar:', requestData);
         console.log('JSON completo request:', JSON.stringify(requestData));
         
-        const response = await axios.post(
-          "https://localhost:7056/api/Beneficio", 
-          requestData,  
+        const response = await axios.post(API_ENDPOINTS.CREATE_BENEFICIO, requestData,  
           {
             headers: { "Content-Type": "application/json" }
           }

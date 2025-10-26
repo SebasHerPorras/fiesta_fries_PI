@@ -132,6 +132,7 @@
 
 <script>
    import axios from 'axios';
+   import { API_ENDPOINTS } from '../config/apiConfig';
     export default{
         name: "employerFomr",
         data(){
@@ -193,7 +194,7 @@
                 this.passwordError = message;
             },
             async validateEmail() {
-                const validateEmailUrl = `http://localhost:5081/api/user/emailverify?email=${encodeURIComponent(this.form.email)}`;
+                const validateEmailUrl = API_ENDPOINTS.USER_EMAIL_VERIFY;
 
                 const response = await axios.get(validateEmailUrl);
 
@@ -254,7 +255,7 @@
             },
             async validateID() {
                 // tengo que llamar aquí a la api
-                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
+                const validateidurl = API_ENDPOINTS.ID_VALIDATE;
                 console.log("Entra aquí jijij");
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
@@ -292,7 +293,7 @@
                 //Ojito qe primero vamos 
                try {
                    this.clearErrors();
-                   const createUserUrl = "http://localhost:5081/api/user/create";
+                   const createUserUrl = API_ENDPOINTS.USER_CREATE;
                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
                    const userData = {
                        Email: this.form.email.trim(),
@@ -361,7 +362,7 @@
 
                     this.form.uniqueUser = userId;
 
-                    const personUrl = "http://localhost:5081/api/person/create";
+                    const personUrl = API_ENDPOINTS.PERSON_CREATE;
 
                     const persRes = await axios.post(personUrl, this.form);
                     console.log("Usuario y Persona creados correctamente:");
