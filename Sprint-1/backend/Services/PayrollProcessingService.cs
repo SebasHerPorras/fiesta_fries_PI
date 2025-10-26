@@ -55,8 +55,8 @@ namespace backend.Services
                 return validationResult.ErrorResult!;
 
             var payroll = await CreatePayrollAsync(request);
-            var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId); 
-            await SavePayrollResultsAsync(payroll, calculationResult); 
+            var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
+            await SavePayrollResultsAsync(payroll, calculationResult);
 
             return _resultBuilder.CreateSuccessResult(payroll.PayrollId, calculationResult.TotalAmount, calculationResult.ProcessedEmployees);
         }
@@ -95,7 +95,7 @@ namespace backend.Services
             return result;
         }
 
-        private async Task<EmployeeCalculation> ProcessSingleEmployeeAsync( 
+        private async Task<EmployeeCalculation> ProcessSingleEmployeeAsync(
             EmpleadoListDto empleado, long companyId, int payrollId)
         {
             var empleadoDto = new EmployeeCalculationDto
@@ -129,7 +129,7 @@ namespace backend.Services
 
         private async Task SavePayrollResultsAsync(Payroll payroll, PayrollCalculationResult calculationResult)
         {
-            var payments = calculationResult.ToPayments(payroll.PayrollId); 
+            var payments = calculationResult.ToPayments(payroll.PayrollId);
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
             payroll.IsCalculated = true;
@@ -145,8 +145,20 @@ namespace backend.Services
 
         private async Task<decimal> ObtenerSalarioEmpleado(int cedula)
         {
-            //Implementar para obtener salario real
-            return 500000;
+            try
+            {
+                var salarioBruto = await _employeeService.GetSalarioBrutoAsync(cedula);
+
+                _logger.LogDebug("Salario bruto obtenido: {Salario} para empleado {Cedula}",
+                    salarioBruto, cedula);
+
+                return salarioBruto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo salario para empleado {Cedula}", cedula);
+                return 0;
+            }
         }
     }
 }
