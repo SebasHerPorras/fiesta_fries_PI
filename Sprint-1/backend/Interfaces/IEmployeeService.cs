@@ -6,5 +6,6 @@ namespace backend.Interfaces.Services
     {
         List<EmpleadoListDto> GetByEmpresa(long cedulaJuridica);
         EmpleadoModel CreateEmpleadoWithPersonaAndUser(EmpleadoCreateRequest request);
+        Task<decimal> GetSalarioBrutoAsync(int cedulaEmpleado);
     }
 }
