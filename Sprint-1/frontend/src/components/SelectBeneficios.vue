@@ -63,8 +63,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="beneficio in beneficios" :key="beneficio.idBeneficio" 
-                    :class="{ 'selected': beneficio.elegido }">
+                <tr v-for="beneficio in beneficios" :key="beneficio.idBeneficio" :class="{ 'selected': beneficio.elegido }">
                   <td class="nombre-cell">
                     <strong>{{ beneficio.nombre }}</strong>
                     <div v-if="beneficio.descripcion" class="descripcion">
@@ -92,20 +91,13 @@
                     </span>
                   </td>
                   <td class="accion-cell">
-                    <button 
-                      v-if="!beneficio.elegido"
-                      @click="elegirBeneficio(beneficio)"
-                      class="btn-elegir"
-                      :disabled="elegiendo"
+                    <button
+                      :disabled="!beneficio.canSelect || beneficio.isProcessing"
+                      :class="beneficio.canSelect ? 'btn-primary' : 'btn-disabled'"
+                      @click="onSelectBenefit(beneficio)"
                     >
-                      Elegir
-                    </button>
-                    <button 
-                      v-else
-                      disabled
-                      class="btn-elegido"
-                    >
-                      Seleccionado
+                      <span v-if="beneficio.isProcessing">Procesando...</span>
+                      <span v-else>{{ beneficio.canSelect ? 'Elegir' : 'No disponible' }}</span>
                     </button>
                   </td>
                 </tr>
@@ -143,6 +135,7 @@
 
 <script>
 import axios from "axios";
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: "SelectBeneficios",
@@ -155,23 +148,48 @@ export default {
       loading: false,
       elegiendo: false,
       message: "",
-      messageType: "success"
+      messageType: "success",
+      empleadoId: null // Se obtiene desde backend
     };
   },
   mounted() {
+    console.log("mounted: SelectBeneficios mounted");
     this.loadUserData();
     this.loadSelectedCompany();
-    this.loadBeneficios();
+    this.resolveEmpleadoId().then(() => {
+      console.log("mounted: resolveEmpleadoId finished, empleadoId =", this.empleadoId);
+      if (this.empleadoId) this.loadBeneficios();
+      else console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
+    });
   },
   methods: {
-    loadUserData() {
-      const stored = localStorage.getItem("userData");
-      if (stored) {
-        const userData = JSON.parse(stored);
-        this.userName = `${userData.firstName || ""} ${userData.secondName || ""}`.trim() || "Usuario";
-        this.userRole = userData.personType || "";
+  loadUserData() {
+    console.log("loadUserData: entrando");
+    const guidFromKey = localStorage.getItem("userID");
+
+    const stored = localStorage.getItem("userData");
+    let parsed = null;
+    if (stored) {
+      try {
+        parsed = JSON.parse(stored);
+        console.log("loadUserData: parsed userData =", parsed);
+      } catch (e) {
+        console.error("loadUserData: error parsing userData", e);
       }
-    },
+    }
+
+    this.userUniqueId = guidFromKey || (parsed && (parsed.id || parsed.PK_User || parsed.userID)) || null;
+
+    if (parsed && parsed.personaId) {
+      this.empleadoId = parsed.personaId;
+      console.log("loadUserData: empleadoId tomado de userData.personaId =", this.empleadoId);
+    }
+
+    if (parsed) {
+      this.userName = `${parsed.firstName || ""} ${parsed.secondName || ""}`.trim() || this.userName;
+      this.userRole = parsed.personType || parsed.role || this.userRole;
+    }
+  },
 
     loadSelectedCompany() {
       try {
@@ -191,71 +209,182 @@ export default {
       }
     },
 
+    async resolveEmpleadoId() {
+      if (this.empleadoId) {
+        return;
+      }
+
+      if (!this.userUniqueId) {
+        console.warn("resolveEmpleadoId: no userUniqueId, abortando");
+        return;
+      }
+
+      try {
+        const url = API_ENDPOINTS.PERSON_BY_USER(this.userUniqueId);
+        console.log("resolveEmpleadoId: GET ->", url);
+        const resp = await axios.get(url);
+        const persona = resp?.data?.persona ?? resp?.data ?? null;
+        this.empleadoId = persona?.id ?? persona?.Id ?? null;
+      } catch (err) {
+        console.error("resolveEmpleadoId: error en petición", err);
+      }
+    },
+
     async loadBeneficios() {
-      if (!this.selectedCompany) return;
+      if (!this.empleadoId) {
+        this.showMessage("No se pudo determinar el id del empleado. Imposible cargar beneficios.", "error");
+        return;
+      }
 
       this.loading = true;
       try {
-        console.log("Cargando beneficios para empresa:", this.selectedCompany.cedulaJuridica);
-        
-        const response = await axios.get(
-          `http://localhost:5081/api/Beneficio/por-empresa/${this.selectedCompany.cedulaJuridica}`
+        const beneficiosResponse = await axios.get(
+          API_ENDPOINTS.BENEFICIOS_POR_EMPRESA(this.selectedCompany.cedulaJuridica)
         );
 
-        console.log("Respuesta beneficios:", response.data);
-
         let beneficiosData = [];
-        if (response.data && response.data.success && Array.isArray(response.data.beneficios)) {
-          // Agregar propiedad 'elegido' a cada beneficio
-          beneficiosData = response.data.beneficios.map(beneficio => ({
-            ...beneficio,
-            elegido: false // Por ahora siempre false, luego se cargará desde BD
+        if (beneficiosResponse.data?.success && Array.isArray(beneficiosResponse.data.beneficios)) {
+          beneficiosData = beneficiosResponse.data.beneficios.map(b => ({
+            ...b,
+            elegido: false,
+            canSelect: null,
+            isProcessing: false
           }));
         }
 
+        // Obtener beneficios seleccionados
+        const seleccionadosResponse = await axios.get(
+          API_ENDPOINTS.BENEFICIOS_SELECCIONADOS(this.empleadoId)
+        );
+
+        const seleccionados = seleccionadosResponse.data?.selectedBenefitIds || [];
+        // Marcar los seleccionados
+        beneficiosData = beneficiosData.map(b => ({
+          ...b,
+          elegido: seleccionados.includes(b.idBeneficio)
+        }));
+
         this.beneficios = beneficiosData;
-        
-        if (beneficiosData.length === 0) {
-          this.showMessage("No se encontraron beneficios para tu empresa", "info");
-        } else {
-          this.showMessage(`Se cargaron ${beneficiosData.length} beneficio(s) disponibles`, "success");
+
+        // canSelect por cada beneficio 1 x 1
+        for (const b of this.beneficios) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.checkCanSelectForBenefit(b);
         }
 
+        if (this.beneficios.length === 0) {
+          this.showMessage("No se encontraron beneficios para tu empresa", "info");
+        } else {
+          this.showMessage(`Se cargaron ${this.beneficios.length} beneficio(s) disponibles`, "success");
+        }
       } catch (error) {
         console.error("Error cargando beneficios:", error);
-        let errorMessage = "Error al cargar beneficios";
-        if (error.response?.status === 404) {
-          errorMessage = "No se encontraron beneficios para esta empresa";
-        } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        }
-        this.showMessage(errorMessage, "error");
+        this.showMessage("Error al cargar beneficios", "error");
         this.beneficios = [];
       } finally {
         this.loading = false;
       }
     },
 
+
+    async checkCanSelectForBenefit(benefit) {
+      benefit.canSelect = null;
+      benefit.isProcessing = false;
+
+      if (benefit.elegido) {
+        benefit.canSelect = false;
+        return;
+      }
+
+      if (!this.empleadoId) {
+        benefit.canSelect = false;
+        return;
+      }
+
+      // Normalizar tipo para comparaciones tolerantes
+      const rawTipo = (benefit.tipo || "").toString();
+      const tipo = rawTipo
+        .trim()
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quita tildes
+
+      // aceptar variantes comunes de monto fijo y porcentual
+      const isMontoFijo = tipo === "monto-fijo" || tipo === "monto fijo";
+      const isPorcentual = tipo === "porcentual" || tipo === "porcentaje";
+
+      // Si no es MontoFijo ni Porcentual ni API -> no seleccionable
+      if (!isMontoFijo && !isPorcentual) {
+        // para los tipo "api" dejamos canSelect = false (flujo distinto) = TEMP
+        benefit.canSelect = false;
+        return;
+      }
+
+      try {
+        const url = API_ENDPOINTS.CAN_SELECT_BENEFIT(this.empleadoId, benefit.idBeneficio);
+        const resp = await axios.get(url);
+        benefit.canSelect = !!resp?.data?.canSelect;
+      } catch (err) {
+        console.error("checkCanSelectForBenefit err", err);
+        benefit.canSelect = false;
+      }
+    },
+
+    async onSelectBenefit(benefit) {
+      if (!benefit.canSelect || benefit.isProcessing) return;
+      if (benefit.tipo === "API") return;
+
+      benefit.isProcessing = true;
+      try {
+        const payload = {
+          EmployeeId: this.empleadoId,      // recuerda PascalCase
+          BenefitId: benefit.idBeneficio,
+          PensionType: null,
+          DependentsCount: null
+        };
+        console.log("POST EmployeeBenefit payload:", payload);
+        const resp = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
+        if (resp?.data?.success) {
+          benefit.canSelect = false;
+          this.showMessage("Beneficio seleccionado correctamente", "success");
+          // opcional: actualizar lista de seleccionados o recargar
+        } else {
+          this.showMessage(resp?.data?.message || "No se pudo seleccionar el beneficio", "error");
+        }
+      } catch (err) {
+          console.error("onSelectBenefit error", err);
+          console.error("axios response data:", err.response?.data);
+          console.error("axios response status:", err.response?.status);
+          console.error("axios response headers:", err.response?.headers);
+        if (err.response && err.response.status === 400) {
+          this.showMessage(err.response.data?.message || "Selección no permitida", "error");
+        } else {
+          this.showMessage("Error al seleccionar beneficio", "error");
+        }
+      } finally {
+        benefit.isProcessing = false;
+      }
+    },
+
+
     async elegirBeneficio(beneficio) {
       this.elegiendo = true;
       try {
-        console.log("Eligiendo beneficio:", beneficio);
-        
-        // TODO: Implementar llamada al backend para guardar en BeneficioDeEmpleado
-        // const response = await axios.post(`http://localhost:5081/api/BeneficioEmpleado/elegir`, {
-        //   empleadoId: this.getEmpleadoId(),
-        //   beneficioId: beneficio.idBeneficio,
-        //   empresaId: this.selectedCompany.cedulaJuridica
-        // });
-        
-        // Simulación de éxito (eliminar al conectar con BD)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Marcar como elegido localmente
-        beneficio.elegido = true;
-        
-        this.showMessage(`✅ Has elegido el beneficio: ${beneficio.nombre}`, "success");
-        
+        const payload = {
+          employeeId: this.empleadoId,
+          benefitId: beneficio.idBeneficio,
+          pensionType: null,
+          dependentsCount: null
+        };
+
+        const response = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
+
+        if (response.data?.success) {
+          beneficio.elegido = true;
+          this.showMessage(`✅ Has elegido el beneficio: ${beneficio.nombre}`, "success");
+        } else {
+          this.showMessage("No se pudo registrar tu selección", "error");
+        }
+
       } catch (error) {
         console.error("Error eligiendo beneficio:", error);
         this.showMessage("Error al seleccionar el beneficio", "error");
@@ -264,13 +393,7 @@ export default {
       }
     },
 
-    // Método auxiliar para obtener ID del empleado (necesitarás implementarlo)
-    getEmpleadoId() {
-      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      return userData.id || userData.PK_User;
-    },
-
-    // Formato Lista
+    // Estilos y formato
     getTypeClass(tipo) {
       const classes = {
         "Monto Fijo": "monto-fijo",

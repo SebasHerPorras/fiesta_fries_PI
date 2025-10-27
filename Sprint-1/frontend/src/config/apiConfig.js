@@ -40,6 +40,14 @@ export const API_ENDPOINTS = {
   CREATE_EMPRESA: buildApiUrl("empresa"),
   CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
 
+  EMPRESA_BY_EMPLOYEE: (userId) => buildApiUrl(`empresa/employee-company/${userId}`),
+
+  BENEFICIOS_SELECCIONADOS: (empleadoId) => buildApiUrl(`EmployeeBenefit/${empleadoId}`),
+  ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
+  CAN_SELECT_BENEFIT: (employeeId, benefitId) => buildApiUrl(`EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`),
+  PERSON_BY_USER: (userGuid) => buildApiUrl(`person/by-user/${userGuid}`),
+
+
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
   USER_EMAIL_VERIFY: (email) =>
