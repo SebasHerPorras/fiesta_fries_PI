@@ -163,7 +163,7 @@
                     <button
                       :disabled="!beneficio.canSelect || beneficio.isProcessing"
                       :class="beneficio.canSelect ? 'btn-primary' : 'btn-disabled'"
-                      @click="onSelectBenefit(beneficio)"
+                      @click="openModalForBenefit(beneficio)"
                     >
                       <span v-if="beneficio.isProcessing">Procesando...</span>
                       <span v-else>{{ beneficio.canSelect ? 'Elegir' : 'No disponible' }}</span>
@@ -190,6 +190,19 @@
       </div>
     </main>
 
+    <!-- ModalApiInput (siempre usado) -->
+    <ModalApiInput
+      :visible="modalVisible"
+      :mode="modalMode"
+      :title="modalTitle"
+      :instructions="modalInstructions"
+      :confirmText="modalConfirmText"
+      :initialValue="null"
+      :submitting="modalSubmitting"
+      @confirm="onModalConfirm"
+      @cancel="onModalCancel"
+    />
+
     <!-- FOOTER -->
     <footer>
       <div>©2025 Fiesta Fries</div>
@@ -198,13 +211,14 @@
 </template>
 
 
-
 <script>
 import axios from "axios";
 import { API_ENDPOINTS } from '../config/apiConfig';
+import ModalApiInput from "../components/ModalApiInput.vue";
 
 export default {
   name: "SelectBeneficios",
+  components: { ModalApiInput },
   data() {
     return {
       userName: "Cargando...",
@@ -215,30 +229,38 @@ export default {
       elegiendo: false,
       message: "",
       messageType: "success",
-      empleadoId: null, // Se obtiene desde backend
+      empleadoId: null,
 
-      // Nuevos estados para la tabla de "Beneficios Seleccionados"
       selectedBenefits: [],
-      loadingSelectedBenefits: false
+      loadingSelectedBenefits: false,
+
+      // Modal para confirm / dependientes / tipoPension
+      modalVisible: false,
+      modalMode: 'confirm',
+      modalTargetBenefit: null,
+      modalSubmitting: false,
+      modalInstructions: '',
+      modalTitle: '',
+      modalConfirmText: null
     };
   },
   mounted() {
-    console.log("mounted: SelectBeneficios mounted");
     this.loadUserData();
     this.loadSelectedCompany();
     this.resolveEmpleadoId().then(() => {
-      console.log("mounted: resolveEmpleadoId finished, empleadoId =", this.empleadoId);
       if (this.empleadoId) {
         this.loadBeneficios();
-        this.loadSelectedBenefits(); // cargar la lista de seleccionados al inicio
+        this.loadSelectedBenefits();
       } else {
         console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
       }
     });
   },
   methods: {
+    /* -------------------------
+        Inicialización y carga
+       ------------------------- */
     loadUserData() {
-      console.log("loadUserData: entrando");
       const guidFromKey = localStorage.getItem("userID");
 
       const stored = localStorage.getItem("userData");
@@ -246,7 +268,6 @@ export default {
       if (stored) {
         try {
           parsed = JSON.parse(stored);
-          console.log("loadUserData: parsed userData =", parsed);
         } catch (e) {
           console.error("loadUserData: error parsing userData", e);
         }
@@ -256,7 +277,6 @@ export default {
 
       if (parsed && parsed.personaId) {
         this.empleadoId = parsed.personaId;
-        console.log("loadUserData: empleadoId tomado de userData.personaId =", this.empleadoId);
       }
 
       if (parsed) {
@@ -277,16 +297,13 @@ export default {
           return false;
         }
       } catch (error) {
-        console.error("Error cargando empresa:", error);
         this.showMessage("Error al cargar empresa", "error");
         return false;
       }
     },
 
     async resolveEmpleadoId() {
-      if (this.empleadoId) {
-        return;
-      }
+      if (this.empleadoId) return;
 
       if (!this.userUniqueId) {
         console.warn("resolveEmpleadoId: no userUniqueId, abortando");
@@ -295,7 +312,6 @@ export default {
 
       try {
         const url = API_ENDPOINTS.PERSON_BY_USER(this.userUniqueId);
-        console.log("resolveEmpleadoId: GET ->", url);
         const resp = await axios.get(url);
         const persona = resp?.data?.persona ?? resp?.data ?? null;
         this.empleadoId = persona?.id ?? persona?.Id ?? null;
@@ -304,6 +320,9 @@ export default {
       }
     },
 
+    /* -------------------------
+       Beneficios: carga y checks
+       ------------------------- */
     async loadBeneficios() {
       if (!this.empleadoId) {
         this.showMessage("No se pudo determinar el id del empleado. Imposible cargar beneficios.", "error");
@@ -326,13 +345,11 @@ export default {
           }));
         }
 
-        // Obtener beneficios seleccionados (IDs) usando el endpoint que ya tienes
         const seleccionadosResponse = await axios.get(
           API_ENDPOINTS.BENEFICIOS_SELECCIONADOS(this.empleadoId)
         );
 
         const seleccionados = seleccionadosResponse.data?.selectedBenefitIds || [];
-        // Marcar los seleccionados
         beneficiosData = beneficiosData.map(b => ({
           ...b,
           elegido: seleccionados.includes(b.idBeneficio)
@@ -340,9 +357,8 @@ export default {
 
         this.beneficios = beneficiosData;
 
-        // canSelect por cada beneficio 1 x 1
+        // canSelect por cada beneficio
         for (const b of this.beneficios) {
-          // eslint-disable-next-line no-await-in-loop
           await this.checkCanSelectForBenefit(b);
         }
 
@@ -374,17 +390,28 @@ export default {
         return;
       }
 
-      const rawTipo = (benefit.tipo || "").toString();
+      const rawTipo = (benefit.tipo || benefit.benefitType || "").toString();
       const tipo = rawTipo
         .trim()
         .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quita tildes
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
       const isMontoFijo = tipo === "monto-fijo" || tipo === "monto fijo";
       const isPorcentual = tipo === "porcentual" || tipo === "porcentaje";
 
       if (!isMontoFijo && !isPorcentual) {
-        benefit.canSelect = false;
+        if (tipo.includes("api")) {
+          try {
+            const url = API_ENDPOINTS.CAN_SELECT_BENEFIT(this.empleadoId, benefit.idBeneficio);
+            const resp = await axios.get(url);
+            benefit.canSelect = !!resp?.data?.canSelect;
+          } catch (err) {
+            console.error("checkCanSelectForBenefit err (api):", err);
+            benefit.canSelect = false;
+          }
+        } else {
+          benefit.canSelect = false;
+        }
         return;
       }
 
@@ -398,87 +425,9 @@ export default {
       }
     },
 
-    async onSelectBenefit(benefit) {
-      if (!benefit.canSelect || benefit.isProcessing) return;
-      if (benefit.tipo === "API") return;
-
-      benefit.isProcessing = true;
-      try {
-        const payload = {
-          EmployeeId: this.empleadoId,      // recuerda PascalCase
-          BenefitId: benefit.idBeneficio,
-          PensionType: null,
-          DependentsCount: null
-        };
-        console.log("POST EmployeeBenefit payload:", payload);
-        const resp = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
-        if (resp?.data?.success) {
-          benefit.canSelect = false;
-          benefit.elegido = true;
-          this.showMessage("Beneficio seleccionado correctamente", "success");
-
-          // REFRESCAR la tabla de Beneficios Seleccionados
-          // Si el endpoint POST devuelve la entidad creada en resp.data.data puedes hacer:
-          if (resp.data?.data) {
-            // insertar al inicio para mostrar inmediatamente sin recargar todo
-            this.selectedBenefits.unshift(resp.data.data);
-          } else {
-            // si no devuelve entidad, recargamos la lista completa desde el backend
-            await this.loadSelectedBenefits();
-          }
-        } else {
-          this.showMessage(resp?.data?.message || "No se pudo seleccionar el beneficio", "error");
-        }
-      } catch (err) {
-        console.error("onSelectBenefit error", err);
-        console.error("axios response data:", err.response?.data);
-        console.error("axios response status:", err.response?.status);
-        console.error("axios response headers:", err.response?.headers);
-        if (err.response && err.response.status === 400) {
-          this.showMessage(err.response.data?.message || "Selección no permitida", "error");
-        } else {
-          this.showMessage("Error al seleccionar beneficio", "error");
-        }
-      } finally {
-        benefit.isProcessing = false;
-      }
-    },
-
-    async elegirBeneficio(beneficio) {
-      this.elegiendo = true;
-      try {
-        const payload = {
-          employeeId: this.empleadoId,
-          benefitId: beneficio.idBeneficio,
-          pensionType: null,
-          dependentsCount: null
-        };
-
-        const response = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
-
-        if (response.data?.success) {
-          beneficio.elegido = true;
-          this.showMessage(`✅ Has elegido el beneficio: ${beneficio.nombre}`, "success");
-
-          // REFRESCAR la tabla de Beneficios Seleccionados
-          if (response.data?.data) {
-            this.selectedBenefits.unshift(response.data.data);
-          } else {
-            await this.loadSelectedBenefits();
-          }
-        } else {
-          this.showMessage("No se pudo registrar tu selección", "error");
-        }
-
-      } catch (error) {
-        console.error("Error eligiendo beneficio:", error);
-        this.showMessage("Error al seleccionar el beneficio", "error");
-      } finally {
-        this.elegiendo = false;
-      }
-    },
-
-    // Nuevos métodos: carga y manejo de "Beneficios Seleccionados"
+    /* -------------------------
+          Selected Benefits
+       ------------------------- */
     async loadSelectedBenefits() {
       if (!this.empleadoId) {
         this.selectedBenefits = [];
@@ -487,10 +436,29 @@ export default {
 
       this.loadingSelectedBenefits = true;
       try {
-        // Asegúrate de tener configurado en API_ENDPOINTS el endpoint:
-        // EMPLOYEE_BENEFIT_SELECTED(employeeId) => /api/EmployeeBenefit/{employeeId}/selected
         const resp = await axios.get(API_ENDPOINTS.EMPLOYEE_BENEFIT_SELECTED(this.empleadoId));
-        this.selectedBenefits = resp.data?.success ? resp.data.data : [];
+        const body = resp.data || {};
+        if (body.success && Array.isArray(body.data)) {
+          this.selectedBenefits = body.data;
+        } else if (Array.isArray(body.selectedBenefitIds)) {
+          this.selectedBenefits = body.selectedBenefitIds.map(id => {
+            const b = this.beneficios.find(x => x.idBeneficio === id) || {};
+            return {
+              id: null,
+              employeeId: this.empleadoId,
+              benefitId: id,
+              apiName: b.nombre || null,
+              benefitValue: b.valor ?? null,
+              benefitType: b.tipo || null,
+              descripcion: b.descripcion || null,
+              etiqueta: b.etiqueta || null
+            };
+          });
+        } else if (Array.isArray(body)) {
+          this.selectedBenefits = body;
+        } else {
+          this.selectedBenefits = [];
+        }
       } catch (err) {
         console.error("loadSelectedBenefits error", err);
         this.selectedBenefits = [];
@@ -499,12 +467,183 @@ export default {
       }
     },
 
-    // Método público para que un padre o ref lo llame cuando quiera forzar refresco
-    async refreshSelectedBenefits() {
-      await this.loadSelectedBenefits();
+    refreshSelectedBenefits() {
+      return this.loadSelectedBenefits();
     },
 
-    // Estilos y formato
+    /* -------------------------
+        Formateo de valores
+       ------------------------- */
+    formatValor(item) {
+      const tipo = (item.tipo || item.benefitType || "").toString();
+      const rawValor = item.valor ?? item.benefitValue ?? null;
+      const tipoNorm = tipo.trim().toLowerCase();
+
+      if (tipoNorm === "porcentual" || tipoNorm === "porcentaje") {
+        const n = Number(rawValor);
+        return Number.isFinite(n) ? `${n}%` : (rawValor ? `${rawValor}%` : "—");
+      }
+
+      const isApiType = tipoNorm === "api" || tipoNorm.includes("api");
+      if (isApiType && (rawValor === null || rawValor === undefined)) {
+        return "API";
+      }
+
+      const currencyFromItem = (item.currency || item.moneda || item.currencyCode || "").toString().trim();
+      const currencyCode = currencyFromItem || "CRC";
+
+      const valorNum = rawValor == null ? null : Number(rawValor);
+      if (!Number.isFinite(valorNum)) {
+        return rawValor != null ? String(rawValor) : (isApiType ? "API" : "—");
+      }
+
+      try {
+        return new Intl.NumberFormat("es-CR", {
+          style: "currency",
+          currency: currencyCode,
+          maximumFractionDigits: 2
+        }).format(valorNum);
+      } catch (e) {
+        return `${currencyCode} ${valorNum.toLocaleString()}`;
+      }
+    },
+
+    formatCurrency(v, currencyCode = "CRC") {
+      if (v == null) return "—";
+      const n = Number(v);
+      if (!Number.isFinite(n)) return String(v);
+      try {
+        return new Intl.NumberFormat("es-CR", { style: "currency", currency: currencyCode }).format(n);
+      } catch (e) {
+        return `${currencyCode} ${n.toLocaleString()}`;
+      }
+    },
+
+    /* -------------------------
+        Modal: abrir / cancelar / confirmar
+       ------------------------- */
+    openModalForBenefit(benefit) {
+      this.modalTargetBenefit = benefit;
+
+      const rawName = (benefit.apiName || benefit.nombre || "").toString().trim().toLowerCase();
+
+      this.modalTitle = "Confirmar selección";
+      this.modalInstructions = "";
+      this.modalConfirmText = "Esta decisión es final. ¿Continuar?";
+      this.modalMode = "confirm";
+
+      const seguroAliases = ["seguro privado"];
+      const pensionesAliases = ["pensiones voluntarias"];
+
+      const matches = (aliases, name) => aliases.some(a => name === a || name.startsWith(a + " "));
+
+      if (matches(seguroAliases, rawName)) {
+        this.modalMode = "dependientes";
+        this.modalTitle = "Seguro privado — Dependientes";
+        this.modalInstructions = "Ingrese la cantidad de dependientes (0 si no aplica).";
+      } else if (matches(pensionesAliases, rawName)) {
+        this.modalMode = "tipoPension";
+        this.modalTitle = "Pensiones voluntarias — Tipo";
+        this.modalInstructions = "Elija tipo de pensión: A, B o C.";
+      } else {
+        this.modalMode = "confirm";
+      }
+
+      this.modalVisible = true;
+    },
+
+    onModalCancel() {
+      this.modalVisible = false;
+      this.modalMode = 'confirm';
+      this.modalTargetBenefit = null;
+      this.modalInstructions = '';
+      this.modalTitle = '';
+      this.modalConfirmText = null;
+    },
+
+    async onModalConfirm(extraData) {
+      if (!this.modalTargetBenefit) {
+        this.onModalCancel();
+        return;
+      }
+
+      this.modalSubmitting = true;
+      try {
+        await this.submitSelectBenefit(this.modalTargetBenefit, extraData);
+        this.modalVisible = false;
+        this.modalMode = 'confirm';
+        this.modalTargetBenefit = null;
+        this.modalInstructions = '';
+        this.modalTitle = '';
+        this.modalConfirmText = null;
+      } catch (err) {
+        console.error("Error al enviar datos del modal:", err);
+        // dejar modal abierto para corrección si fallo de validación
+      } finally {
+        this.modalSubmitting = false;
+      }
+    },
+
+    /* -------------------------
+          Envío al backend
+       ------------------------- */
+    async submitSelectBenefit(benefit, extraData) {
+      if (!this.empleadoId || !benefit) return;
+      benefit.isProcessing = true;
+      try {
+        const payload = {
+          EmployeeId: this.empleadoId,
+          BenefitId: benefit.idBeneficio ?? benefit.benefitId,
+          PensionType: null,
+          DependentsCount: null,
+          ApiName: benefit.apiName || benefit.nombre || null,
+          BenefitValue: null,
+          BenefitType: benefit.tipo || benefit.benefitType || null,
+          ExtraData: extraData || null
+        };
+
+        if (extraData && extraData.dependientes != null) {
+          payload.DependentsCount = extraData.dependientes;
+        }
+        if (extraData && extraData.tipoPension) {
+          payload.PensionType = extraData.tipoPension;
+        }
+
+        const resp = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
+
+        if (resp?.data?.success) {
+          benefit.canSelect = false;
+          benefit.elegido = true;
+          this.showMessage("Beneficio seleccionado correctamente", "success");
+
+          if (resp.data?.data) {
+            this.selectedBenefits.unshift(resp.data.data);
+          } else {
+            await this.loadSelectedBenefits();
+          }
+        } else {
+          this.showMessage(resp?.data?.message || "No se pudo seleccionar el beneficio", "error");
+          throw new Error("selection_failed");
+        }
+      } catch (err) {
+        console.error("submitSelectBenefit error", err);
+        console.error("axios response data:", err.response?.data);
+        if (err.response && err.response.data?.message) {
+          this.showMessage(err.response.data.message, "error");
+        } else if (err.response && err.response.status === 400) {
+          this.showMessage(err.response.data?.message || "Selección no permitida", "error");
+        } else {
+          this.showMessage("Error al seleccionar beneficio", "error");
+        }
+        throw err;
+      } finally {
+        benefit.isProcessing = false;
+      }
+    },
+
+    /* -------------------------
+                  UI 
+       ------------------------- */
     getTypeClass(tipo) {
       const classes = {
         "Monto Fijo": "monto-fijo",
@@ -531,68 +670,8 @@ export default {
       return classes[etiqueta] || "default";
     },
 
-    getEtiquetaForSelected(item) {
-      if (item.tipo) return item.tipo;
-
-      // Intentar tomarla del listado general de beneficios por beneficioId
-      const id = item.benefitId ?? item.idBeneficio ?? null;
-      if (!id || !Array.isArray(this.beneficios)) return null;
-
-      const found = this.beneficios.find(b => b.idBeneficio === id || b.benefitId === id);
-      return found ? (found.etiqueta || null) : null;
-    },
-
     getValueClass(etiqueta) {
       return etiqueta === "Deducción" ? "valor-negativo" : "valor-positivo";
-    },
-
-    formatValor(item) {
-      // Normalizar tipo y valor desde ambos formatos posibles
-      const tipo = (item.tipo || item.benefitType || "").toString();
-      const rawValor = item.valor ?? item.benefitValue ?? null;
-
-      // Detectar si es porcentual (comparación tolerante)
-      const tipoNorm = tipo.trim().toLowerCase();
-      if (tipoNorm === "porcentual" || tipoNorm === "porcentaje") {
-        // Aceptar tanto number como string convertible a number
-        const n = Number(rawValor);
-        return Number.isFinite(n) ? `${n}%` : (rawValor ? `${rawValor}%` : "—");
-      }
-
-      // Si el tipo indica API y no hay valor numérico, retornar indicador API
-      const isApiType = tipoNorm === "api" || tipoNorm.includes("api");
-      if (isApiType && (rawValor === null || rawValor === undefined)) {
-        return "API";
-      }
-
-      // Determinar moneda: preferir campos explícitos
-      const currencyFromItem = (item.currency || item.moneda || item.currencyCode || "").toString().trim();
-      const currencyCode = currencyFromItem || "CRC"; // fallback a CRC
-
-      // Formatear número si existe
-      const valorNum = rawValor == null ? null : Number(rawValor);
-      if (!Number.isFinite(valorNum)) {
-        // Si no es numérico pero existe, mostrar tal cual
-        return rawValor != null ? String(rawValor) : (isApiType ? "API" : "—");
-      }
-
-      // Usar Intl.NumberFormat para formateo por moneda
-      try {
-        return new Intl.NumberFormat("es-CR", {
-          style: "currency",
-          currency: currencyCode,
-          maximumFractionDigits: 2
-        }).format(valorNum);
-      } catch (e) {
-        // Si currencyCode no es válido para Intl, formatear con separador de miles y prefijo
-        return `${currencyCode} ${valorNum.toLocaleString()}`;
-      }
-    },
-
-    // formateo reutilizable para moneda (usado por la tabla de seleccionados)
-    formatCurrency(v) {
-      if (v == null) return "—";
-      return new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(v);
     },
 
     volverAtras() {
