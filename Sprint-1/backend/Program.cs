@@ -41,6 +41,28 @@ builder.Services.AddScoped<IPersonalIncomeTaxService, PersonalIncomeTaxService>(
 builder.Services.AddScoped<IEmployeeDeductionsByPayrollService, EmployeeDeductionsByPayrollService>();
 builder.Services.AddScoped<ICalculatorDeductionsEmployeeService, CalculatorDeductionsEmployeeService>();
 
+// ===== CONFIGURACIÓN DE HTTP CLIENTS PARA APIS EXTERNAS =====
+builder.Services.AddHttpClient<ISolidarityAssociationService, SolidarityAssociationService>("AsociacionSolidarista", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IPrivateInsuranceService, PrivateInsuranceService>("SeguroPrivado", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IVoluntaryPensionsService, VoluntaryPensionsService>("PensionesVoluntarias", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// ===== REGISTRO DE SERVICIOS DE APIS EXTERNAS =====
+builder.Services.AddScoped<ISolidarityAssociationService, SolidarityAssociationService>();
+builder.Services.AddScoped<IPrivateInsuranceService, PrivateInsuranceService>();
+builder.Services.AddScoped<IVoluntaryPensionsService, VoluntaryPensionsService>();
+builder.Services.AddScoped<IExternalApiFactory, ExternalApiFactory>();
+
 var app = builder.Build();
 
 // Solo habilitar Swagger en desarrollo
