@@ -23,6 +23,7 @@ namespace backend.Services
             IEmployeeService employeeService,
             IPayrollValidator payrollValidator,
             IPayrollResultBuilder resultBuilder,
+            ICalculatorDeductionsEmployerService employerDeductionsService,
             ILogger<PayrollProcessingService> logger)
         {
             _payrollRepository = payrollRepository;
@@ -124,24 +125,52 @@ namespace backend.Services
                 "Empleado {Nombre} procesado - Bruto: {Bruto}",
                 empleado.Nombre, empleadoDto.SalarioBruto);
 
-            return new EmployeeCalculation(empleadoModel, deductions, benefits, tax);
+            return new EmployeeCalculation(empleadoModel, deductions, benefits);
         }
 
         private async Task SavePayrollResultsAsync(Payroll payroll, PayrollCalculationResult calculationResult)
         {
+            var sumaDeducciones = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
             var payments = calculationResult.ToPayments(payroll.PayrollId);
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
+            var totalEmployerDeductions = 0m;
+            foreach (var employeeCalc in calculationResult.EmployeeCalculations)
+            {
+                var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
+                var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
+                    empleadoDto, payroll.CompanyId, payroll.PayrollId);
+
+                totalEmployerDeductions += employerDeductions;
+            }
+
             payroll.IsCalculated = true;
-            payroll.TotalAmount = calculationResult.TotalAmount;
+            payroll.TotalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
+            payroll.TotalEmployeeDeductions = totalEmployerDeductions;
+            payroll.TotalEmployerDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
+            payroll.TotalBenefits = calculationResult.TotalBenefits;
+            payroll.TotalNetSalary = calculationResult.EmployeeCalculations.Sum(x => x.NetSalary);
+            payroll.TotalEmployerCost = payroll.TotalGrossSalary + payroll.TotalEmployerDeductions;
             payroll.LastModified = DateTime.Now;
 
             await _payrollRepository.UpdatePayrollAsync(payroll);
 
             _logger.LogInformation(
                 "Planilla {PayrollId} guardada - Total: {TotalAmount}, Empleados: {EmployeeCount}",
-                payroll.PayrollId, payroll.TotalAmount, calculationResult.ProcessedEmployees);
+                payroll.PayrollId, payroll.TotalNetSalary, calculationResult.ProcessedEmployees);
         }
+
+        private EmployeeCalculationDto MapToEmployeeDto(EmpleadoModel employee)
+        {
+            return new EmployeeCalculationDto
+            {
+                CedulaEmpleado = employee.id,
+                NombreEmpleado = employee.name,
+                SalarioBruto = employee.salary,
+                TipoEmpleado = employee.employmentType,
+            };
+        }
+
 
         private async Task<decimal> ObtenerSalarioEmpleado(int cedula)
         {
