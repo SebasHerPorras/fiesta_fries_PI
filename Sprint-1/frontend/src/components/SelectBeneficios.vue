@@ -43,16 +43,85 @@
           </div>
         </div>
 
-        
+        <!-- Mensaje global -->
+        <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
+          {{ message }}
+        </div>
+
+        <!-- Beneficios Seleccionados -->
+        <div v-if="empleadoId" class="beneficios-table-container" style="margin-bottom: 16px;">
+          <div class="table-wrapper">
+            <table class="beneficios-table">
+              <thead>
+                <tr class="title-row">
+                  <th colspan="6" class="table-title">Beneficios Seleccionados</th>
+                </tr>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Tipo</th>
+                  <th>Quien Asume</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr v-if="loadingSelectedBenefits">
+                  <td colspan="6" style="padding: 20px; color: #bdbdbd;">Cargando beneficios seleccionados…</td>
+                </tr>
+
+                <tr v-else-if="!selectedBenefits.length">
+                  <td colspan="6" style="padding: 20px; color: #bdbdbd;">No hay beneficios seleccionados</td>
+                </tr>
+
+                <tr v-else v-for="item in selectedBenefits" :key="item.id || `${item.employeeId}-${item.benefitId}`" class="selected-row">
+                  <td class="nombre-cell">
+                    <strong>
+                      {{ item.apiName || (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).nombre || '—' }}
+                    </strong>
+                    <div v-if="item.descripcion || (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).descripcion" class="descripcion">
+                      {{ item.descripcion || (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).descripcion }}
+                    </div>
+                  </td>
+
+                  <!-- Tipo -->
+                  <td>
+                    <span class="type-badge" :class="getTypeClass(item.benefitType || (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).tipo)">
+                      {{ item.benefitType || (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).tipo || '—' }}
+                    </span>
+                  </td>
+
+                  <!-- Quien Asume -->
+                  <td>
+                    <span class="assume-badge" :class="getAssumeClass((beneficios.find(b => b.idBeneficio === item.benefitId) || {}).quienAsume)">
+                      {{ (beneficios.find(b => b.idBeneficio === item.benefitId) || {}).quienAsume || '—' }}
+                    </span>
+                  </td>
+
+                  <!-- Valor -->
+                  <td>
+                    <span :class="getValueClass((beneficios.find(b => b.idBeneficio === item.benefitId) || {}).etiqueta)" class="valor">
+                      {{ formatValor(item) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Estado de carga general -->
         <div v-if="loading" class="loading">
           Cargando beneficios
         </div>
 
-        <!-- Tabla de beneficios -->
+        <!-- Tabla de beneficios disponibles -->
         <div v-else class="beneficios-table-container">
           <div v-if="beneficios.length > 0" class="table-wrapper">
             <table class="beneficios-table">
               <thead>
+                <tr class="title-row">
+                  <th colspan="6" class="table-title">Beneficios Disponibles</th>
+                </tr>
                 <tr>
                   <th>Nombre</th>
                   <th>Tipo</th>
@@ -118,11 +187,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Mensajes -->
-        <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
-          {{ message }}
-        </div>
       </div>
     </main>
 
@@ -132,6 +196,8 @@
     </footer>
   </div>
 </template>
+
+
 
 <script>
 import axios from "axios";
@@ -149,7 +215,11 @@ export default {
       elegiendo: false,
       message: "",
       messageType: "success",
-      empleadoId: null // Se obtiene desde backend
+      empleadoId: null, // Se obtiene desde backend
+
+      // Nuevos estados para la tabla de "Beneficios Seleccionados"
+      selectedBenefits: [],
+      loadingSelectedBenefits: false
     };
   },
   mounted() {
@@ -158,38 +228,42 @@ export default {
     this.loadSelectedCompany();
     this.resolveEmpleadoId().then(() => {
       console.log("mounted: resolveEmpleadoId finished, empleadoId =", this.empleadoId);
-      if (this.empleadoId) this.loadBeneficios();
-      else console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
+      if (this.empleadoId) {
+        this.loadBeneficios();
+        this.loadSelectedBenefits(); // cargar la lista de seleccionados al inicio
+      } else {
+        console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
+      }
     });
   },
   methods: {
-  loadUserData() {
-    console.log("loadUserData: entrando");
-    const guidFromKey = localStorage.getItem("userID");
+    loadUserData() {
+      console.log("loadUserData: entrando");
+      const guidFromKey = localStorage.getItem("userID");
 
-    const stored = localStorage.getItem("userData");
-    let parsed = null;
-    if (stored) {
-      try {
-        parsed = JSON.parse(stored);
-        console.log("loadUserData: parsed userData =", parsed);
-      } catch (e) {
-        console.error("loadUserData: error parsing userData", e);
+      const stored = localStorage.getItem("userData");
+      let parsed = null;
+      if (stored) {
+        try {
+          parsed = JSON.parse(stored);
+          console.log("loadUserData: parsed userData =", parsed);
+        } catch (e) {
+          console.error("loadUserData: error parsing userData", e);
+        }
       }
-    }
 
-    this.userUniqueId = guidFromKey || (parsed && (parsed.id || parsed.PK_User || parsed.userID)) || null;
+      this.userUniqueId = guidFromKey || (parsed && (parsed.id || parsed.PK_User || parsed.userID)) || null;
 
-    if (parsed && parsed.personaId) {
-      this.empleadoId = parsed.personaId;
-      console.log("loadUserData: empleadoId tomado de userData.personaId =", this.empleadoId);
-    }
+      if (parsed && parsed.personaId) {
+        this.empleadoId = parsed.personaId;
+        console.log("loadUserData: empleadoId tomado de userData.personaId =", this.empleadoId);
+      }
 
-    if (parsed) {
-      this.userName = `${parsed.firstName || ""} ${parsed.secondName || ""}`.trim() || this.userName;
-      this.userRole = parsed.personType || parsed.role || this.userRole;
-    }
-  },
+      if (parsed) {
+        this.userName = `${parsed.firstName || ""} ${parsed.secondName || ""}`.trim() || this.userName;
+        this.userRole = parsed.personType || parsed.role || this.userRole;
+      }
+    },
 
     loadSelectedCompany() {
       try {
@@ -252,7 +326,7 @@ export default {
           }));
         }
 
-        // Obtener beneficios seleccionados
+        // Obtener beneficios seleccionados (IDs) usando el endpoint que ya tienes
         const seleccionadosResponse = await axios.get(
           API_ENDPOINTS.BENEFICIOS_SELECCIONADOS(this.empleadoId)
         );
@@ -286,7 +360,6 @@ export default {
       }
     },
 
-
     async checkCanSelectForBenefit(benefit) {
       benefit.canSelect = null;
       benefit.isProcessing = false;
@@ -301,20 +374,16 @@ export default {
         return;
       }
 
-      // Normalizar tipo para comparaciones tolerantes
       const rawTipo = (benefit.tipo || "").toString();
       const tipo = rawTipo
         .trim()
         .toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quita tildes
 
-      // aceptar variantes comunes de monto fijo y porcentual
       const isMontoFijo = tipo === "monto-fijo" || tipo === "monto fijo";
       const isPorcentual = tipo === "porcentual" || tipo === "porcentaje";
 
-      // Si no es MontoFijo ni Porcentual ni API -> no seleccionable
       if (!isMontoFijo && !isPorcentual) {
-        // para los tipo "api" dejamos canSelect = false (flujo distinto) = TEMP
         benefit.canSelect = false;
         return;
       }
@@ -345,16 +414,26 @@ export default {
         const resp = await axios.post(API_ENDPOINTS.ELEGIR_BENEFICIO, payload);
         if (resp?.data?.success) {
           benefit.canSelect = false;
+          benefit.elegido = true;
           this.showMessage("Beneficio seleccionado correctamente", "success");
-          // opcional: actualizar lista de seleccionados o recargar
+
+          // REFRESCAR la tabla de Beneficios Seleccionados
+          // Si el endpoint POST devuelve la entidad creada en resp.data.data puedes hacer:
+          if (resp.data?.data) {
+            // insertar al inicio para mostrar inmediatamente sin recargar todo
+            this.selectedBenefits.unshift(resp.data.data);
+          } else {
+            // si no devuelve entidad, recargamos la lista completa desde el backend
+            await this.loadSelectedBenefits();
+          }
         } else {
           this.showMessage(resp?.data?.message || "No se pudo seleccionar el beneficio", "error");
         }
       } catch (err) {
-          console.error("onSelectBenefit error", err);
-          console.error("axios response data:", err.response?.data);
-          console.error("axios response status:", err.response?.status);
-          console.error("axios response headers:", err.response?.headers);
+        console.error("onSelectBenefit error", err);
+        console.error("axios response data:", err.response?.data);
+        console.error("axios response status:", err.response?.status);
+        console.error("axios response headers:", err.response?.headers);
         if (err.response && err.response.status === 400) {
           this.showMessage(err.response.data?.message || "Selección no permitida", "error");
         } else {
@@ -364,7 +443,6 @@ export default {
         benefit.isProcessing = false;
       }
     },
-
 
     async elegirBeneficio(beneficio) {
       this.elegiendo = true;
@@ -381,6 +459,13 @@ export default {
         if (response.data?.success) {
           beneficio.elegido = true;
           this.showMessage(`✅ Has elegido el beneficio: ${beneficio.nombre}`, "success");
+
+          // REFRESCAR la tabla de Beneficios Seleccionados
+          if (response.data?.data) {
+            this.selectedBenefits.unshift(response.data.data);
+          } else {
+            await this.loadSelectedBenefits();
+          }
         } else {
           this.showMessage("No se pudo registrar tu selección", "error");
         }
@@ -391,6 +476,32 @@ export default {
       } finally {
         this.elegiendo = false;
       }
+    },
+
+    // Nuevos métodos: carga y manejo de "Beneficios Seleccionados"
+    async loadSelectedBenefits() {
+      if (!this.empleadoId) {
+        this.selectedBenefits = [];
+        return;
+      }
+
+      this.loadingSelectedBenefits = true;
+      try {
+        // Asegúrate de tener configurado en API_ENDPOINTS el endpoint:
+        // EMPLOYEE_BENEFIT_SELECTED(employeeId) => /api/EmployeeBenefit/{employeeId}/selected
+        const resp = await axios.get(API_ENDPOINTS.EMPLOYEE_BENEFIT_SELECTED(this.empleadoId));
+        this.selectedBenefits = resp.data?.success ? resp.data.data : [];
+      } catch (err) {
+        console.error("loadSelectedBenefits error", err);
+        this.selectedBenefits = [];
+      } finally {
+        this.loadingSelectedBenefits = false;
+      }
+    },
+
+    // Método público para que un padre o ref lo llame cuando quiera forzar refresco
+    async refreshSelectedBenefits() {
+      await this.loadSelectedBenefits();
     },
 
     // Estilos y formato
@@ -420,18 +531,68 @@ export default {
       return classes[etiqueta] || "default";
     },
 
+    getEtiquetaForSelected(item) {
+      if (item.tipo) return item.tipo;
+
+      // Intentar tomarla del listado general de beneficios por beneficioId
+      const id = item.benefitId ?? item.idBeneficio ?? null;
+      if (!id || !Array.isArray(this.beneficios)) return null;
+
+      const found = this.beneficios.find(b => b.idBeneficio === id || b.benefitId === id);
+      return found ? (found.etiqueta || null) : null;
+    },
+
     getValueClass(etiqueta) {
       return etiqueta === "Deducción" ? "valor-negativo" : "valor-positivo";
     },
 
-    formatValor(beneficio) {
-      if (beneficio.tipo === "Porcentual") {
-        return `${beneficio.valor}%`;
-      } else if (beneficio.tipo === "Monto Fijo") {
-        return `₡${beneficio.valor?.toLocaleString() || "0"}`;
-      } else {
-        return beneficio.valor ? `₡${beneficio.valor.toLocaleString()}` : "API";
+    formatValor(item) {
+      // Normalizar tipo y valor desde ambos formatos posibles
+      const tipo = (item.tipo || item.benefitType || "").toString();
+      const rawValor = item.valor ?? item.benefitValue ?? null;
+
+      // Detectar si es porcentual (comparación tolerante)
+      const tipoNorm = tipo.trim().toLowerCase();
+      if (tipoNorm === "porcentual" || tipoNorm === "porcentaje") {
+        // Aceptar tanto number como string convertible a number
+        const n = Number(rawValor);
+        return Number.isFinite(n) ? `${n}%` : (rawValor ? `${rawValor}%` : "—");
       }
+
+      // Si el tipo indica API y no hay valor numérico, retornar indicador API
+      const isApiType = tipoNorm === "api" || tipoNorm.includes("api");
+      if (isApiType && (rawValor === null || rawValor === undefined)) {
+        return "API";
+      }
+
+      // Determinar moneda: preferir campos explícitos
+      const currencyFromItem = (item.currency || item.moneda || item.currencyCode || "").toString().trim();
+      const currencyCode = currencyFromItem || "CRC"; // fallback a CRC
+
+      // Formatear número si existe
+      const valorNum = rawValor == null ? null : Number(rawValor);
+      if (!Number.isFinite(valorNum)) {
+        // Si no es numérico pero existe, mostrar tal cual
+        return rawValor != null ? String(rawValor) : (isApiType ? "API" : "—");
+      }
+
+      // Usar Intl.NumberFormat para formateo por moneda
+      try {
+        return new Intl.NumberFormat("es-CR", {
+          style: "currency",
+          currency: currencyCode,
+          maximumFractionDigits: 2
+        }).format(valorNum);
+      } catch (e) {
+        // Si currencyCode no es válido para Intl, formatear con separador de miles y prefijo
+        return `${currencyCode} ${valorNum.toLocaleString()}`;
+      }
+    },
+
+    // formateo reutilizable para moneda (usado por la tabla de seleccionados)
+    formatCurrency(v) {
+      if (v == null) return "—";
+      return new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC" }).format(v);
     },
 
     volverAtras() {
@@ -454,6 +615,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 /* Estilos del header (style de DatosPersonales.vue) */
@@ -617,6 +779,32 @@ export default {
 .table-wrapper {
   overflow-x: auto;
 }
+
+/* fila de título que ocupa todas las columnas */
+.title-row .table-title {
+  text-align: left;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 12px;
+  background: #6b7280;
+  border-bottom: 1px solid #e6e9ef;
+}
+
+/* cuando la tabla está vacía, centrar el mensaje */
+.sb-table-empty .empty-cell {
+  text-align: center;
+  padding: 16px;
+  color: #FFFFFF;
+}
+
+/* pequeñas mejoras visuales por si las quieres */
+.sb-table thead tr + tr th,
+.beneficios-table thead tr + tr th {
+  background: rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+  padding: 8px 10px;
+}
+
 
 .beneficios-table {
   width: 100%;

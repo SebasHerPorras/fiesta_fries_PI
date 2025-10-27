@@ -54,6 +54,10 @@ namespace backend.Services
             var saved = await _repository.SaveSelectionAsync(entity);
             return saved;
         }
-
+        public Task<List<EmployeeBenefit>> GetSelectedByEmployeeIdAsync(int employeeId)
+        {
+            if (employeeId <= 0) throw new ArgumentException("employeeId invalido: ", nameof(employeeId));
+            return _repository.GetSelectedByEmployeeIdAsync(employeeId);
+        }
     }
 }

@@ -46,6 +46,7 @@ export const API_ENDPOINTS = {
   ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
   CAN_SELECT_BENEFIT: (employeeId, benefitId) => buildApiUrl(`EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`),
   PERSON_BY_USER: (userGuid) => buildApiUrl(`person/by-user/${userGuid}`),
+  EMPLOYEE_BENEFIT_SELECTED: (employeeId) => buildApiUrl(`EmployeeBenefit/selected?employeeId=${employeeId}`),
 
 
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),

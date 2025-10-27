@@ -96,6 +96,31 @@ namespace backend.Repositories
             return result;
         }
 
+        public async Task<List<EmployeeBenefit>> GetSelectedByEmployeeIdAsync(int employeeId)
+        {
+            if (employeeId < 0) return new List<EmployeeBenefit>();
+
+            const string sql = @"
+                SELECT
+                    employeeId        AS EmployeeId,
+                    benefitId         AS BenefitId,
+                    pensionType       AS PensionType,
+                    dependentsCount   AS DependentsCount,
+                    apiName           AS ApiName,
+                    benefitValue      AS BenefitValue,
+                    benefitType       AS BenefitType
+                FROM EmployeeBenefit
+                WHERE employeeId = @EmployeeId;";
+
+            if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
+            {
+                await sqlConn.OpenAsync();
+            }
+
+            var result = await _db.QueryAsync<EmployeeBenefit>(sql, new { EmployeeId = employeeId });
+            return result.AsList();
+        }
+
     }
 
 }

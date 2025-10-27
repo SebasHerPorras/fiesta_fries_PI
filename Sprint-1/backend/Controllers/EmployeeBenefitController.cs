@@ -29,7 +29,6 @@ public class EmployeeBenefitController : ControllerBase
         return success ? Ok(new { success = true }) : BadRequest(new { success = false, message = "No puede seleccionar este beneficio" });
     }
 
-    // GET api/EmployeeBenefit/can-select?employeeId=1&benefitId=2
     [HttpGet("can-select")]
     public async Task<IActionResult> CanSelect([FromQuery] int employeeId, [FromQuery] int benefitId)
     {
@@ -38,5 +37,14 @@ public class EmployeeBenefitController : ControllerBase
 
         var can = await _service.CanEmployeeSelectBenefitAsync(employeeId, benefitId);
         return Ok(new { success = true, canSelect = can });
+    }
+
+    [HttpGet("selected")]
+    public async Task<IActionResult> GetSelectedDetails([FromQuery] int employeeId)
+    {
+        if (employeeId <= 0) return BadRequest(new { success = false, message = "employeeId inválido" });
+
+        var selected = await _service.GetSelectedByEmployeeIdAsync(employeeId);
+        return Ok(new { success = true, data = selected });
     }
 }
