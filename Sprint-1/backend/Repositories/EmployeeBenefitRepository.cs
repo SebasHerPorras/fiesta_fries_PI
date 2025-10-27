@@ -29,8 +29,8 @@ namespace backend.Repositories
             if (entity.EmployeeId <= 0 || entity.BenefitId <= 0) throw new ArgumentException("EmployeeId y BenefitId requeridos");
 
             const string sql = @"
-                INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount)
-                VALUES (@EmployeeId, @BenefitId, @PensionType, @DependentsCount);";
+                INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType)
+                VALUES (@EmployeeId, @BenefitId, @PensionType, @DependentsCount, @ApiName, @BenefitValue, @BenefitType);";
 
             // Abrir la conexión si está cerrada
             if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
@@ -46,7 +46,10 @@ namespace backend.Repositories
                     EmployeeId = entity.EmployeeId,
                     BenefitId = entity.BenefitId,
                     PensionType = entity.PensionType,
-                    DependentsCount = entity.DependentsCount
+                    DependentsCount = entity.DependentsCount,
+                    ApiName = entity.ApiName,
+                    BenefitValue = entity.BenefitValue,
+                    BenefitType = entity.BenefitType
                 }, tx);
 
                 tx.Commit();
@@ -65,6 +68,32 @@ namespace backend.Repositories
                 "                   @BenefitId) AS INT) AS CanSelect";
             var result = await _db.QueryFirstOrDefaultAsync<int?>(sql, new { EmployeeId = employeeId, BenefitId = benefitId });
             return result.HasValue && result.Value == 1;
+        }
+
+        public async Task<BeneficioModel?> GetBeneficioByIdAsync(int beneficioId)
+        {
+            if (beneficioId <= 0) return null;
+
+            const string sql = @"
+                SELECT TOP 1
+                    idBeneficio       AS IdBeneficio,
+                    cedulaJuridica    AS CedulaJuridica,
+                    nombre            AS Nombre,
+                    tipo              AS Tipo,
+                    quienAsume        AS QuienAsume,
+                    valor             AS Valor,
+                    etiqueta          AS Etiqueta
+                FROM Beneficio
+                WHERE idBeneficio = @BeneficioId;";
+
+            // Abrir la conexión si está cerrada
+            if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
+            {
+                await sqlConn.OpenAsync();
+            }
+
+            var result = await _db.QueryFirstOrDefaultAsync<BeneficioModel>(sql, new { BeneficioId = beneficioId });
+            return result;
         }
 
     }

@@ -35,8 +35,25 @@ namespace backend.Services
             var can = await _repository.CanEmployeeSelectBenefitAsync(entity.EmployeeId, entity.BenefitId);
             if (!can) return false;
 
+            // 2. Obtener datos canónicos del beneficio
+            var benefit = await _repository.GetBeneficioByIdAsync(entity.BenefitId);
+            if (benefit == null)
+            {
+                return false;
+            }
+
+            entity.ApiName = benefit.Nombre;
+            entity.BenefitValue = benefit.Valor;
+            entity.BenefitType = benefit.Tipo;
+
+            if (entity.BenefitValue.HasValue && entity.BenefitValue.Value < 0)
+            {
+                throw new InvalidOperationException("BenefitValue no puede ser negativo");
+            }
+
             var saved = await _repository.SaveSelectionAsync(entity);
             return saved;
         }
+
     }
 }
