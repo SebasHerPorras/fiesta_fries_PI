@@ -5,8 +5,7 @@
         public List<EmployeeCalculation> EmployeeCalculations { get; } = new();
         public decimal TotalDeductions => EmployeeCalculations.Sum(x => x.Deductions);
         public decimal TotalBenefits => EmployeeCalculations.Sum(x => x.Benefits);
-        public decimal TotalTax => EmployeeCalculations.Sum(x => x.Tax);
-        public decimal TotalAmount => TotalDeductions + TotalBenefits + TotalTax;
+        public decimal TotalAmount => TotalDeductions + TotalBenefits;
         public int ProcessedEmployees => EmployeeCalculations.Count;
 
         public void AddEmployeeCalculation(EmployeeCalculation calculation)
@@ -25,10 +24,9 @@
     public record EmployeeCalculation(
         EmpleadoModel Employee,
         decimal Deductions,
-        decimal Benefits,
-        decimal Tax)
+        decimal Benefits)
     {
-        public decimal NetSalary => Employee.salary - Deductions + Benefits - Tax;
+        public decimal NetSalary => Employee.salary - Deductions + Benefits;
 
         public PayrollPayment ToPayment(int payrollId) => new()
         {
