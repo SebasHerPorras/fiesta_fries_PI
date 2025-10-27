@@ -7,13 +7,19 @@ namespace backend.Services
     public class CalculationService : ICalculationService
     {
         private readonly ICalculatorDeductionsEmployerService _deductionsService;
+        private readonly ICalculatorDeductionsEmployeeService _employeeDeductionsService;
+        private readonly IPersonalIncomeTaxService _incomeTaxService;
         private readonly ILogger<CalculationService> _logger;
 
         public CalculationService(
             ICalculatorDeductionsEmployerService deductionsService,
+            ICalculatorDeductionsEmployeeService employeeDeductionsService,
+            IPersonalIncomeTaxService incomeTaxService,
             ILogger<CalculationService> logger)
         {
             _deductionsService = deductionsService ?? throw new ArgumentNullException(nameof(deductionsService));
+            _employeeDeductionsService = employeeDeductionsService;
+            _incomeTaxService = incomeTaxService;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -25,7 +31,7 @@ namespace backend.Services
 
             try
             {
-                var deducciones = _deductionsService.CalculateEmployerDeductions(empleado, payrollId, companyId);
+                var deducciones = _employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
 
                 _logger.LogDebug(
                     "Deducciones calculadas: {Deducciones} para empleado {Cedula}",
@@ -56,14 +62,32 @@ namespace backend.Services
 
         public async Task<decimal> CalculateIncomeTaxAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogDebug("Calculando impuesto para empleado: {Cedula}", empleado.CedulaEmpleado);
+            _logger.LogInformation("=== CALCULANDO IMPUESTO RENTA ===");
+            _logger.LogInformation("Empleado: {Cedula}, Salario: {Salario}",
+                empleado.CedulaEmpleado, empleado.SalarioBruto);
 
-            // implementar servicio real de impuestos  
-            // por ahora retorna 0
-            await Task.Delay(1); 
+            try
+            {
+                var incomeTax = await Task.Run(() =>
+                    _incomeTaxService.CalculateIncomeTax(empleado.SalarioBruto));
 
-            _logger.LogDebug("Impuesto calculado: 0 para empleado {Cedula}", empleado.CedulaEmpleado);
-            return 0m;
+                _logger.LogInformation("=== IMPUESTO RENTA CALCULADO: {IncomeTax} ===", incomeTax);
+
+                return incomeTax;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calculando impuesto renta para empleado {Cedula}",
+                    empleado.CedulaEmpleado);
+                throw;
+            }
+        }
+        
+
+        public async Task<decimal> CalculateEmployerDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
+        {
+            return await Task.Run(() =>
+                _deductionsService.CalculateEmployerDeductions(empleado, payrollId, companyId));
         }
     }
 }
