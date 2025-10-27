@@ -31,9 +31,14 @@ namespace backend.Repositories
                     PeriodDate, 
                     CompanyId, 
                     IsCalculated, 
-                    TotalAmount, 
                     ApprovedBy, 
-                    LastModified
+                    LastModified,
+                    TotalGrossSalary,
+                    TotalEmployerDeductions,
+                    TotalEmployeeDeductions,
+                    TotalBenefits,
+                    TotalNetSalary,
+                    TotalEmployerCost
                 FROM Payroll 
                 WHERE PeriodDate = @PeriodDate AND CompanyId = @CompanyId";
 
@@ -63,9 +68,33 @@ namespace backend.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
-                INSERT INTO Payroll (PeriodDate, CompanyId, ApprovedBy, LastModified)
+                INSERT INTO Payroll (
+                    PeriodDate, 
+                    CompanyId,
+                    IsCalculated,
+                    ApprovedBy, 
+                    LastModified,
+                    TotalGrossSalary,
+                    TotalEmployerDeductions,
+                    TotalEmployeeDeductions,
+                    TotalBenefits,
+                    TotalNetSalary,
+                    TotalEmployerCost
+                )
                 OUTPUT INSERTED.PayrollId
-                VALUES (@PeriodDate, @CompanyId, @ApprovedBy, @LastModified)";
+                VALUES (
+                    @PeriodDate, 
+                    @CompanyId,
+                    @IsCalculated, 
+                    @ApprovedBy, 
+                    @LastModified,
+                    @TotalGrossSalary,
+                    @TotalEmployerDeductions,
+                    @TotalEmployeeDeductions,
+                    @TotalBenefits,
+                    @TotalNetSalary,
+                    @TotalEmployerCost
+                )";
 
             try
             {
@@ -73,8 +102,15 @@ namespace backend.Repositories
                 {
                     payroll.PeriodDate,
                     payroll.CompanyId,
+                    payroll.IsCalculated,
+                    payroll.LastModified,
                     payroll.ApprovedBy,
-                    payroll.LastModified
+                    payroll.TotalGrossSalary,
+                    payroll.TotalEmployerDeductions,
+                    payroll.TotalEmployeeDeductions,
+                    payroll.TotalBenefits,
+                    payroll.TotalNetSalary,
+                    payroll.TotalEmployerCost
                 });
 
                 _logger.LogInformation("Planilla creada exitosamente. ID: {PayrollId}, Período: {PeriodDate}",
@@ -97,8 +133,13 @@ namespace backend.Repositories
             const string query = @"
                 UPDATE Payroll 
                 SET IsCalculated = @IsCalculated,
-                    TotalAmount = @TotalAmount,
-                    LastModified = @LastModified
+                    LastModified = @LastModified,
+                    TotalGrossSalary = @TotalGrossSalary, 
+                    TotalEmployerDeductions = @TotalEmployerDeductions,
+                    TotalEmployeeDeductions = @TotalEmployeeDeductions,
+                    TotalBenefits = @TotalBenefits,
+                    TotalNetSalary = @TotalNetSalary,
+                    TotalEmployerCost = @TotalEmployerCost
                 WHERE PayrollId = @PayrollId";
 
             try
@@ -264,5 +305,6 @@ namespace backend.Repositories
         }
 
         #endregion
+
     }
 }
