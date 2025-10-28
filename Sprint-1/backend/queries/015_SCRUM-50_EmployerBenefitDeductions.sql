@@ -18,6 +18,11 @@ CREATE TABLE EmployerBenefitDeductions (
 );
 GO
 
+-- Alterar la tabla para cambiar el tipo de dato de Percentage
+ALTER TABLE EmployerBenefitDeductions
+ALTER COLUMN Percentage DECIMAL(6,4) NULL;
+GO
+
 -- Crear índices para mejorar el rendimiento de consultas
 CREATE INDEX IX_EmployerBenefitDeductions_ReportId ON EmployerBenefitDeductions(ReportId);
 CREATE INDEX IX_EmployerBenefitDeductions_EmployeeId ON EmployerBenefitDeductions(EmployeeId);
@@ -32,7 +37,7 @@ CREATE OR ALTER PROCEDURE SP_InsertEmployerBenefitDeduction
     @BenefitName VARCHAR(100),
     @DeductionAmount DECIMAL(18,2),
     @BenefitType VARCHAR(50),
-    @Percentage DECIMAL(5,4) = NULL
+    @Percentage DECIMAL(6,4) = NULL  -- CAMBIO: de DECIMAL(5,4) a DECIMAL(6,4)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -70,6 +75,3 @@ BEGIN
 END;
 GO
 
--- Query de verificación
-SELECT * FROM EmployerBenefitDeductions;
-GO
