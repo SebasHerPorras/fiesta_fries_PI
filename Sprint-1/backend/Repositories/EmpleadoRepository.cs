@@ -47,5 +47,41 @@ namespace backend.Repositories
                 return new List<EmpleadoListDto>();
             }
         }
+
+        public DateTime GetHireDate(int id_)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = "SELECT hiredate from Empleado where id = @id";
+
+            return connection.QuerySingleOrDefault<DateTime>(query, new {id = id_});
+        }
+
+        public WeekEmployeeModel? GetWorkWeek(DateTime date_, int idEmployee)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"EXEC sp_GetOrCreateWeek @start_date = @start_date, @id_employee = @id_employee";
+
+            return connection.QuerySingleOrDefault<WeekEmployeeModel>(query, new {start_date = date_, id_employee = idEmployee});
+        }
+        
+        public EmployeeWorkDayModel? GetWorkDay(DateTime weekDate_,DateTime dayDate_, int idEmployee)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"EXEC sp_GetOrCreateDay @date = @date, @week_start_date = @week_start_date, @id_employee = @id_employee";
+
+            return connection.QuerySingleOrDefault<EmployeeWorkDayModel>(query, new {date = dayDate_, week_start_date=weekDate_,id_employee = idEmployee});
+        }
+
+        public EmployeeWorkDayModel? AddHours(DateTime dateW,DateTime dateD,int hours_, int idEmployee)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"EXEC sp_AddHoursToDayAndGetTable @hours_count = @hours_count, @date = @date,@week_start_date = @week_start_date ,@id_employee = @id_employee";
+
+            return connection.QuerySingleOrDefault<EmployeeWorkDayModel>(query, new { date = dateD, hours_count = hours_ ,id_employee=idEmployee,week_start_date = dateW});
+        }
     }
 }

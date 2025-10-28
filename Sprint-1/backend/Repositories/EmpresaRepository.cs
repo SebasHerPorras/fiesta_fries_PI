@@ -136,5 +136,36 @@ namespace backend.Handlers.backend.Repositories
                 throw;
             }
         }
+        public EmpresaModel GetByEmployeeUserId(string userId)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+            SELECT e.*
+            FROM Empresa e
+            INNER JOIN Empleado emp ON e.CedulaJuridica = emp.idCompny
+            INNER JOIN Persona p ON emp.id = p.id
+            WHERE p.uniqueUser = @UserId";
+
+                Console.WriteLine($"Buscando empresa para empleado con UserId (uniqueUser): {userId}");
+                var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { UserId = Guid.Parse(userId) });
+
+                if (empresa != null)
+                    Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
+                else
+                    Console.WriteLine($"No se encontró empresa para el empleado con UserId: {userId}");
+
+                return empresa;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository GetByEmployeeUserId: {ex.Message}");
+                throw;
+            }
+
+        }
+
     }
 }

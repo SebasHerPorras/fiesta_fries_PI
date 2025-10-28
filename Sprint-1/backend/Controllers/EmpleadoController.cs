@@ -51,6 +51,58 @@ namespace backend.Controllers
             return Ok();
         }
 
+        [HttpGet("GetEmployeeHireDate")]
+        public ActionResult getHireDate([FromQuery] int id)
+        {
+            var hireDate = this.empleadoService.GetHireDate(id);
+
+            return Ok(hireDate);
+        }
+
+        [HttpGet("GetEmployeeWorkDayHours")]
+        public ActionResult getWorkDayHours([FromQuery] DateTime dateW, DateTime dateD,int id)
+        {
+            EmployeeWorkDayHoursService service = new EmployeeWorkDayHoursService();
+
+            EmployeeWorkDayModel? workHours = service.GetWorkDay(dateW, dateD, id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("El Día asociado a este empleado no existe");
+        }
+
+        [HttpGet("AddWorkHours")]
+        public ActionResult AddWorkHours([FromQuery] DateTime dateW,DateTime dateD, int hours, int id)
+        {
+            EmployeeWorkDayHoursService service = new EmployeeWorkDayHoursService();
+
+            EmployeeWorkDayModel? workHours = service.AddHours(dateW,dateD, hours,id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("No se pudieron añadir las horas");
+        }
+        [HttpGet("GetWorkHoursWeek")]
+        public ActionResult getWeekHours([FromQuery] DateTime date, int id)
+        {
+            EmployeeWorkWeekService service = new EmployeeWorkWeekService();
+
+            WeekEmployeeModel? workHours = service.GetWeek(date, id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("No se pudieron traer las horas");
+
+        }
 
     }
 }

@@ -45,6 +45,19 @@ namespace backend.Controllers
             return Ok(profile);
         }
 
+        [HttpGet("by-user/{userGuid:guid}")]
+        public ActionResult GetByUserGuid(Guid userGuid)
+        {
+            if (userGuid == Guid.Empty) return BadRequest(new { success = false, message = "userGuid is required" });
+
+            var repo = new PersonRepository();
+            var persona = repo.GetByUserId(userGuid);
+
+            if (persona == null) return NotFound(new { success = false, message = "Persona not found" });
+
+            return Ok(new { success = true, persona });
+        }
+
     }
 
 }
