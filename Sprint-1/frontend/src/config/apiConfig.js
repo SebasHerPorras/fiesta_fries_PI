@@ -44,6 +44,15 @@ export const API_ENDPOINTS = {
     WORK_WEEK_HOURS: (date, id) => `${buildApiUrl("Empleado/GetWorkHoursWeek")}?date=${encodeURIComponent(date)}&id=${encodeURIComponent(id)}`,
     ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) => `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(hours)}&id=${encodeURIComponent(id)}`,
 
+  EMPRESA_BY_EMPLOYEE: (userId) => buildApiUrl(`empresa/employee-company/${userId}`),
+
+  BENEFICIOS_SELECCIONADOS: (empleadoId) => buildApiUrl(`EmployeeBenefit/${empleadoId}`),
+  ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
+  CAN_SELECT_BENEFIT: (employeeId, benefitId) => buildApiUrl(`EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`),
+  PERSON_BY_USER: (userGuid) => buildApiUrl(`person/by-user/${userGuid}`),
+  EMPLOYEE_BENEFIT_SELECTED: (employeeId) => buildApiUrl(`EmployeeBenefit/selected?employeeId=${employeeId}`),
+
+
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
   USER_EMAIL_VERIFY: (email) =>

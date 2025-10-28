@@ -23,7 +23,7 @@
               </li>
 
               <!--Solo Empleado: Añadir horas-->
-              <li v-f="userRole === 'Empleado'">
+              <li v-if="userRole === 'Empleado'">
                   <router-link to="/RegisterHoras">Registrar Horas</router-link>
               </li>
 
@@ -40,6 +40,17 @@
               <!-- Solo Administrador: Ver Toda Empresa -->
               <li v-if="isAdmin">
                   <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+              </li>
+
+              <!-- Solo Empleado: Seleccionar Beneficios -->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
+              </li>
+
+              <!-- Nombre de Empresa: Solo Empleados -->
+              <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
+                <a href="#" @click.prevent> Empresa: {{ selectedCompany.nombre }}
+                </a>
               </li>
 
               <!-- Siempre visible -->
@@ -177,78 +188,124 @@ export default {
     this.email = userData?.email || "";
   }
 },
-    async loadCompanies() {
-      try {
-        const stored = JSON.parse(localStorage.getItem("userData"));
-        const userId = stored?.id;
-        if (!userId)
-        return;
+async loadCompanies() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("userData"));
+    const userId = stored?.id;
+    if (!userId) return;
 
-      // Si es ADMIN, cargar TODAS las empresas
-      if (this.isAdmin || stored.isAdmin) {
-        console.log('Usuario es admin, cargando TODAS las empresas');
-        const empresasRes = await axios.get(API_ENDPOINTS.EMPRESAS_TODAS);
-        
-        // Verificar estructura de respuesta
-        if (empresasRes.data && empresasRes.data.success) {
-          this.companies = empresasRes.data.empresas || [];
-        } else if (Array.isArray(empresasRes.data)) {
-          this.companies = empresasRes.data;
-        } else {
-          this.companies = [];
-        }
-        
-        console.log(`Admin - ${this.companies.length} empresas cargadas`);
-        return;
-      }
-
-      // Si NO es admin, verificar si es Empleador
-      const isEmpleador = stored.personType === "Empleador";
-
-      if (!isEmpleador) {
-        console.log(`Usuario es ${stored.personType || 'empleado'}, no se cargan empresas`);
+    // Si es ADMIN, cargar TODAS las empresas
+    if (this.isAdmin || stored.isAdmin) {
+      console.log('Usuario es admin, cargando TODAS las empresas');
+      const empresasRes = await axios.get(API_ENDPOINTS.EMPRESAS_TODAS);
+      
+      // Verificar estructura de respuesta
+      if (empresasRes.data && empresasRes.data.success) {
+        this.companies = empresasRes.data.empresas || [];
+      } else if (Array.isArray(empresasRes.data)) {
+        this.companies = empresasRes.data;
+      } else {
         this.companies = [];
-        return;
       }
- 
+      
+      console.log(`Admin - ${this.companies.length} empresas cargadas`);
+      return;
+    }
+
+    // Determinar tipo de usuario
+    const userType = stored.personType;
+    console.log(`Usuario es ${userType}, cargando empresas...`);
+
+    if (userType === "Empleador") {
       // Buscar empresas del Empleador específico
       console.log('Usuario es Empleador, cargando sus empresas');
       const empresasRes = await axios.get(API_ENDPOINTS.MIS_EMPRESAS_ID(userId));
       
       // Verificar la estructura de la respuesta
       if (empresasRes.data && empresasRes.data.success) {
-        // Si la respuesta tiene estructura { success: true, empresas: [...] }
         this.companies = empresasRes.data.empresas || [];
       } else if (Array.isArray(empresasRes.data)) {
-        // Si la respuesta es directamente un array
         this.companies = empresasRes.data;
       } else {
         this.companies = [];
       }
+    } 
+    else if (userType === "Empleado") {
+        console.log('=== DEBUG EMPLEADO ===');
+        console.log('User ID:', userId);
+        console.log('User Data completo:', stored);
 
-      if (this.companies.length > 0) {
-          const savedCompany = localStorage.getItem("selectedCompany");
-          if (savedCompany) {
-            try {
-              this.selectedCompany = JSON.parse(savedCompany);
-              console.log("Empresa recuperada de localStorage:", this.selectedCompany);
-            } catch (e) {
-              console.error("Error parsing saved company:", e);
-              this.selectedCompany = this.companies[0];
-              this.saveSelectedCompany();
-            }
+    try {
+        const endpointURL = API_ENDPOINTS.EMPRESA_BY_EMPLOYEE(userId);
+        console.log('🔗 Endpoint URL:', endpointURL);
+        
+        const empresaRes = await axios.get(endpointURL);
+        console.log('📡 Response status:', empresaRes.status);
+        console.log('📡 Response headers:', empresaRes.headers);
+        console.log('📡 Response data:', empresaRes.data);
+        console.log('📡 Response data type:', typeof empresaRes.data);
+        
+        if (empresaRes.data) {
+          console.log('Data recibida válida');
+          if (empresaRes.data.success && empresaRes.data.empresa) {
+            console.log('Empresa encontrada');
+            this.companies = [empresaRes.data.empresa];
+          } else if (empresaRes.data.nombre) {
+            console.log('Estructura alternativa - objeto directo');
+            this.companies = [empresaRes.data];
           } else {
-            this.selectedCompany = this.companies[0];
-            this.saveSelectedCompany();
+            console.log('Estructura inesperada');
+            console.log('Keys en response.data:', Object.keys(empresaRes.data));
+            this.companies = [];
           }
         } else {
-          console.log("Empleador no tiene empresas registradas");
+          console.log('Response.data es null/undefined');
+          this.companies = [];
         }
-      } catch (err) {
-        console.error("Error cargando empresas:", err);
+        
+      } catch (error) {
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Error response:', error.response);
+        console.error('Error response data:', error.response?.data);
+        console.error('Error response status:', error.response?.status);
+        console.error('Error response headers:', error.response?.headers);
+        
         this.companies = [];
       }
-    },
+
+    }
+    else {
+      console.log(`Usuario es ${userType}, no se cargan empresas`);
+      this.companies = [];
+      return;
+    }
+
+    if (this.companies.length > 0) {
+      const savedCompany = localStorage.getItem("selectedCompany");
+      if (savedCompany) {
+        try {
+          this.selectedCompany = JSON.parse(savedCompany);
+          console.log("Empresa recuperada de localStorage:", this.selectedCompany.nombre);
+        } catch (e) {
+          console.error("Error parsing saved company:", e);
+          this.selectedCompany = this.companies[0];
+          this.saveSelectedCompany();
+        }
+      } else {
+        this.selectedCompany = this.companies[0];
+        this.saveSelectedCompany();
+        console.log("Empresa guardada en localStorage:", this.selectedCompany.nombre);
+      }
+    } else {
+      console.log("No se encontraron empresas asociadas");
+      localStorage.removeItem("selectedCompany");
+    }
+  } catch (err) {
+    console.error("Error cargando empresas:", err);
+    this.companies = [];
+  }
+},
 
     saveSelectedCompany() {
       if (this.selectedCompany) {
