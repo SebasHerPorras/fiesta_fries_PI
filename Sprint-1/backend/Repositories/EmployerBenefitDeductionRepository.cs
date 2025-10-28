@@ -25,26 +25,9 @@ namespace backend.Repositories
                 foreach (var deduction in deductions)
                 {
                     const string query = @"
-                        INSERT INTO EmployerBenefitDeductions (
-                            ReportId,
-                            EmployeeId,
-                            CedulaJuridicaEmpresa,
-                            BenefitName,
-                            DeductionAmount,
-                            BenefitType,
-                            Percentage,
-                            CreatedDate
-                        )
-                        VALUES (
-                            @ReportId,
-                            @EmployeeId,
-                            @CedulaJuridicaEmpresa,
-                            @BenefitName,
-                            @DeductionAmount,
-                            @BenefitType,
-                            @Percentage,
-                            GETDATE()
-                        )";
+                        EXEC SP_InsertEmployerBenefitDeduction 
+                        @ReportId, @EmployeeId, @CedulaJuridicaEmpresa, 
+                        @BenefitName, @DeductionAmount, @BenefitType, @Percentage";
 
                     connection.Execute(query, new
                     {
