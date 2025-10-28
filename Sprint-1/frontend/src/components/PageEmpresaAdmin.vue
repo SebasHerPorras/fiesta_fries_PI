@@ -26,22 +26,24 @@
       <button @click="toggleEmpleados" class="btn-info">
         👥 {{ mostrandoEmpleados ? 'Ver Empresas' : 'Lista de Empleados' }}
       </button>
+      <button @click="togglePayroll" class="btn-info">
+        📝 {{ mostrandoPayroll ? 'Ver Empresas' : 'Generar Planilla' }}
+      </button>
     </div>
 
     <div class="content">
       <!-- Estado de carga -->
       <div v-if="loading" class="loading">
-        ⏳ {{ 
-          mostrandoEmpleados ? 'Cargando empleados...' : 
-          mostrandoBeneficios ? 'Cargando beneficios...' : 
-          'Cargando empresas...' 
-        }}
-      </div>
-
+    ⏳ {{  mostrandoEmpleados ? 'Cargando empleados...' : 
+            mostrandoBeneficios ? 'Cargando beneficios...' : 
+            mostrandoPayroll ? 'Cargando planillas...' :
+            'Cargando empresas...' 
+          }}
+        </div>
       <!-- Vista principal con condiciones anidadas -->
       <div v-else>
         <!-- Vista de EMPRESAS -->
-        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios">
+        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios && !mostrandoPayroll">
           <!-- Lista de empresas -->
           <div v-if="empresas.length > 0" class="empresas-list">
             <div class="table-container">
@@ -166,8 +168,44 @@
             </div>
           </div>
         </div>
-      </div>
+  
 
+      <!-- Vista de PAYROLL -->
+      <div v-else-if="mostrandoPayroll">
+        <div class="payroll-list">
+          <div class="section-header">
+            <h3>📝 Planillas de Pago</h3>
+            <span class="count-badge">{{ payrolls.length }} planillas</span>
+          </div>
+          <div class="table-container">
+            <table class="payroll-table">
+              <thead>
+                <tr>
+                  <th>Fecha de Pago</th>
+                  <th>Salario Bruto</th>
+                  <th>Deducciones Empleador</th>
+                  <th>Deducciones Empleados</th>
+                  <th>Beneficios</th>
+                  <th>Salario Neto</th>
+                  <th>Costo Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="payroll in payrolls" :key="payroll.payrollId" class="payroll-row">
+                  <td>{{ formatDate(payroll.periodDate) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalGrossSalary) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalEmployerDeductions) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalEmployeeDeductions) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalBenefits) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalNetSalary) }}</td>
+                  <td>₡{{ formatCurrency(payroll.totalEmployerCost) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+   </div> 
       <!-- Mensajes de éxito/error -->
       <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
         {{ message }}
@@ -203,36 +241,35 @@ export default {
       messageType: 'success',
       mostrandoEmpleados: false,
       mostrandoBeneficios: false,
+      mostrandoPayroll: false,
       empleadosQuemados: [],
       beneficios: [],
+      payrolls: [],
       selectedCompany: null,
       selectedCompanyId: null,
-      selectedCompanyCedula: null
+      selectedCompanyCedula: null  
     }
   },
   mounted() {
     this.loadEmpresas();
-    this.loadSelectedCompany(); // Cargar empresa seleccionada al iniciar
+    this.loadSelectedCompany();
   },
   methods: {
-    // Alternar entre mostrar empresas y empleados
     async toggleEmpleados() {
       this.mostrandoEmpleados = !this.mostrandoEmpleados;
       
       if (this.mostrandoEmpleados) {
-        // Verificar si hay empresa seleccionada
         if (this.loadSelectedCompany()) {
-          await this.loadEmpleadosReales(); // Cargar empleados reales
+          await this.loadEmpleadosReales(); 
         } else {
           this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
-          this.mostrandoEmpleados = false; // Volver a empresas
+          this.mostrandoEmpleados = false;
         }
       } else {
         this.showMessage('Mostrando lista de empresas', 'success');
       }
     },
 
-    // Cargar empleados reales desde el backend
     async loadEmpleadosReales() {
       if (!this.selectedCompanyCedula) {
         this.showMessage('No hay empresa seleccionada', 'error');
@@ -243,7 +280,6 @@ export default {
       try {
         console.log('Cargando empleados para empresa:', this.selectedCompanyCedula);
         
-        // Usar la cédula de la empresa para obtener empleados
         const response = await axios.get(API_ENDPOINTS.EMPLEADOS(this.selectedCompanyCedula));
 
         console.log('Respuesta empleados:', response.data);
@@ -282,7 +318,6 @@ export default {
       }
     },
 
-
   async toggleBeneficios() {
     this.mostrandoEmpleados = false;
     this.mostrandoBeneficios = !this.mostrandoBeneficios;
@@ -299,8 +334,54 @@ export default {
     }
   },
 
- 
- async loadBeneficiosReales() {
+    async loadBeneficiosReales() {
+      if (!this.selectedCompanyCedula) {
+        this.showMessage('No hay empresa seleccionada', 'error');
+        return;
+      }
+
+      this.loading = true;
+      try {
+        console.log('Cargando beneficios para empresa:', this.selectedCompanyCedula);
+
+        const response = await axios.get(API_ENDPOINTS.BENEFICIOS_POR_EMPRESA(this.selectedCompanyCedula));
+
+        console.log('Respuesta completa:', response);
+        console.log('Datos de beneficios:', response.data);
+        
+        let beneficiosData = [];
+
+        if (response.data && response.data.success && Array.isArray(response.data.beneficios)) {
+          beneficiosData = response.data.beneficios;
+          console.log(`Se cargaron ${beneficiosData.length} beneficio/s`);
+        } else {
+          console.log('Formato inesperado:', response.data);
+          beneficiosData = [];
+        }
+
+        this.beneficios = beneficiosData;
+        this.showMessage(`Se cargaron ${beneficiosData.length} beneficio/s de ${this.selectedCompany.nombre}`, 'success');
+        
+      } catch (error) {
+        console.error('Error cargando beneficios:', error);
+        console.error('Detalles del error:', error.response?.data);
+        this.beneficios = [];
+        
+        let errorMessage = 'Error al cargar beneficios';
+        if (error.response?.status === 404) {
+          errorMessage = 'No se encontraron beneficios para esta empresa';
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        this.showMessage(errorMessage, 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+        async generarNuevaPlanilla() {
   if (!this.selectedCompanyCedula) {
     this.showMessage('No hay empresa seleccionada', 'error');
     return;
@@ -308,41 +389,64 @@ export default {
 
   this.loading = true;
   try {
-    console.log('Cargando beneficios para empresa:', this.selectedCompanyCedula);
+    const request = {
+      periodDate: new Date().toISOString(),
+      companyId: parseInt(this.selectedCompanyCedula),
+      approvedBy: 'Sistema'
+    };
 
-    const response = await axios.get(API_ENDPOINTS.BENEFICIOS_POR_EMPRESA(this.selectedCompanyCedula));
-
-    console.log('Respuesta completa:', response);
-    console.log('Datos de beneficios:', response.data);
+    console.log('Generando nueva planilla:', request);
     
-    let beneficiosData = [];
+    const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
 
-    if (response.data && response.data.success && Array.isArray(response.data.beneficios)) {
-      beneficiosData = response.data.beneficios;
-      console.log(`Se cargaron ${beneficiosData.length} beneficio/s`);
+    console.log('Respuesta de generación:', response.data);
+
+    if (response.data.success) {
+      this.showMessage(`${response.data.message}`, 'success');
+      
+      console.log('Obteniendo planilla completa...');
+      const payrollsResponse = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+      
+      if (payrollsResponse.data && Array.isArray(payrollsResponse.data) && payrollsResponse.data.length > 0) {
+        const planillaMasReciente = payrollsResponse.data[0];
+        
+        console.log(' Planilla completa obtenida:', planillaMasReciente);
+        
+        this.payrolls = [planillaMasReciente];
+      } else {
+
+        console.log(' No se pudo obtener planilla completa, usando datos básicos');
+        const nuevaPlanilla = {
+          payrollId: response.data.payrollId,
+          periodDate: request.periodDate,
+          companyId: this.selectedCompanyCedula,
+          isCalculated: true,
+          approvedBy: request.approvedBy,
+          lastModified: new Date().toISOString(),
+          totalGrossSalary: response.data.totalAmount || 0,
+          totalEmployerDeductions: response.data.totalDeductions || 0,
+          totalEmployeeDeductions: 0,
+          totalBenefits: response.data.totalBenefits || 0,
+          totalNetSalary: response.data.totalAmount || 0,
+          totalEmployerCost: response.data.totalAmount || 0
+        };
+        this.payrolls = [nuevaPlanilla];
+      }
+      
     } else {
-      console.log('Formato inesperado:', response.data);
-      beneficiosData = [];
+      this.showMessage(`${response.data.message}`, 'error');
+      this.payrolls = [];
     }
-
-    this.beneficios = beneficiosData;
-    this.showMessage(`Se cargaron ${beneficiosData.length} beneficio/s de ${this.selectedCompany.nombre}`, 'success');
-    
   } catch (error) {
-    console.error('Error cargando beneficios:', error);
-    console.error('Detalles del error:', error.response?.data);
-    this.beneficios = [];
+    console.error('Error generando planilla:', error);
     
-    let errorMessage = 'Error al cargar beneficios';
-    if (error.response?.status === 404) {
-      errorMessage = 'No se encontraron beneficios para esta empresa';
-    } else if (error.response?.data?.message) {
+    let errorMessage = 'Error al generar la planilla';
+    if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
     }
     
-    this.showMessage(errorMessage, 'error');
+    this.showMessage(`${errorMessage}`, 'error');
+    this.payrolls = [];
   } finally {
     this.loading = false;
   }
@@ -449,6 +553,7 @@ export default {
       }
     },
 
+    
     navigateToCreate() {
       this.$router.push('/FormEmpresa');
     },
@@ -514,7 +619,75 @@ export default {
         console.error('Error cargando empresa seleccionada:', error);
         return false;
       }
-    }
+    },
+
+       async togglePayroll() {
+        this.mostrandoEmpleados = false;
+        this.mostrandoBeneficios = false;
+        this.mostrandoPayroll = !this.mostrandoPayroll;
+        
+        if (this.mostrandoPayroll) {
+          if (this.loadSelectedCompany()) {
+            await this.generarNuevaPlanilla(); 
+          } else {
+            this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
+            this.mostrandoPayroll = false;
+          }
+        } else {
+          this.showMessage('Mostrando lista de empresas', 'success');
+        }
+      },
+
+      async loadPayrollsReales() {
+      if (!this.selectedCompanyCedula) {
+        this.showMessage('No hay empresa seleccionada', 'error');
+        return;
+      }
+
+      this.loading = true;
+      try {
+        console.log('Cargando payrolls para empresa:', this.selectedCompanyCedula);
+        
+        const response = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+
+        console.log('Respuesta payrolls:', response.data);
+        
+        this.payrolls = Array.isArray(response.data) ? response.data : [];
+        
+        this.showMessage(
+          `Se cargaron ${this.payrolls.length} planilla(s) de ${this.selectedCompany?.nombre || 'la empresa'}`,
+          'success'
+        );
+      } catch (error) {
+        console.error('Error cargando payrolls:', error);
+        this.payrolls = [];
+        
+        let errorMessage = 'Error al cargar planillas';
+        if (error.response?.status === 404) {
+          errorMessage = 'No se encontraron planillas para esta empresa';
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+        
+        this.showMessage(errorMessage, 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // Formatear fecha
+    formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES');
+    },
+
+    // Formatear moneda
+    formatCurrency(amount) {
+      if (!amount) return '0';
+      return parseFloat(amount).toLocaleString('es-CR');
+    },
+    
   }
 }
 </script>
@@ -949,6 +1122,37 @@ footer {
   text-decoration: none;
   color: #bdbdbd;
   font-size: 14px;
+}
+/* Estilos para la tabla de payroll */
+.payroll-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.payroll-table th,
+.payroll-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.payroll-table th {
+  background: rgba(31, 185, 180, 0.2);
+  font-weight: 600;
+  color: #1fb9b4;
+}
+
+.payroll-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Asegurar que los números se alineen a la izquierda */
+.payroll-table td:not(:first-child) {
+  text-align: left;
+  font-family: 'Courier New', monospace;
 }
 
 /* Responsivo para pantallas pequeñas */
