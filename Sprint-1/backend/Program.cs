@@ -40,6 +40,8 @@ builder.Services.AddScoped<IEmployeeSocialSecurityContributionsService, Employee
 builder.Services.AddScoped<IPersonalIncomeTaxService, PersonalIncomeTaxService>();
 builder.Services.AddScoped<IEmployeeDeductionsByPayrollService, EmployeeDeductionsByPayrollService>();
 builder.Services.AddScoped<ICalculatorDeductionsEmployeeService, CalculatorDeductionsEmployeeService>();
+builder.Services.AddScoped<ICalculatorBenefitsService, CalculatorBenefitsService>();
+builder.Services.AddScoped<IEmployerBenefitDeductionService, EmployerBenefitDeductionService>();
 
 // ===== CONFIGURACIÓN DE HTTP CLIENTS PARA APIS EXTERNAS =====
 builder.Services.AddHttpClient<ISolidarityAssociationService, SolidarityAssociationService>("AsociacionSolidarista", client =>
