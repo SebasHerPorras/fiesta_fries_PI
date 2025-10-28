@@ -209,10 +209,12 @@ footer {
 .error-msg {
     margin-top: 6px;
     color: #ff6b6b;
-    font-size: 13px;
+    font-size: 14px;
     text-align: left;
     min-height: 16px;
     transition: opacity 0.3s ease;
+    display:grid;
+    place-items:center;
 }
 
 .field-group {

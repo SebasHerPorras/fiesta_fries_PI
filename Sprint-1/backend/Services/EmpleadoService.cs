@@ -12,6 +12,7 @@ namespace backend.Services
     {
         private readonly string _connectionString;
         private readonly PersonService _personService;
+        private readonly EmpleadoRepository _empleadoService;
 
         public EmpleadoService()
         {
@@ -20,6 +21,8 @@ namespace backend.Services
                 ?? throw new InvalidOperationException("Connection string 'UserContext' not found.");
 
             _personService = new PersonService();
+
+           _empleadoService = new EmpleadoRepository(); 
         }
 
         // Reutiliza PersonService: si no existe la persona la crea (PersonService crea user si hace falta)
@@ -92,5 +95,13 @@ namespace backend.Services
             var empleadoRepository = new EmpleadoRepository();
             return empleadoRepository.GetByEmpresa(cedulaJuridica);
         }
+
+        public DateTime GetHireDate(int id)
+        {
+            DateTime hireDate = this._empleadoService.GetHireDate(id);
+
+            return hireDate;
+        }
+
     }
 }
