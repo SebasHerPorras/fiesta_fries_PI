@@ -147,7 +147,7 @@ namespace backend.Handlers.backend.Repositories
             FROM Empresa e
             INNER JOIN Empleado emp ON e.CedulaJuridica = emp.idCompny
             INNER JOIN Persona p ON emp.id = p.id
-            WHERE p.uniqueUser = @UserId"; // ← Cambiado a uniqueUser
+            WHERE p.uniqueUser = @UserId";
 
                 Console.WriteLine($"Buscando empresa para empleado con UserId (uniqueUser): {userId}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { UserId = Guid.Parse(userId) });
@@ -164,6 +164,7 @@ namespace backend.Handlers.backend.Repositories
                 Console.WriteLine($"[ERROR] Repository GetByEmployeeUserId: {ex.Message}");
                 throw;
             }
+
         }
 
     }
