@@ -13,6 +13,7 @@ namespace backend.Services
     {
         private readonly string _connectionString;
         private readonly PersonService _personService;
+        private readonly EmpleadoRepository _empleadoService;
 
         public EmpleadoService()
         {
@@ -21,6 +22,8 @@ namespace backend.Services
                 ?? throw new InvalidOperationException("Connection string 'UserContext' not found.");
 
             _personService = new PersonService();
+
+           _empleadoService = new EmpleadoRepository(); 
         }
 
         // Reutiliza PersonService: si no existe la persona la crea (PersonService crea user si hace falta)
@@ -28,7 +31,7 @@ namespace backend.Services
         {
             try
             {
-                // 1) comprobar si existe la persona por su id (identidad numérica)
+                // 1) comprobar si existe la persona por su id (identidad numï¿½rica)
                 var existingPersona = _personService.GetByIdentity(req.personaId);
 
                 PersonModel personaUsed;
@@ -39,7 +42,7 @@ namespace backend.Services
                 }
                 else
                 {
-                    // Construir PersonModel desde el request y delegar la creación a PersonService
+                    // Construir PersonModel desde el request y delegar la creaciï¿½n a PersonService
                     var personToCreate = new PersonModel
                     {
                         id = req.personaId,
@@ -101,5 +104,13 @@ namespace backend.Services
             var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
             return salario ?? 0;
         }
+        
+        public DateTime GetHireDate(int id)
+        {
+            DateTime hireDate = this._empleadoService.GetHireDate(id);
+
+            return hireDate;
+        }
+
     }
 }
