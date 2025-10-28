@@ -21,6 +21,39 @@ namespace backend.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        [HttpGet("company/{companyId}")]
+        [ProducesResponseType(typeof(List<PayrollSummaryResult>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetPayrollsByCompany(string companyId)
+        {
+            _logger.LogInformation("Obteniendo planillas para compañía: {CompanyId}", companyId);
+
+            if (string.IsNullOrEmpty(companyId))
+            {
+                return BadRequest(new { error = "CompanyId es requerido" });
+            }
+
+            try
+            {
+                var payrolls = await _payrollProcessingService.GetPayrollsByCompanyAsync(companyId);
+
+                if (payrolls == null || !payrolls.Any())
+                {
+                    _logger.LogInformation("No se encontraron planillas para la compañía: {CompanyId}", companyId);
+                    return Ok(new List<PayrollSummaryResult>()); 
+                }
+
+                _logger.LogInformation("Se encontraron {Count} planillas para la compañía: {CompanyId}", payrolls.Count, companyId);
+                return Ok(payrolls);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo planillas para compañía: {CompanyId}", companyId);
+                return StatusCode(500, new { error = "Error interno del servidor al obtener planillas" });
+            }
+        }
+
         [HttpPost("process")]
         [ProducesResponseType(typeof(PayrollProcessResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PayrollProcessResult), StatusCodes.Status400BadRequest)]
