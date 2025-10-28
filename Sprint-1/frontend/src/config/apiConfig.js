@@ -56,6 +56,8 @@ export const API_ENDPOINTS = {
     buildApiUrl(`Beneficio/por-empresa/${cedulaEmpresa}`),
   USER_CREATE: buildApiUrl("user/create"),
   EMPLEADO_CREATE: buildApiUrl("Empleado/create"),
+  PAYROLLS: (cedulaEmpresa) => buildApiUrl(`Payroll/company/${cedulaEmpresa}`),
+  PAYROLL_PROCESS: buildApiUrl("Payroll/process"),
 };
 
 // Log de configuración (solo en desarrollo)
