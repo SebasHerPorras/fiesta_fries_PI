@@ -34,6 +34,46 @@ namespace backend.Services
             _logger = logger;
         }
 
+        public async Task<List<PayrollSummaryResult>> GetPayrollsByCompanyAsync(string companyId)
+        {
+            _logger.LogInformation("Obteniendo planillas para compañía: {CompanyId}", companyId);
+
+            try
+            {
+                var payrolls = await _payrollRepository.GetPayrollsByCompanyAsync(companyId);
+
+                if (payrolls == null || !payrolls.Any())
+                {
+                    _logger.LogInformation("No se encontraron planillas para la compañía: {CompanyId}", companyId);
+                    return new List<PayrollSummaryResult>();
+                }
+
+                var result = payrolls.Select(p => new PayrollSummaryResult
+                {
+                    PayrollId = p.PayrollId,
+                    PeriodDate = p.PeriodDate,
+                    CompanyId = p.CompanyId.ToString(),
+                    IsCalculated = p.IsCalculated,
+                    ApprovedBy = p.ApprovedBy,
+                    LastModified = p.LastModified,
+                    TotalGrossSalary = p.TotalGrossSalary ?? 0m,
+                    TotalEmployerDeductions = p.TotalEmployerDeductions ?? 0m,
+                    TotalEmployeeDeductions = p.TotalEmployeeDeductions ?? 0m,
+                    TotalBenefits = p.TotalBenefits ?? 0m,
+                    TotalNetSalary = p.TotalNetSalary ?? 0m,
+                    TotalEmployerCost = p.TotalEmployerCost ?? 0m
+                }).ToList();
+
+                _logger.LogInformation("Se encontraron {Count} planillas para la compañía: {CompanyId}", result.Count, companyId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo planillas para compañía: {CompanyId}", companyId);
+                throw;
+            }
+        }
+
         public async Task<PayrollProcessResult> ProcessPayrollAsync(PayrollProcessRequest request)
         {
             using var activity = _logger.BeginScope("Procesando nómina para compañía {CompanyId}", request.CompanyId);
