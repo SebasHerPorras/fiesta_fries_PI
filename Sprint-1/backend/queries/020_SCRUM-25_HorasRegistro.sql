@@ -122,6 +122,19 @@ BEGIN
 END;
 GO
 
+CREATE FUNCTION Fn_ObtenerHoras(@id_employee int,@start_date DATE, @end_date DATE)
+RETURNS INT
+AS 
+BEGIN
+DECLARE @hours_total INT;
+SELECT @hours_total = ISNULL(SUM(ISNULL(hours_count,0)), 0)
+FROM Semana WHERE [start_date] BETWEEN @start_date AND @end_date 
+    AND id_employee = @id_employee;
 
-Select* from Semana where[start_date] = '2025-07-31'; 
-Select* from Día where  [date] = '2025-07-31';
+    RETURN ISNULL(@hours_total,0);
+END;
+GO
+
+
+SELECT dbo.Fn_ObtenerHoras(119180745,'2025-10-1','2025-10-31') AS horas_semana;
+
