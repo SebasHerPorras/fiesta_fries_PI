@@ -645,6 +645,7 @@
                     departament: this.form.departament,
                 };
 
+                localStorage.setItem("employeeId", this.form.id);
                 const empleadoUrl = API_ENDPOINTS.EMPLEADO_CREATE_WITH_PERSON;
 
                 await axios.post(empleadoUrl, empleado);

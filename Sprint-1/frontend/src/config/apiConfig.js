@@ -38,7 +38,11 @@ export const API_ENDPOINTS = {
   EMPLEADOS: (cedulaEmpresa) =>
     buildApiUrl(`Empleado/empresa/${cedulaEmpresa}`),
   CREATE_EMPRESA: buildApiUrl("empresa"),
-  CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
+    CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
+    HIRE_DATE: (id) => `${buildApiUrl("Empleado/GetEmployeeHireDate")}?id=${encodeURIComponent(id)}`,
+    WORK_DAY_HOURS: (dateW, dateD, id) => `${buildApiUrl("Empleado/GetEmployeeWorkDayHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&id=${encodeURIComponent(id)}`,
+    WORK_WEEK_HOURS: (date, id) => `${buildApiUrl("Empleado/GetWorkHoursWeek")}?date=${encodeURIComponent(date)}&id=${encodeURIComponent(id)}`,
+    ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) => `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(hours)}&id=${encodeURIComponent(id)}`,
 
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
