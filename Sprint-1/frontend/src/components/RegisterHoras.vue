@@ -65,7 +65,7 @@
           </div>
 
           <div class="buttons-row">
-              <button class="btn btn-secondary" @click="volverAlHome"> ← Volver</button>
+              <button class="btn btn-secondary" @click="getBacktoHome"> ← Volver</button>
               <button class="btn btn-primary" type="submit">Añadir</button>
           </div>
       </form>
@@ -125,6 +125,10 @@ export default {
                 let dataTemp = localStorage.getItem("userData");
                 let objectTemp = JSON.parse(dataTemp);
                 this.employeeId = objectTemp.personaId;
+            },
+
+            getBacktoHome() {
+                this.$router.go(-1)
             },
 
             async getEmployeeHireDate() {
