@@ -21,6 +21,8 @@ namespace backend.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        #region Public Methods - IPayrollRepository Implementation
+
         public async Task<Payroll?> GetByPeriodAndCompanyAsync(DateTime periodDate, long companyId)
         {
             using var connection = _connectionFactory.CreateConnection();
@@ -50,15 +52,62 @@ namespace backend.Repositories
                     CompanyId = companyId
                 });
 
-                _logger.LogDebug("Consulta de planilla por período: {PeriodDate}, Compañía: {CompanyId} - {Result}",
-                    periodDate.ToString("yyyy-MM"), companyId, result != null ? "Encontrada" : "No encontrada");
+                _logger.LogDebug(
+                    "Consulta de planilla por período: {PeriodDate}, Compañía: {CompanyId} - {Result}",
+                    periodDate.ToString("yyyy-MM"),
+                    companyId,
+                    result != null ? "Encontrada" : "No encontrada");
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo planilla por período {PeriodDate} y compañía {CompanyId}",
-                    periodDate.ToString("yyyy-MM"), companyId);
+                _logger.LogError(
+                    ex,
+                    "Error obteniendo planilla por período {PeriodDate} y compañía {CompanyId}",
+                    periodDate.ToString("yyyy-MM"),
+                    companyId);
+                throw;
+            }
+        }
+
+        public async Task<List<Payroll>> GetPayrollsByCompanyAsync(string companyId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            const string query = @"
+                SELECT 
+                    PayrollId, 
+                    PeriodDate, 
+                    CompanyId, 
+                    IsCalculated, 
+                    ApprovedBy, 
+                    LastModified,
+                    TotalGrossSalary,
+                    TotalEmployerDeductions,
+                    TotalEmployeeDeductions,
+                    TotalBenefits,
+                    TotalNetSalary,
+                    TotalEmployerCost
+                FROM Payroll 
+                WHERE CompanyId = @CompanyId
+                ORDER BY PeriodDate DESC";
+
+            try
+            {
+                var payrolls = await connection.QueryAsync<Payroll>(query, new { CompanyId = companyId });
+                var payrollList = payrolls.AsList();
+
+                _logger.LogDebug(
+                    "Obtenidas {PayrollCount} planillas para compañía {CompanyId}",
+                    payrollList.Count,
+                    companyId);
+
+                return payrollList;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo planillas para compañía {CompanyId}", companyId);
                 throw;
             }
         }
@@ -113,15 +162,20 @@ namespace backend.Repositories
                     payroll.TotalEmployerCost
                 });
 
-                _logger.LogInformation("Planilla creada exitosamente. ID: {PayrollId}, Período: {PeriodDate}",
-                    payrollId, payroll.PeriodDate.ToString("yyyy-MM"));
+                _logger.LogInformation(
+                    "Planilla creada exitosamente. ID: {PayrollId}, Período: {PeriodDate}",
+                    payrollId,
+                    payroll.PeriodDate.ToString("yyyy-MM"));
 
                 return payrollId;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creando planilla para período {PeriodDate} y compañía {CompanyId}",
-                    payroll.PeriodDate.ToString("yyyy-MM"), payroll.CompanyId);
+                _logger.LogError(
+                    ex,
+                    "Error creando planilla para período {PeriodDate} y compañía {CompanyId}",
+                    payroll.PeriodDate.ToString("yyyy-MM"),
+                    payroll.CompanyId);
                 throw;
             }
         }
@@ -148,12 +202,16 @@ namespace backend.Repositories
 
                 if (affectedRows == 0)
                 {
-                    _logger.LogWarning("No se encontró planilla con ID {PayrollId} para actualizar", payroll.PayrollId);
+                    _logger.LogWarning(
+                        "No se encontró planilla con ID {PayrollId} para actualizar",
+                        payroll.PayrollId);
                     throw new InvalidOperationException($"Planilla con ID {payroll.PayrollId} no encontrada");
                 }
 
-                _logger.LogDebug("Planilla {PayrollId} actualizada exitosamente. Calculada: {IsCalculated}",
-                    payroll.PayrollId, payroll.IsCalculated);
+                _logger.LogDebug(
+                    "Planilla {PayrollId} actualizada exitosamente. Calculada: {IsCalculated}",
+                    payroll.PayrollId,
+                    payroll.IsCalculated);
             }
             catch (Exception ex)
             {
@@ -181,7 +239,8 @@ namespace backend.Repositories
             {
                 var result = new List<PayrollPayment>();
 
-                _logger.LogInformation("Iniciando creación de {PaymentCount} pagos mediante procedure sp_CreatePayrollPayment",
+                _logger.LogInformation(
+                    "Iniciando creación de {PaymentCount} pagos mediante procedure sp_CreatePayrollPayment",
                     payments.Count);
 
                 foreach (var payment in payments)
@@ -194,13 +253,19 @@ namespace backend.Repositories
 
                 await transaction.CommitAsync();
 
-                _logger.LogInformation("{PaymentCount} pagos creados exitosamente mediante procedure", payments.Count);
+                _logger.LogInformation(
+                    "{PaymentCount} pagos creados exitosamente mediante procedure",
+                    payments.Count);
+
                 return result;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error creando {PaymentCount} pagos. Transacción revertida.", payments.Count);
+                _logger.LogError(
+                    ex,
+                    "Error creando {PaymentCount} pagos. Transacción revertida.",
+                    payments.Count);
                 throw;
             }
         }
@@ -229,8 +294,10 @@ namespace backend.Repositories
                 var payments = await connection.QueryAsync<PayrollPayment>(query, new { PayrollId = payrollId });
                 var paymentList = payments.AsList();
 
-                _logger.LogDebug("Obtenidos {PaymentCount} detalles de pagos para planilla {PayrollId}",
-                    paymentList.Count, payrollId);
+                _logger.LogDebug(
+                    "Obtenidos {PaymentCount} detalles de pagos para planilla {PayrollId}",
+                    paymentList.Count,
+                    payrollId);
 
                 return paymentList;
             }
@@ -255,7 +322,8 @@ namespace backend.Repositories
                 var count = await connection.ExecuteScalarAsync<int>(query);
                 var exists = count > 0;
 
-                _logger.LogDebug("Verificación de procedure sp_CreatePayrollPayment: {Exists}",
+                _logger.LogDebug(
+                    "Verificación de procedure sp_CreatePayrollPayment: {Exists}",
                     exists ? "EXISTE" : "NO EXISTE");
 
                 return exists;
@@ -267,6 +335,8 @@ namespace backend.Repositories
             }
         }
 
+        #endregion
+
         #region Private Methods
 
         private async Task<PayrollPayment> ExecutePaymentProcedureAsync(
@@ -274,7 +344,13 @@ namespace backend.Repositories
             DbTransaction transaction,
             PayrollPayment payment)
         {
-            const string query = "EXEC sp_CreatePayrollPayment @PayrollId, @EmployeeId, @GrossSalary, @DeductionsAmount, @BenefitsAmount, @NetSalary";
+            const string query = @"EXEC sp_CreatePayrollPayment 
+                @PayrollId, 
+                @EmployeeId, 
+                @GrossSalary, 
+                @DeductionsAmount, 
+                @BenefitsAmount, 
+                @NetSalary";
 
             try
             {
@@ -291,20 +367,25 @@ namespace backend.Repositories
                 var createdPayment = await connection.QuerySingleAsync<PayrollPayment>(
                     query, parameters, transaction);
 
-                _logger.LogDebug("Pago creado exitosamente - Planilla: {PayrollId}, Empleado: {EmployeeId}, Neto: {NetSalary}",
-                    payment.PayrollId, payment.EmployeeId, payment.NetSalary);
+                _logger.LogDebug(
+                    "Pago creado exitosamente - Planilla: {PayrollId}, Empleado: {EmployeeId}, Neto: {NetSalary}",
+                    payment.PayrollId,
+                    payment.EmployeeId,
+                    payment.NetSalary);
 
                 return createdPayment;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error ejecutando procedure para pago - Planilla: {PayrollId}, Empleado: {EmployeeId}",
-                    payment.PayrollId, payment.EmployeeId);
+                _logger.LogError(
+                    ex,
+                    "Error ejecutando procedure para pago - Planilla: {PayrollId}, Empleado: {EmployeeId}",
+                    payment.PayrollId,
+                    payment.EmployeeId);
                 throw;
             }
         }
 
         #endregion
-
     }
 }
