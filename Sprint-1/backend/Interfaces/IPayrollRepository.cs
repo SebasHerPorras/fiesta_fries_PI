@@ -7,4 +7,5 @@ public interface IPayrollRepository
     Task UpdatePayrollAsync(Payroll payroll);
     Task<List<PayrollPayment>> CreatePayrollPaymentsAsync(List<PayrollPayment> payments);
     Task<List<PayrollPayment>> GetPayrollDetailsAsync(int payrollId);
+    Task<List<Payroll>> GetPayrollsByCompanyAsync(string companyId);
 }
