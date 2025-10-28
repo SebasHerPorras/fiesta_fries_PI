@@ -190,7 +190,6 @@
       </div>
     </main>
 
-    <!-- ModalApiInput (siempre usado) -->
     <ModalApiInput
       :visible="modalVisible"
       :mode="modalMode"
@@ -876,7 +875,6 @@ export default {
   color: #FFFFFF;
 }
 
-/* pequeñas mejoras visuales por si las quieres */
 .sb-table thead tr + tr th,
 .beneficios-table thead tr + tr th {
   background: rgba(0, 0, 0, 0.25);

@@ -35,7 +35,6 @@ namespace backend.Services
             var can = await _repository.CanEmployeeSelectBenefitAsync(entity.EmployeeId, entity.BenefitId);
             if (!can) return false;
 
-            // 2. Obtener datos canónicos del beneficio
             var benefit = await _repository.GetBeneficioByIdAsync(entity.BenefitId);
             if (benefit == null)
             {

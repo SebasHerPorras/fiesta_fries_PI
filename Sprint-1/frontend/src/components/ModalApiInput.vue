@@ -15,7 +15,7 @@
 
         <!-- Dependientes -->
         <div v-else-if="mode === 'dependientes'" class="field">
-          <label for="dependientes">Cantidad de dependientes</label>
+          <label for="dependientes">Cantidad de dependientes:</label>
           <input
             id="dependientes"
             type="number"
@@ -48,7 +48,7 @@
       </div>
 
       <footer class="modal-footer">
-        <button class="btn-secondary" @click="cancel" :disabled="submitting">Cancelar</button>
+        <button class="btn-secondary" @click="cancel" :disabled="submitting">Volver</button>
         <button class="btn-primary" @click="confirm" :disabled="submitting">
           <span v-if="submitting">Enviando…</span>
           <span v-else>Confirmar</span>
@@ -119,14 +119,14 @@ export default {
 
 <style scoped>
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:1200; }
-.modal-box { width:420px; background:#0f172a; color:#eee; border-radius:8px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.6); }
+.modal-box { width:420px; background:#5e666d; color:#eee; border-radius:8px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.6); }
 .modal-header h3 { margin:0 0 8px 0; font-size:1.05rem; }
-.instructions, .confirm-text { color:#cbd5e1; margin-bottom:8px; }
-.field label { display:block; font-size:0.9rem; margin-bottom:6px; color:#cbd5e1; }
+.instructions, .confirm-text { color:#ffffff; margin-bottom:8px; }
+.field label { display:block; font-size:0.9rem; margin-bottom:6px; color:#ffffff; }
 .field input { width:100%; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color:#fff; }
 .error { color:#ffb4b4; margin-top:6px; font-size:0.85rem; }
 .modal-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
-.btn-primary { background:#1fb9b4; color:#042027; border-radius:6px; padding:8px 12px; border:none; cursor:pointer; }
-.btn-secondary { background:transparent; color:#cbd5e1; border-radius:6px; padding:8px 12px; border:1px solid rgba(255,255,255,0.06); cursor:pointer; }
+.btn-primary { background:#1fb9b4; color:#ffffff; border-radius:6px; padding:8px 12px; border:none; cursor:pointer; }
+.btn-secondary { background:#767f88; color:#ffffff; border-radius:6px; padding:8px 12px; border:1px solid rgba(255,255,255,0.06); cursor:pointer; }
 .btn-primary[disabled], .btn-secondary[disabled] { opacity:0.6; cursor:not-allowed; }
 </style>
