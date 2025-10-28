@@ -50,7 +50,7 @@ namespace backend.Handlers.backend.Repositories
                 if (affectedRows >= 1)
                 {
                     Console.WriteLine("INSERT EXITOSO EN REPOSITORY");
-                    return string.Empty; 
+                    return string.Empty;
                 }
                 else
                 {
