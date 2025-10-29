@@ -57,7 +57,7 @@ namespace backend.Services.Strategies
                 StartDate = startDate,
                 EndDate = endDate,
                 Description = $"Mes {startDate:MMMM yyyy}",
-                PeriodType = "monthly"
+                PeriodType = backend.Models.Payroll.PayrollPeriodType.Mensual
             };
         }
     }
