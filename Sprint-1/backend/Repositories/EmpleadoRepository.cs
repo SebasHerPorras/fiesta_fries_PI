@@ -83,5 +83,40 @@ namespace backend.Repositories
 
             return connection.QuerySingleOrDefault<EmployeeWorkDayModel>(query, new { date = dateD, hours_count = hours_ ,id_employee=idEmployee,week_start_date = dateW});
         }
+
+        public List<EmployeeCalculationDto> GetEmployeesForPayroll(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                connection.Open();
+
+                var query = @"
+                SELECT 
+                    p.id AS CedulaEmpleado,
+                    p.firstName + ' ' + p.secondName AS NombreEmpleado,
+                    e.salary AS SalarioBruto,
+                    e.employmentType AS TipoEmpleado,
+                    p.birthdate AS Cumpleanos,
+                    dbo.Fn_ObtenerHoras(e.id, @FechaInicio, @FechaFin) AS horas
+                FROM Empleado e
+                INNER JOIN Persona p ON e.id = p.id
+                INNER JOIN [User] u ON p.uniqueUser = u.PK_User
+                WHERE e.idCompny = @CedulaJuridica
+                ORDER BY e.department, p.firstName";
+
+                return connection.Query<EmployeeCalculationDto>(query, new 
+                { 
+                    CedulaJuridica = cedulaJuridica,
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error obteniendo empleados para planilla: {ex.Message}");
+                return new List<EmployeeCalculationDto>();
+            }
+        }
     }
 }
