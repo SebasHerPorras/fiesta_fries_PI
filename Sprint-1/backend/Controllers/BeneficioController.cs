@@ -102,6 +102,42 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBeneficio(int id, [FromBody] BeneficioRequest request)
+        {
+            try
+            {
+                if (request?.Beneficio == null)
+                    return BadRequest("Datos de beneficio inválidos");
+
+                if (!Guid.TryParse(request.UserId, out Guid userId))
+                    return BadRequest("UserId inválido");                    
+                
+                var persona = _personService.GetByUserId(userId);
+                if (persona.personType != "Empleador")
+                    return BadRequest("Solo los usuarios tipo Empleador pueden modificar beneficios");
+
+                var beneficio = _beneficioService.GetById(id);
+                if (beneficio == null)
+                    return NotFound("Beneficio no encontrado");
+
+                var empresa = _empresaService.GetEmpresaByCedula(beneficio.CedulaJuridica);
+                if (empresa?.DueñoEmpresa != persona.id)
+                    return BadRequest("No tienes permisos para modificar este beneficio");
+
+                var resultado = _beneficioService.UpdateBeneficio(id, request.Beneficio);
+                return string.IsNullOrEmpty(resultado)
+                    ? Ok(new { success = true, message = "Beneficio actualizado correctamente" })
+                    : BadRequest(new { success = false, message = resultado });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] UpdateBeneficio: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { success = false, message = $"Error interno del servidor: {ex.Message}" });
+            }
+        }
+
         [HttpGet]
         public List<BeneficioModel> GetAll()
         {

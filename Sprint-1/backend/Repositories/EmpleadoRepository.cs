@@ -83,5 +83,45 @@ namespace backend.Repositories
 
             return connection.QuerySingleOrDefault<EmployeeWorkDayModel>(query, new { date = dateD, hours_count = hours_ ,id_employee=idEmployee,week_start_date = dateW});
         }
+
+        public List<EmployeeCalculationDto> GetEmployeesForPayroll(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+                connection.Open();
+
+                const string query = @"
+                    EXEC SP_GetEmployeesForPayroll 
+                    @CedulaJuridica, @FechaInicio, @FechaFin";
+
+                return connection.Query<EmployeeCalculationDto>(query, new 
+                { 
+                    CedulaJuridica = cedulaJuridica,
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error obteniendo empleados para planilla: {ex.Message}");
+                return new List<EmployeeCalculationDto>();
+            }
+        }
+
+        public List<EmpleadoModel> GetEmpleadosPorEmpresa(long cedulaEmpresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            var query = @"
+            SELECT 
+                id, position, employmentType, salary, hireDate, department, idCompny,
+                '' AS email, '' AS name
+            FROM Empleado
+            WHERE idCompny = @CedulaEmpresa";
+
+            return connection.Query<EmpleadoModel>(query, new { CedulaEmpresa = cedulaEmpresa }).ToList();
+        }
     }
 }

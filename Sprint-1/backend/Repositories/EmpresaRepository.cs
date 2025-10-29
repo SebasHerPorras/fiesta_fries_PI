@@ -145,10 +145,10 @@ namespace backend.Handlers.backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
 
                 const string query = @"
-            SELECT e.*, 
-                   0 as CantidadEmpleados
-            FROM Empresa e
-            WHERE e.id = @Id";
+                  SELECT e.*, 
+                        0 as CantidadEmpleados
+                  FROM Empresa e
+                  WHERE e.id = @Id";
 
                 Console.WriteLine($"Buscando empresa con ID: {id}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { Id = id });
@@ -173,11 +173,11 @@ namespace backend.Handlers.backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
 
                 const string query = @"
-            SELECT e.*
-            FROM Empresa e
-            INNER JOIN Empleado emp ON e.CedulaJuridica = emp.idCompny
-            INNER JOIN Persona p ON emp.id = p.id
-            WHERE p.uniqueUser = @UserId";
+                  SELECT e.*
+                  FROM Empresa e
+                  INNER JOIN Empleado emp ON e.CedulaJuridica = emp.idCompny
+                  INNER JOIN Persona p ON emp.id = p.id
+                  WHERE p.uniqueUser = @UserId";
 
                 Console.WriteLine($"Buscando empresa para empleado con UserId (uniqueUser): {userId}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { UserId = Guid.Parse(userId) });
@@ -198,5 +198,50 @@ namespace backend.Handlers.backend.Repositories
 
         }
 
+        public EmpresaModel GetByCedula(long cedulaJuridica)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+                    SELECT * 
+                    FROM Empresa 
+                    WHERE CedulaJuridica = @CedulaJuridica";
+
+                Console.WriteLine($"Buscando empresa por cédula jurídica: {cedulaJuridica}");
+
+                var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
+
+                if (empresa != null)
+                    Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
+                else
+                    Console.WriteLine("No se encontró empresa con esa cédula jurídica");
+
+                return empresa;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository GetByCedula: {ex.Message}");
+                throw;
+            }
+        }
+
+        public void Update(EmpresaModel empresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+                UPDATE Empresa
+                SET Nombre = @Nombre,
+                    DireccionEspecifica = @DireccionEspecifica,
+                    Telefono = @Telefono,
+                    NoMaxBeneficios = @NoMaxBeneficios,
+                    FrecuenciaPago = @FrecuenciaPago,
+                    DiaPago = @DiaPago
+                WHERE CedulaJuridica = @CedulaJuridica";
+
+            connection.Execute(query, empresa);
+        }
     }
 }

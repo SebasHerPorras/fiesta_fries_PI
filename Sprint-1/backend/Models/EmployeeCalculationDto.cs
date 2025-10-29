@@ -8,5 +8,6 @@ namespace backend.Models
         public string TipoEmpleado { get; set; } = string.Empty;
         public int HorasTrabajadas { get; set; }
         public DateTime Cumpleanos { get; set; }
+        public int horas { get; set; }
     }
 }
