@@ -96,6 +96,18 @@ namespace backend.Services
             return empleadoRepository.GetByEmpresa(cedulaJuridica);
         }
 
+        public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
+        {
+            try
+            {
+                return _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+            }
+            catch (Exception ex)
+            {
+               return new List<EmployeeCalculationDto>();
+            }
+        }
+
         public DateTime GetHireDate(int id)
         {
             DateTime hireDate = this._empleadoService.GetHireDate(id);
