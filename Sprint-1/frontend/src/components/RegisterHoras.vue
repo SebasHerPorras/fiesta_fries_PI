@@ -64,6 +64,10 @@
               <div class="message" v-if="form.weekHoursMessage">{{form.weekHoursMessage}} </div>
           </div>
 
+          <div class="field-group">
+              <div class="error-msg" v-if="form.weekHoursMessageError">{{form.weekHoursMessageError}} </div>
+          </div>
+
           <div class="buttons-row">
               <button class="btn btn-secondary" @click="getBacktoHome"> ← Volver</button>
               <button class="btn btn-primary" type="submit">Añadir</button>
@@ -110,6 +114,7 @@ export default {
                     hoursCount: "",
                     daysHoursLabel: "",
                     weekHoursLabel: "",
+                    weekHoursMessageError: "",
                 }
             };
         },
@@ -343,7 +348,10 @@ export default {
                     await axios.get(urlAddHours);
                     this.setSuccessMessage();
                 } catch (error) {
-                    this.form.weekHoursMessage = "Error al registrar las horas";
+                    this.form.weekHoursMessageError = "Error al registrar las horas";
+                    setTimeout(() => {
+                        this.form.weekHoursMessageError = ""
+                    }, 2000);
                 }
             },
 
