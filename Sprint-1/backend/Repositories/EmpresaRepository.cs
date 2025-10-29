@@ -1,4 +1,5 @@
 ﻿using backend.Models;
+using backend.Interfaces;
 using System.Data;
 using System.Data.SqlClient;
 using Dapper;
@@ -6,7 +7,7 @@ using System.Data.Common;
 
 namespace backend.Handlers.backend.Repositories
 {
-    public class EmpresaRepository
+    public class EmpresaRepository : IEmpresaRepository 
     {
         private readonly string _connectionString;
 
@@ -14,6 +15,35 @@ namespace backend.Handlers.backend.Repositories
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext");
+        }
+
+        public EmpresaModel GetByCedulaJuridica(long cedulaJuridica)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+                    SELECT e.*, 
+                           0 as CantidadEmpleados
+                    FROM Empresa e
+                    WHERE e.CedulaJuridica = @CedulaJuridica";
+
+                Console.WriteLine($"Buscando empresa con cédula: {cedulaJuridica}");
+                var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
+
+                if (empresa != null)
+                    Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
+                else
+                    Console.WriteLine($"Empresa con cédula {cedulaJuridica} no encontrada");
+
+                return empresa;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository GetByCedulaJuridica: {ex.Message}");
+                throw;
+            }
         }
 
         public string CreateEmpresa(EmpresaModel empresa)
@@ -25,7 +55,7 @@ namespace backend.Handlers.backend.Repositories
 
                 var query = @"INSERT INTO [dbo].[Empresa] 
                               ([CedulaJuridica], [Nombre], [DueñoEmpresa], [DireccionEspecifica], 
-                               [Telefono], [NoMaxBeneficios], [FrecuenciaPago], [DiaPago])  
+                               [Telefono], [NoMaxBeneficios], [FrecuenciaPago], [DiaPago]) 
                               VALUES (@CedulaJuridica, @Nombre, @DueñoEmpresa, @DireccionEspecifica, 
                                       @Telefono, @NoMaxBeneficios, @FrecuenciaPago, @DiaPago)";
 
@@ -164,6 +194,7 @@ namespace backend.Handlers.backend.Repositories
                 Console.WriteLine($"[ERROR] Repository GetByEmployeeUserId: {ex.Message}");
                 throw;
             }
+
 
         }
 

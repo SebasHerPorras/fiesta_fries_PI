@@ -1,12 +1,22 @@
-﻿namespace backend.Models.Payroll.Results
+﻿using backend.Models;
+using backend.Models.Payroll; 
+
+namespace backend.Models.Payroll.Results
 {
     public class PayrollCalculationResult
     {
-        public List<EmployeeCalculation> EmployeeCalculations { get; } = new();
+        public List<EmployeeCalculation> EmployeeCalculations { get; set; } = new(); // Cambiar a set
         public decimal TotalDeductions => EmployeeCalculations.Sum(x => x.Deductions);
         public decimal TotalBenefits => EmployeeCalculations.Sum(x => x.Benefits);
         public decimal TotalAmount => TotalDeductions + TotalBenefits;
         public int ProcessedEmployees => EmployeeCalculations.Count;
+
+    
+        public decimal TotalGrossSalary { get; set; }
+        public decimal TotalEmployeeDeductions { get; set; }
+        public decimal TotalEmployerDeductions { get; set; }
+        public decimal TotalNetSalary { get; set; }
+        public decimal TotalEmployerCost { get; set; }
 
         public void AddEmployeeCalculation(EmployeeCalculation calculation)
         {
@@ -41,3 +51,4 @@
         };
     }
 }
+

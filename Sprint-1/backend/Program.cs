@@ -1,8 +1,11 @@
-﻿using backend.Interfaces;
+﻿using backend.Handlers.backend.Repositories;
+using backend.Infrastructure;
+using backend.Interfaces;
 using backend.Interfaces.Services;
+using backend.Interfaces.Strategies;
 using backend.Repositories;
 using backend.Services;
-using backend.Infrastructure;
+using backend.Services.Strategies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,11 @@ builder.Services.AddScoped<IEmployeeDeductionsByPayrollService, EmployeeDeductio
 builder.Services.AddScoped<ICalculatorDeductionsEmployeeService, CalculatorDeductionsEmployeeService>();
 builder.Services.AddScoped<ICalculatorBenefitsService, CalculatorBenefitsService>();
 builder.Services.AddScoped<IEmployerBenefitDeductionService, EmployerBenefitDeductionService>();
+builder.Services.AddScoped<IPayrollPeriodService, PayrollPeriodService>();
+builder.Services.AddScoped<IPeriodCalculator, BiweeklyPeriodCalculator>();
+builder.Services.AddScoped<IPeriodCalculator, MonthlyPeriodCalculator>();
+builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+builder.Services.AddScoped<ICalculationService, CalculationService>();
 
 // ===== CONFIGURACIÓN DE HTTP CLIENTS PARA APIS EXTERNAS =====
 builder.Services.AddHttpClient<ISolidarityAssociationService, SolidarityAssociationService>("AsociacionSolidarista", client =>
@@ -76,7 +84,6 @@ builder.Services.AddScoped<IEmployeeService, EmpleadoService>();
 builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>();
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
-
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
 var app = builder.Build();

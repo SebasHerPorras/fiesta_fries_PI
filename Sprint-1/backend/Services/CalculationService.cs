@@ -1,6 +1,7 @@
-﻿using backend.Models;
-using backend.Interfaces;
+﻿using backend.Interfaces;
 using backend.Interfaces.Services;
+using backend.Models;
+using backend.Repositories;
 
 namespace backend.Services
 {
@@ -9,17 +10,20 @@ namespace backend.Services
         private readonly ICalculatorDeductionsEmployerService _deductionsService;
         private readonly ICalculatorDeductionsEmployeeService _employeeDeductionsService;
         private readonly IPersonalIncomeTaxService _incomeTaxService;
+        private readonly ICalculatorBenefitsService _benefitsService;
         private readonly ILogger<CalculationService> _logger;
 
         public CalculationService(
             ICalculatorDeductionsEmployerService deductionsService,
             ICalculatorDeductionsEmployeeService employeeDeductionsService,
             IPersonalIncomeTaxService incomeTaxService,
+            ICalculatorBenefitsService benefitsService,
             ILogger<CalculationService> logger)
         {
             _deductionsService = deductionsService ?? throw new ArgumentNullException(nameof(deductionsService));
             _employeeDeductionsService = employeeDeductionsService;
             _incomeTaxService = incomeTaxService;
+            _benefitsService = benefitsService ?? throw new ArgumentNullException(nameof(benefitsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -50,14 +54,25 @@ namespace backend.Services
 
         public async Task<decimal> CalculateBenefitsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogDebug("Calculando beneficios para empleado: {Cedula}", empleado.CedulaEmpleado);
+            try
+            {
+                _logger.LogInformation("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
+                _logger.LogInformation("Empleado: {Nombre} ({Cedula})",
+                    empleado.NombreEmpleado, empleado.CedulaEmpleado);
 
-            // implementar servicio real de beneficios
-            // por ahora retorna 0 
-            await Task.Delay(1); 
+                var totalBenefits = await _benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
 
-            _logger.LogDebug("Beneficios calculados: 0 para empleado {Cedula}", empleado.CedulaEmpleado);
-            return 0m;
+                _logger.LogInformation("Total beneficios para {Nombre}: ₡{Total}",
+                    empleado.NombreEmpleado, totalBenefits);
+
+                return totalBenefits;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ERROR calculando beneficios para empleado {Cedula}",
+                    empleado.CedulaEmpleado);
+                return 0m;
+            }
         }
 
         public async Task<decimal> CalculateIncomeTaxAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)

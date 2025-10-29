@@ -20,11 +20,11 @@ namespace backend.Services
             return new PayrollProcessResult
             {
                 Success = true,
-                Message = $"Cálculo de nómina completado - Empleados: {processedEmployees}, Total: {totalAmount:C}",
+                Message = $"Cálculo de nómina completado - Empleados: {processedEmployees}, Costo Total: ₡{totalAmount:N2}",
                 PayrollId = payrollId,
                 TotalAmount = totalAmount,
                 ProcessedEmployees = processedEmployees,
-                TotalDeductions = 0, 
+                TotalDeductions = 0,
                 TotalBenefits = 0,
                 TotalTax = 0
             };
@@ -38,6 +38,33 @@ namespace backend.Services
             {
                 Success = false,
                 Message = message
+            };
+        }
+        public PayrollProcessResult CreatePreviewResult(
+          decimal totalAmount,
+          int processedEmployees,
+          decimal totalGrossSalary,
+          decimal totalEmployeeDeductions,
+          decimal totalEmployerDeductions,
+          decimal totalBenefits,
+          decimal totalNetSalary,
+          decimal totalEmployerCost)
+        {
+            return new PayrollProcessResult
+            {
+                Success = true,
+                Message = $"Preview calculado - Empleados: {processedEmployees}, Total: ₡{totalAmount:N2}",
+                ProcessedEmployees = processedEmployees,
+                TotalAmount = totalAmount,
+                PreviewData = new PreviewPayrollData
+                {
+                    TotalGrossSalary = totalGrossSalary,
+                    TotalEmployeeDeductions = totalEmployeeDeductions,
+                    TotalEmployerDeductions = totalEmployerDeductions,
+                    TotalBenefits = totalBenefits,
+                    TotalNetSalary = totalNetSalary,
+                    TotalEmployerCost = totalEmployerCost
+                }
             };
         }
     }

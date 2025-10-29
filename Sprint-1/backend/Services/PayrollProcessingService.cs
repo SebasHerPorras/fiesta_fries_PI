@@ -1,10 +1,11 @@
-﻿using backend.Models;
+﻿using backend.Interfaces;
+using backend.Interfaces.Services;
+using backend.Models;
 using backend.Models.Payroll;
 using backend.Models.Payroll.Requests;
 using backend.Models.Payroll.Results;
-using backend.Interfaces;
-using backend.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using static backend.Controllers.PayrollController;
 
 namespace backend.Services
 {
@@ -15,6 +16,7 @@ namespace backend.Services
         private readonly IEmployeeService _employeeService;
         private readonly IPayrollValidator _payrollValidator;
         private readonly IPayrollResultBuilder _resultBuilder;
+        private readonly IPayrollPeriodService _payrollPeriodService;
         private readonly ILogger<PayrollProcessingService> _logger;
 
         public PayrollProcessingService(
@@ -23,7 +25,7 @@ namespace backend.Services
             IEmployeeService employeeService,
             IPayrollValidator payrollValidator,
             IPayrollResultBuilder resultBuilder,
-            ICalculatorDeductionsEmployerService employerDeductionsService,
+            IPayrollPeriodService payrollPeriodService,
             ILogger<PayrollProcessingService> logger)
         {
             _payrollRepository = payrollRepository;
@@ -31,9 +33,69 @@ namespace backend.Services
             _employeeService = employeeService;
             _payrollValidator = payrollValidator;
             _resultBuilder = resultBuilder;
+            _payrollPeriodService = payrollPeriodService;
             _logger = logger;
         }
 
+        public async Task<List<PayrollPeriod>> GetPendingPeriodsAsync(string companyId, int months = 6)
+        {
+            try
+            {
+                _logger.LogInformation("Obteniendo periodos pendientes para compañía: {CompanyId}", companyId);
+
+                var pendingPeriods = await _payrollPeriodService.GetPendingPeriodsAsync(companyId, months);
+
+                _logger.LogInformation("Encontrados {Count} periodos pendientes para compañía: {CompanyId}",
+                    pendingPeriods.Count, companyId);
+
+                return pendingPeriods;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo periodos pendientes para compañía: {CompanyId}", companyId);
+                throw;
+            }
+        }
+
+        public async Task<List<PayrollPeriod>> GetOverduePeriodsAsync(string companyId)
+        {
+            try
+            {
+                _logger.LogInformation("Obteniendo periodos atrasados para compañía: {CompanyId}", companyId);
+
+                var overduePeriods = await _payrollPeriodService.GetOverduePeriodsAsync(companyId);
+
+                _logger.LogInformation("Encontrados {Count} periodos atrasados para compañía: {CompanyId}",
+                    overduePeriods.Count, companyId);
+
+                return overduePeriods;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo periodos atrasados para compañía: {CompanyId}", companyId);
+                throw;
+            }
+        }
+        public async Task<PayrollPeriod> GetNextPayrollPeriodAsync(string companyId)
+        {
+            try
+            {
+                _logger.LogInformation("Obteniendo próximo periodo de nómina para compañía: {CompanyId}", companyId);
+
+                var nextPeriod = await _payrollPeriodService.CalculateNextPendingPeriodAsync(companyId);
+
+                _logger.LogInformation("Próximo periodo: {Description} ({StartDate} - {EndDate})",
+                    nextPeriod.Description, nextPeriod.StartDate.ToString("yyyy-MM-dd"),
+                    nextPeriod.EndDate.ToString("yyyy-MM-dd"));
+
+                return nextPeriod;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo próximo periodo para compañía: {CompanyId}", companyId);
+                throw;
+            }
+        }
         public async Task<List<PayrollSummaryResult>> GetPayrollsByCompanyAsync(string companyId)
         {
             _logger.LogInformation("Obteniendo planillas para compañía: {CompanyId}", companyId);
@@ -80,6 +142,43 @@ namespace backend.Services
 
             try
             {
+                var today = DateTime.Now.Date;
+                if (request.PeriodDate > today)
+                {
+                    _logger.LogWarning(
+                        "Intento de procesar periodo futuro: {PeriodDate} (Hoy: {Today})",
+                        request.PeriodDate.ToString("yyyy-MM-dd"),
+                        today.ToString("yyyy-MM-dd"));
+
+                    return _resultBuilder.CreateErrorResult(
+                        $"No se pueden procesar nóminas para periodos futuros. " +
+                        $"Solo se permiten periodos hasta: {today:yyyy-MM-dd}");
+                }
+
+                var minAllowedDate = DateTime.Now.AddYears(-1); 
+                if (request.PeriodDate < minAllowedDate)
+                {
+                    _logger.LogWarning(
+                        "Intento de procesar periodo muy pasado: {PeriodDate} (Límite: {MinDate})",
+                        request.PeriodDate.ToString("yyyy-MM-dd"),
+                        minAllowedDate.ToString("yyyy-MM-dd"));
+
+                    return _resultBuilder.CreateErrorResult(
+                        $"No se pueden procesar nóminas con más de 1 año de antigüedad. " +
+                        $"Fecha mínima permitida: {minAllowedDate:yyyy-MM-dd}");
+                }
+
+                var isProcessed = await _payrollPeriodService.IsPeriodProcessedAsync(
+                    request.CompanyId.ToString(), request.PeriodDate);
+
+                if (isProcessed)
+                {
+                    _logger.LogWarning("El periodo {PeriodDate} ya está procesado para la compañía {CompanyId}",
+                        request.PeriodDate.ToString("yyyy-MM-dd"), request.CompanyId);
+
+                    return _resultBuilder.CreateErrorResult($"El periodo {request.PeriodDate:yyyy-MM-dd} ya fue procesado");
+                }
+
                 return await ProcessPayrollInternalAsync(request);
             }
             catch (Exception ex)
@@ -99,7 +198,19 @@ namespace backend.Services
             var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
             await SavePayrollResultsAsync(payroll, calculationResult);
 
-            return _resultBuilder.CreateSuccessResult(payroll.PayrollId, calculationResult.TotalAmount, calculationResult.ProcessedEmployees);
+            var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions;
+
+            var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
+            var totalEmployeeDeductions = calculationResult.TotalEmployeeDeductions;
+
+            _logger.LogInformation(
+                "COSTO EMPLEADOR - Bruto: {Gross}, Deducciones Empleador: {EmpDed}, Total: {Total}",
+                totalGrossSalary, totalEmployeeDeductions, totalEmployerCost);
+
+            return _resultBuilder.CreateSuccessResult(
+                payroll.PayrollId,
+                totalEmployerCost,  
+                calculationResult.ProcessedEmployees);
         }
 
         private async Task<Payroll> CreatePayrollAsync(PayrollProcessRequest request)
@@ -170,34 +281,43 @@ namespace backend.Services
 
         private async Task SavePayrollResultsAsync(Payroll payroll, PayrollCalculationResult calculationResult)
         {
-            var sumaDeducciones = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
+            _logger.LogInformation("=== DEBUG CALCULATION RESULTS ===");
+            _logger.LogInformation("EmployeeCalculations count: {Count}", calculationResult.EmployeeCalculations.Count);
+
+            var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
+            var totalBenefits = calculationResult.EmployeeCalculations.Sum(x => x.Benefits);
+            var totalNetSalary = calculationResult.EmployeeCalculations.Sum(x => x.NetSalary);
+            var totalEmployerDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
+
+            _logger.LogInformation("Calculated - Gross: {Gross}, Benefits: {Benefits}, Net: {Net}, EmpDeductions: {EmpDed}",
+                totalGrossSalary, totalBenefits, totalNetSalary, totalEmployerDeductions);
+
             var payments = calculationResult.ToPayments(payroll.PayrollId);
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
-            var totalEmployerDeductions = 0m;
+            var totalEmployeeDeductions = 0m;
             foreach (var employeeCalc in calculationResult.EmployeeCalculations)
             {
                 var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
                 var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
                     empleadoDto, payroll.CompanyId, payroll.PayrollId);
-
-                totalEmployerDeductions += employerDeductions;
+                totalEmployeeDeductions += employerDeductions;
             }
 
             payroll.IsCalculated = true;
-            payroll.TotalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
-            payroll.TotalEmployeeDeductions = totalEmployerDeductions;
-            payroll.TotalEmployerDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
-            payroll.TotalBenefits = calculationResult.TotalBenefits;
-            payroll.TotalNetSalary = calculationResult.EmployeeCalculations.Sum(x => x.NetSalary);
-            payroll.TotalEmployerCost = payroll.TotalGrossSalary + payroll.TotalEmployerDeductions;
+            payroll.TotalGrossSalary = totalGrossSalary;
+            payroll.TotalEmployeeDeductions = totalEmployeeDeductions;
+            payroll.TotalEmployerDeductions = totalEmployerDeductions;
+            payroll.TotalBenefits = totalBenefits;
+            payroll.TotalNetSalary = totalNetSalary;
+            payroll.TotalEmployerCost = totalGrossSalary + totalEmployeeDeductions + totalBenefits;
             payroll.LastModified = DateTime.Now;
 
-            await _payrollRepository.UpdatePayrollAsync(payroll);
+            _logger.LogInformation("=== SAVING PAYROLL ===");
+            _logger.LogInformation("Payroll {Id} - Gross: {Gross}, Net: {Net}, Benefits: {Benefits}",
+                payroll.PayrollId, payroll.TotalGrossSalary, payroll.TotalNetSalary, payroll.TotalBenefits);
 
-            _logger.LogInformation(
-                "Planilla {PayrollId} guardada - Total: {TotalAmount}, Empleados: {EmployeeCount}",
-                payroll.PayrollId, payroll.TotalNetSalary, calculationResult.ProcessedEmployees);
+            await _payrollRepository.UpdatePayrollAsync(payroll);
         }
 
         private EmployeeCalculationDto MapToEmployeeDto(EmpleadoModel employee)
@@ -228,6 +348,113 @@ namespace backend.Services
                 _logger.LogError(ex, "Error obteniendo salario para empleado {Cedula}", cedula);
                 return 0;
             }
+        }
+
+        public async Task<PayrollProcessResult> PreviewPayrollAsync(PayrollPreviewRequest request)
+        {
+            using var activity = _logger.BeginScope("Preview de nómina para compañía {CompanyId}", request.CompanyId);
+
+            try
+            {
+                _logger.LogInformation("Calculando PREVIEW para período: {PeriodDate}", request.PeriodDate.ToString("yyyy-MM-dd"));
+
+                var today = DateTime.Now.Date;
+                if (request.PeriodDate > today)
+                {
+                    return _resultBuilder.CreateErrorResult(
+                        $"No se pueden previsualizar nóminas para periodos futuros. " +
+                        $"Solo se permiten periodos hasta: {today:yyyy-MM-dd}");
+                }
+
+                var minAllowedDate = DateTime.Now.AddYears(-1);
+                if (request.PeriodDate < minAllowedDate)
+                {
+                    return _resultBuilder.CreateErrorResult(
+                        $"No se pueden previsualizar nóminas con más de 1 año de antigüedad. " +
+                        $"Fecha mínima permitida: {minAllowedDate:yyyy-MM-dd}");
+                }
+
+                var calculationResult = await CalculatePayrollWithoutSaving(request);
+
+
+                var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
+
+                return _resultBuilder.CreatePreviewResult(
+                    totalEmployerCost,  
+                    calculationResult.ProcessedEmployees,
+                    calculationResult.TotalGrossSalary,
+                    calculationResult.TotalEmployeeDeductions,
+                    calculationResult.TotalEmployerDeductions,
+                    calculationResult.TotalBenefits,
+                    calculationResult.TotalNetSalary,
+                    totalEmployerCost  
+                );
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en preview de nómina para compañía {CompanyId}", request.CompanyId);
+                return _resultBuilder.CreateErrorResult($"Error en preview: {ex.Message}");
+            }
+        }
+
+        private async Task<PayrollCalculationResult> CalculatePayrollWithoutSaving(PayrollPreviewRequest request)
+        {
+            var empleados = _employeeService.GetByEmpresa(request.CompanyId);
+            var result = new PayrollCalculationResult();
+
+            _logger.LogInformation("Calculando preview para {EmployeeCount} empleados", empleados.Count);
+
+            foreach (var empleado in empleados)
+            {
+                var empleadoDto = new EmployeeCalculationDto
+                {
+                    CedulaEmpleado = empleado.Cedula,
+                    NombreEmpleado = empleado.Nombre,
+                    SalarioBruto = await ObtenerSalarioEmpleado(empleado.Cedula),
+                    TipoEmpleado = empleado.TipoContrato
+                };
+
+                var deductions = await _calculationService.CalculateDeductionsAsync(empleadoDto, request.CompanyId, 0);
+                var benefits = await _calculationService.CalculateBenefitsAsync(empleadoDto, request.CompanyId, 0);
+
+                var empleadoModel = new EmpleadoModel
+                {
+                    id = empleado.Cedula,
+                    name = empleado.Nombre,
+                    salary = (int)empleadoDto.SalarioBruto,
+                    employmentType = empleado.TipoContrato,
+                    department = "",
+                    idCompny = request.CompanyId
+                };
+
+                result.AddEmployeeCalculation(new EmployeeCalculation(empleadoModel, deductions, benefits));
+            }
+
+            var totalEmployeeDeductions = 0m;
+            foreach (var employeeCalc in result.EmployeeCalculations)
+            {
+                var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
+                var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
+                    empleadoDto, request.CompanyId, 0);
+                totalEmployeeDeductions += employerDeductions;
+            }
+
+            var totalGrossSalary = result.EmployeeCalculations.Sum(x => x.Employee.salary);
+            var totalBenefits = result.EmployeeCalculations.Sum(x => x.Benefits);
+            var totalNetSalary = result.EmployeeCalculations.Sum(x => x.NetSalary);
+            var totalEmployerDeductions = result.EmployeeCalculations.Sum(x => x.Deductions);
+
+            result.TotalGrossSalary = totalGrossSalary;
+            result.TotalEmployeeDeductions = totalEmployeeDeductions;
+            result.TotalEmployerDeductions = totalEmployerDeductions;
+            result.TotalNetSalary = totalNetSalary;
+            result.TotalEmployerCost = totalGrossSalary + totalEmployeeDeductions + totalBenefits;
+            _logger.LogInformation(
+                "Preview calculado - Empleados: {EmployeeCount}, Bruto: {GrossSalary}, Neto: {NetSalary}",
+                result.ProcessedEmployees, result.TotalGrossSalary, result.TotalNetSalary);
+
+            return result;
         }
     }
 }

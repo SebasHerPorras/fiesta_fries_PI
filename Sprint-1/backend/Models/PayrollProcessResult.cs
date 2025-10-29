@@ -12,5 +12,6 @@
         public decimal TotalBenefits { get; set; }
         public decimal TotalTax { get; set; }
         public List<PayrollPayment>? PayrollDetails { get; set; }
+        public PreviewPayrollData? PreviewData { get; set; }
     }
 }

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using backend.Interfaces.Services;
+using backend.Models.Payroll;
 using backend.Models.Payroll.Requests;
 using backend.Models.Payroll.Results;
-using backend.Interfaces.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace backend.Controllers
@@ -54,6 +55,73 @@ namespace backend.Controllers
             }
         }
 
+        [HttpGet("{companyId}/next-period")]
+        [ProducesResponseType(typeof(PayrollPeriod), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<PayrollPeriod>> GetNextPeriod(string companyId)
+        {
+            if (string.IsNullOrEmpty(companyId))
+            {
+                return BadRequest(new { error = "CompanyId es requerido" });
+            }
+
+            try
+            {
+                return await _payrollProcessingService.GetNextPayrollPeriodAsync(companyId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo próximo periodo para compañía: {CompanyId}", companyId);
+                return StatusCode(500, new { error = "Error interno del servidor" });
+            }
+        }
+
+        [HttpGet("{companyId}/overdue-periods")]
+        [ProducesResponseType(typeof(List<PayrollPeriod>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<PayrollPeriod>>> GetOverduePeriods(string companyId)
+        {
+            if (string.IsNullOrEmpty(companyId))
+            {
+                return BadRequest(new { error = "CompanyId es requerido" });
+            }
+
+            try
+            {
+                return await _payrollProcessingService.GetOverduePeriodsAsync(companyId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo periodos atrasados para compañía: {CompanyId}", companyId);
+                return StatusCode(500, new { error = "Error interno del servidor" });
+            }
+        }
+
+        [HttpGet("{companyId}/pending-periods")]
+        [ProducesResponseType(typeof(List<PayrollPeriod>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<PayrollPeriod>>> GetPendingPeriods(string companyId, [FromQuery] int months = 6)
+        {
+            if (string.IsNullOrEmpty(companyId))
+            {
+                return BadRequest(new { error = "CompanyId es requerido" });
+            }
+
+            try
+            {
+                return await _payrollProcessingService.GetPendingPeriodsAsync(companyId, months);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo periodos pendientes para compañía: {CompanyId}", companyId);
+                return StatusCode(500, new { error = "Error interno del servidor" });
+            }
+        }
+
         [HttpPost("process")]
         [ProducesResponseType(typeof(PayrollProcessResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(PayrollProcessResult), StatusCodes.Status400BadRequest)]
@@ -97,6 +165,52 @@ namespace backend.Controllers
                     request.CompanyId);
                 return StatusCode(500, new { error = "Error interno del servidor" });
             }
+        }
+
+        [HttpPost("preview")]
+        [ProducesResponseType(typeof(PayrollProcessResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> PreviewPayroll([FromBody] PayrollPreviewRequest request)
+        {
+            _logger.LogInformation(
+                "Solicitud de PREVIEW de nómina - Compañía: {CompanyId}, Período: {PeriodDate}",
+                request.CompanyId, request.PeriodDate.ToString("yyyy-MM-dd"));
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _payrollProcessingService.PreviewPayrollAsync(request);
+
+                if (result.Success)
+                {
+                    _logger.LogInformation(
+                        "Preview exitoso - Empleados: {EmployeeCount}",
+                        result.ProcessedEmployees);
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex, "Error en preview de nómina - Compañía: {CompanyId}",
+                    request.CompanyId);
+                return StatusCode(500, new { error = "Error interno del servidor" });
+            }
+        }
+
+        public class PayrollPreviewRequest
+        {
+            public long CompanyId { get; set; }
+            public DateTime PeriodDate { get; set; }
         }
     }
 }

@@ -334,6 +334,26 @@ namespace backend.Repositories
                 throw;
             }
         }
+        public async Task<Payroll?> GetLatestPayrollAsync(string companyId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            const string query = @"
+        SELECT TOP 1 * FROM Payroll 
+        WHERE CompanyId = @CompanyId 
+        ORDER BY PeriodDate DESC";
+
+            try
+            {
+                var result = await connection.QueryFirstOrDefaultAsync<Payroll>(query, new { CompanyId = companyId });
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting latest payroll for company {CompanyId}", companyId);
+                throw;
+            }
+        }
 
         #endregion
 
@@ -375,6 +395,7 @@ namespace backend.Repositories
 
                 return createdPayment;
             }
+
             catch (Exception ex)
             {
                 _logger.LogError(

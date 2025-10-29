@@ -8,4 +8,5 @@ public interface IPayrollRepository
     Task<List<PayrollPayment>> CreatePayrollPaymentsAsync(List<PayrollPayment> payments);
     Task<List<PayrollPayment>> GetPayrollDetailsAsync(int payrollId);
     Task<List<Payroll>> GetPayrollsByCompanyAsync(string companyId);
+    Task<Payroll?> GetLatestPayrollAsync(string companyId);
 }
