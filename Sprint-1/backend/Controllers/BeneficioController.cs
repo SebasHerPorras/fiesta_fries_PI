@@ -111,7 +111,7 @@ namespace backend.Controllers
                     return BadRequest("Datos de beneficio inválidos");
 
                 if (!Guid.TryParse(request.UserId, out Guid userId))
-                    return BadRequest("UserId inválido");
+                    return BadRequest("UserId inválido");                    
                 
                 var persona = _personService.GetByUserId(userId);
                 if (persona.personType != "Empleador")

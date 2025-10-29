@@ -58,13 +58,13 @@ const router = createRouter({
       },
     },
     {
-      path: "/FormEmpresa",
-      name: "FormEmpresa",
+      path: '/FormEmpresa/:cedula?',
+      name: 'FormEmpresa',
       component: FormEmpresa,
       meta: {
         requiresAuth: true,
         public: false,
-        allowedRoles: ["admin", "empleador"],
+        allowedRoles: ["empleador"],
       },
     },
     {

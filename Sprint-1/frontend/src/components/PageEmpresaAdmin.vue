@@ -26,6 +26,10 @@
       <button @click="toggleEmpleados" class="btn-info">
         👥 {{ mostrandoEmpleados ? 'Ver Empresas' : 'Lista de Empleados' }}
       </button>
+      <button class="btn-info" @click="editarEmpresaPropia">
+        ✏️ Modificar Empresa
+      </button>
+
     </div>
 
     <div class="content">
@@ -525,6 +529,13 @@ export default {
         console.error('Error cargando empresa seleccionada:', error);
         return false;
       }
+    },
+    editarEmpresaPropia() {
+      if (!this.selectedCompanyCedula) {
+        this.showMessage('No hay empresa seleccionada para editar', 'error');
+        return;
+      }
+      this.$router.push({ name: 'FormEmpresa', params: { cedula: this.selectedCompanyCedula } });
     }
   }
 }

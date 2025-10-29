@@ -9,9 +9,11 @@ namespace backend.Services
     public class EmployeeBenefitService : IEmployeeBenefitService
     {
         private readonly EmployeeBenefitRepository _repository;
+        private readonly EmpleadoRepository _empleadoRepository;
 
-        public EmployeeBenefitService(EmployeeBenefitRepository repository)
+        public EmployeeBenefitService(EmployeeBenefitRepository repository, EmpleadoRepository empleadoRepository)
         {
+            _empleadoRepository = empleadoRepository ?? throw new ArgumentNullException(nameof(empleadoRepository));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
@@ -53,10 +55,28 @@ namespace backend.Services
             var saved = await _repository.SaveSelectionAsync(entity);
             return saved;
         }
+
         public Task<List<EmployeeBenefit>> GetSelectedByEmployeeIdAsync(int employeeId)
         {
             if (employeeId <= 0) throw new ArgumentException("employeeId invalido: ", nameof(employeeId));
             return _repository.GetSelectedByEmployeeIdAsync(employeeId);
+        }
+
+        public List<int> GetEmpleadosConBeneficiosExcedidos(long cedulaEmpresa, int nuevoMax)
+        {
+            var empleados = _empleadoRepository.GetEmpleadosPorEmpresa(cedulaEmpresa);
+            var excedidos = new List<int>();
+
+            foreach (var empleado in empleados)
+            {
+                int cantidad = _repository.CountBeneficiosPorEmpleado(empleado.id);
+                if (cantidad > nuevoMax)
+                {
+                    excedidos.Add(empleado.id);
+                }
+            }
+
+            return excedidos;
         }
     }
 }

@@ -195,6 +195,24 @@ namespace backend.Controllers
             }
         }
 
+        [HttpGet("por-cedula/{cedula}")]
+        public IActionResult GetEmpresaPorCedula(long cedula)
+        {
+            try
+            {
+                var empresa = _empresaService.GetEmpresaByCedula(cedula);
+                if (empresa == null)
+                    return NotFound(new { success = false, message = "Empresa no encontrada" });
+
+                return Ok(new { success = true, empresa });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error interno: {ex.Message}" });
+            }
+        }
+
+
         [HttpGet("employee-company/{userId}")]
         public IActionResult GetEmployeeCompany(string userId)
         {
@@ -234,6 +252,25 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPut("modificar-empresa/{cedula}")]
+        public IActionResult ModificarEmpresa(long cedula, [FromBody] EmpresaModel empresa)
+        {
+            var empresaExistente = _empresaService.GetEmpresaByCedula(cedula);
+            if (empresaExistente == null)
+                return NotFound(new { success = false, message = "Empresa no encontrada." });
+
+            // Actualizar campos
+            empresaExistente.Nombre = empresa.Nombre;
+            empresaExistente.DireccionEspecifica = empresa.DireccionEspecifica;
+            empresaExistente.Telefono = empresa.Telefono;
+            empresaExistente.NoMaxBeneficios = empresa.NoMaxBeneficios;
+            empresaExistente.FrecuenciaPago = empresa.FrecuenciaPago;
+            empresaExistente.DiaPago = empresa.DiaPago;
+
+            _empresaService.UpdateEmpresa(empresaExistente);
+
+            return Ok(new { success = true, message = "Empresa actualizada correctamente." });
+        }
     }
 
    

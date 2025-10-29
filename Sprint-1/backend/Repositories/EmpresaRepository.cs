@@ -196,6 +196,21 @@ namespace backend.Handlers.backend.Repositories
             }
         }
 
+        public void Update(EmpresaModel empresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
 
+            const string query = @"
+                UPDATE Empresa
+                SET Nombre = @Nombre,
+                    DireccionEspecifica = @DireccionEspecifica,
+                    Telefono = @Telefono,
+                    NoMaxBeneficios = @NoMaxBeneficios,
+                    FrecuenciaPago = @FrecuenciaPago,
+                    DiaPago = @DiaPago
+                WHERE CedulaJuridica = @CedulaJuridica";
+
+            connection.Execute(query, empresa);
+        }
     }
 }

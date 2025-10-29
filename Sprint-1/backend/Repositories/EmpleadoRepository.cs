@@ -108,5 +108,20 @@ namespace backend.Repositories
                 return new List<EmployeeCalculationDto>();
             }
         }
+
+        public List<EmpleadoModel> GetEmpleadosPorEmpresa(long cedulaEmpresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            var query = @"
+            SELECT 
+                id, position, employmentType, salary, hireDate, department, idCompny,
+                '' AS email, '' AS name
+            FROM Empleado
+            WHERE idCompny = @CedulaEmpresa";
+
+            return connection.Query<EmpleadoModel>(query, new { CedulaEmpresa = cedulaEmpresa }).ToList();
+        }
     }
 }
