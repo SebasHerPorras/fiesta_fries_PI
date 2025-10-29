@@ -32,7 +32,10 @@
 
         <div class="field-group">
           <label class="input">
-            <select v-model="formData.tipo" required @change="validateTipo">
+            <select v-model="formData.tipo"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateTipo">
               <option value="" disabled selected>Tipo de Beneficio</option>
               <option value="Monto Fijo">Monto Fijo</option>
               <option value="Porcentual">Porcentual</option>
@@ -44,7 +47,10 @@
 
         <div class="field-group">
           <label class="input">
-            <select v-model="formData.quienAsume" required @change="validateQuienAsume">
+            <select v-model="formData.quienAsume"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateQuienAsume">
               <option value="" disabled selected>¿Quién asume el costo? *</option>
               <option value="Empresa">Empresa</option>
               <option value="Empleado">Empleado</option>
@@ -59,6 +65,7 @@
             <input
               type="number"
               v-model="formData.valor"
+              :readonly="modoEdicion"
               placeholder=" Valor*"
               required
               min="0"
@@ -71,7 +78,10 @@
 
         <div class="field-group">
           <label class="input">
-            <select v-model="formData.etiqueta" required @change="validateEtiqueta">
+            <select v-model="formData.etiqueta"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateEtiqueta">
               <option value="" disabled selected>Etiqueta *</option>
               <option value="Beneficio">Beneficio</option>
               <option value="Deducción">Deducción</option>
@@ -411,7 +421,7 @@ export default {
 
 <style
 
-  src="@/assets/style/RegisterEmpleado.css" scoped>
+  src="@/assets/style/RegisterEmpleado.css">
 
 .register-card h2 {
   font-size: 22px;
@@ -426,5 +436,14 @@ export default {
   font-size: 14px;
   color: #ccc;
 }
+
+.readonly-field input,
+.readonly-field select {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #aaa;
+  cursor: not-allowed;
+  border: 1px solid #555;
+}
+
 
 </style>

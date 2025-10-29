@@ -107,64 +107,27 @@ namespace backend.Controllers
         {
             try
             {
-                Console.WriteLine($"=== SOLICITUD ACTUALIZAR BENEFICIO ID: {id} ===");
-
-                if (request == null || request.Beneficio == null)
-                {
-                    Console.WriteLine("Error: Request o Beneficio es null");
+                if (request?.Beneficio == null)
                     return BadRequest("Datos de beneficio inválidos");
-                }
 
-                if (string.IsNullOrEmpty(request.UserId) || !Guid.TryParse(request.UserId, out Guid userId))
-                {
-                    Console.WriteLine($"Error: UserId inválido: {request.UserId}");
+                if (!Guid.TryParse(request.UserId, out Guid userId))
                     return BadRequest("UserId inválido");
-                }
-
-                var persona = _personService.GetByUserId(userId);
-                if (persona == null)
-                {
-                    Console.WriteLine("Error: No se encontró persona asociada al usuario");
-                    return BadRequest("No se encontró perfil de empleador para este usuario");
-                }
 
                 if (persona.personType != "Empleador")
-                {
-                    Console.WriteLine($"Error: El usuario no es empleador. Tipo: {persona.personType}");
                     return BadRequest("Solo los usuarios tipo Empleador pueden modificar beneficios");
-                }
 
-                var beneficioExistente = _beneficioService.GetById(id);
-                if (beneficioExistente == null)
-                {
-                    Console.WriteLine($"Beneficio con ID {id} no encontrado");
+                var beneficio = _beneficioService.GetById(id);
+                if (beneficio == null)
                     return NotFound("Beneficio no encontrado");
-                }
 
-                var empresaDelBeneficio = _empresaService.GetEmpresaByCedula(beneficioExistente.CedulaJuridica);
-                if (empresaDelBeneficio == null)
-                {
-                    Console.WriteLine("Empresa asociada al beneficio no encontrada");
-                    return BadRequest("La empresa asociada al beneficio no existe");
-                }
-
-                if (empresaDelBeneficio.DueñoEmpresa != persona.id)
-                {
-                    Console.WriteLine("El empleador no es dueño de la empresa asociada al beneficio");
+                var empresa = _empresaService.GetEmpresaByCedula(beneficio.CedulaJuridica);
+                if (empresa?.DueñoEmpresa != persona.id)
                     return BadRequest("No tienes permisos para modificar este beneficio");
-                }
 
                 var resultado = _beneficioService.UpdateBeneficio(id, request.Beneficio);
-                if (string.IsNullOrEmpty(resultado))
-                {
-                    Console.WriteLine("Beneficio actualizado correctamente");
-                    return Ok(new { success = true, message = "Beneficio actualizado correctamente" });
-                }
-                else
-                {
-                    Console.WriteLine($"Error al actualizar beneficio: {resultado}");
-                    return BadRequest(new { success = false, message = resultado });
-                }
+                return string.IsNullOrEmpty(resultado)
+                    ? Ok(new { success = true, message = "Beneficio actualizado correctamente" })
+                    : BadRequest(new { success = false, message = resultado });
             }
             catch (Exception ex)
             {
@@ -173,7 +136,6 @@ namespace backend.Controllers
                 return StatusCode(500, new { success = false, message = $"Error interno del servidor: {ex.Message}" });
             }
         }
-
 
         [HttpGet]
         public List<BeneficioModel> GetAll()
