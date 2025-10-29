@@ -100,6 +100,7 @@
                     <th>Correo</th>
                     <th>Departamento</th>
                     <th>Tipo Contrato</th>
+                    <th>Editar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,6 +119,13 @@
                         {{ empleado.tipoContrato }}
                       </span>
                     </td>
+                    <td>
+                      <button @click="editarEmpleado(empleado)" class="btn-editar">
+                        Editar
+                      </button>
+                    </td>
+                      
+
                   </tr>
                 </tbody>
               </table>
@@ -460,21 +468,25 @@ export default {
       }
     },
 
-  async toggleBeneficios() {
-    this.mostrandoEmpleados = false;
-    this.mostrandoBeneficios = !this.mostrandoBeneficios;
-    
-    if (this.mostrandoBeneficios) {
-      if (this.loadSelectedCompany()) {
-        await this.loadBeneficiosReales();
+    editarEmpleado(empleado) {
+      this.$router.push({ name: 'EditEmpleado', params: { id: empleado.cedula } });
+    },
+
+    async toggleBeneficios() {
+      this.mostrandoEmpleados = false;
+      this.mostrandoBeneficios = !this.mostrandoBeneficios;
+      
+      if (this.mostrandoBeneficios) {
+        if (this.loadSelectedCompany()) {
+          await this.loadBeneficiosReales();
+        } else {
+          this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
+          this.mostrandoBeneficios = false;
+        }
       } else {
-        this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
-        this.mostrandoBeneficios = false;
+        this.showMessage('Mostrando lista de empresas', 'success');
       }
-    } else {
-      this.showMessage('Mostrando lista de empresas', 'success');
-    }
-  },
+    },
 
     async loadBeneficiosReales() {
       if (!this.selectedCompanyCedula) {
@@ -748,8 +760,9 @@ export default {
     },
 
     verListaBeneficios() {
-    this.toggleBeneficios();
-  },
+      this.toggleBeneficios();
+    },
+
     formatFrecuenciaPago(frecuencia) {
       const frecuencias = {
         'quincenal': 'Quincenal',

@@ -65,6 +65,10 @@ export const API_ENDPOINTS = {
   USER_CREATE_EMPLOYER: buildApiUrl("user/createUserEmployer"),
   PERSON_CREATE: buildApiUrl("person/create"),
   EMPLEADO_CREATE_WITH_PERSON: buildApiUrl("Empleado/create-with-person"),
+
+  EMPLEADO_UPDATE_BY_ID: (id) => buildApiUrl(`Empleado/${id}`),
+  EMPLEADO_GET_BY_ID: (id) => buildApiUrl(`Empleado/${id}`),
+
   USER_NOTIFY_EMPLOYER: buildApiUrl("Empleado/EmailNotificationMessage"),
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),

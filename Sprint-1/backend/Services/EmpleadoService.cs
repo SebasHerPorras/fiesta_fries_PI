@@ -13,6 +13,7 @@ namespace backend.Services
     {
         private readonly string _connectionString;
         private readonly PersonService _personService;
+        private readonly PersonRepository _personRepository;
         private readonly EmpleadoRepository _empleadoService;
 
         public EmpleadoService()
@@ -22,8 +23,8 @@ namespace backend.Services
                 ?? throw new InvalidOperationException("Connection string 'UserContext' not found.");
 
             _personService = new PersonService();
-
-           _empleadoService = new EmpleadoRepository(); 
+            _personRepository = new PersonRepository();
+            _empleadoService = new EmpleadoRepository(); 
         }
 
         // Reutiliza PersonService: si no existe la persona la crea (PersonService crea user si hace falta)
@@ -123,6 +124,39 @@ namespace backend.Services
 
             return hireDate;
         }
+
+        public async Task<bool> UpdateEmpleadoAsync(int id, EmpleadoUpdateDto dto)
+        {
+            var empleado = _empleadoService.GetById(id);
+            if (empleado == null)
+                return false;
+
+            var persona = _personRepository.GetByIdentity(id);
+            if (persona == null)
+                return false;
+
+            // Datos de Persona
+            persona.firstName = dto.FirstName;
+            persona.secondName = dto.SecondName;
+            persona.direction = dto.Direction;
+            persona.personalPhone = dto.PersonalPhone;
+            persona.homePhone = dto.HomePhone;
+
+            // Datos de Empleado
+            empleado.position = dto.Position;
+            empleado.department = dto.Department;
+            empleado.salary = dto.Salary;
+
+            _personRepository.Update(persona);
+            await _empleadoService.UpdateAsync(empleado);
+
+            return true;
+        }
+        public async Task<EmpleadoUpdateDto?> GetEmpleadoPersonaByIdAsync(int id)
+        {
+            return await _empleadoService.GetEmpleadoPersonaByIdAsync(id);
+        }
+
 
     }
 }
