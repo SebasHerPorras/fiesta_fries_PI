@@ -1,6 +1,7 @@
 ﻿using backend.Interfaces;
 using backend.Interfaces.Services;
 using backend.Models;
+using System.Linq;
 using backend.Models.Payroll;
 using backend.Models.Payroll.Requests;
 using backend.Models.Payroll.Results;
@@ -198,12 +199,12 @@ namespace backend.Services
             var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
             await SavePayrollResultsAsync(payroll, calculationResult);
 
-            var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions;
+           var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
 
             var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalEmployeeDeductions = calculationResult.TotalEmployeeDeductions;
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "COSTO EMPLEADOR - Bruto: {Gross}, Deducciones Empleador: {EmpDed}, Total: {Total}",
                 totalGrossSalary, totalEmployeeDeductions, totalEmployerCost);
 
@@ -233,15 +234,77 @@ namespace backend.Services
 
         private async Task<PayrollCalculationResult> ProcessEmployeesAsync(PayrollProcessRequest request, int payrollId)
         {
-            var empleados = _employeeService.GetByEmpresa(request.CompanyId);
+            var resolvedPeriod = await _payrollPeriodService.ResolvePayrollPeriodAsync(request.CompanyId.ToString(), request.PeriodDate, allowProcessed: false);
+            DateTime fechaInicio = request.PeriodDate;
+            DateTime fechaFin = request.PeriodDate;
+
+            if (resolvedPeriod != null)
+            {
+                fechaInicio = resolvedPeriod.StartDate;
+                fechaFin = resolvedPeriod.EndDate;
+            }
+            else
+            {
+                _logger.LogWarning("No se pudo resolver un periodo para la fecha {PeriodDate} en la compañía {CompanyId}; se usará la fecha como inicio/fin", request.PeriodDate.ToString("yyyy-MM-dd"), request.CompanyId);
+            }
+
+            var employeeDtos = _employeeService.GetEmployeeCalculationDtos(request.CompanyId, fechaInicio, fechaFin);
             var result = new PayrollCalculationResult();
 
-            _logger.LogInformation("Procesando {EmployeeCount} empleados", empleados.Count);
+            _logger.LogInformation("Procesando {EmployeeCount} empleados (usando EmployeeCalculationDto)", employeeDtos.Count);
 
-            foreach (var empleado in empleados)
+            foreach (var _dto in employeeDtos)
             {
-                var calculation = await ProcessSingleEmployeeAsync(empleado, request.CompanyId, payrollId);
-                result.AddEmployeeCalculation(calculation);
+                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                _logger.LogDebug("Empleado DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
+                    _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
+
+                if (_dto.SalarioBruto <= 0)
+                {
+                    try
+                    {
+                        var salarioFallback = await ObtenerSalarioEmpleado((int)_dto.CedulaEmpleado);
+                        if (salarioFallback > 0)
+                        {
+                            _logger.LogInformation("Fallback: salario bruto actualizado desde DB para empleado {Cedula}: {Salario}", _dto.CedulaEmpleado, salarioFallback);
+                            _dto.SalarioBruto = salarioFallback;
+                        }
+                        else
+                        {
+                            _logger.LogDebug("Fallback: no se encontró salario >0 para empleado {Cedula}", _dto.CedulaEmpleado);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error obteniendo salario por fallback para empleado {Cedula}", _dto.CedulaEmpleado);
+                    }
+                }
+            }
+
+            foreach (var empleadoDto in employeeDtos)
+            {
+                var periodType = resolvedPeriod?.PeriodType ?? backend.Models.Payroll.PayrollPeriodType.Mensual;
+                if (!ValidateEmployeeHours(empleadoDto, periodType, out var invalidReason))
+                {
+                    _logger.LogInformation("Empleado omitido en cálculo - Cedula: {Cedula}, Nombre: {Nombre}, Motivo: {Reason}",
+                        empleadoDto.CedulaEmpleado, empleadoDto.NombreEmpleado, invalidReason);
+                    continue;
+                }
+
+                var deductions = await _calculationService.CalculateDeductionsAsync(empleadoDto, request.CompanyId, payrollId);
+                var benefits = await _calculationService.CalculateBenefitsAsync(empleadoDto, request.CompanyId, payrollId);
+
+                var empleadoModel = new EmpleadoModel
+                {
+                    id = (int)empleadoDto.CedulaEmpleado,
+                    name = empleadoDto.NombreEmpleado,
+                    salary = (int)empleadoDto.SalarioBruto,
+                    employmentType = empleadoDto.TipoEmpleado,
+                    department = "",
+                    idCompny = request.CompanyId
+                };
+
+                result.AddEmployeeCalculation(new EmployeeCalculation(empleadoModel, deductions, benefits));
             }
 
             return result;
@@ -331,6 +394,65 @@ namespace backend.Services
             };
         }
 
+        // No se pudo implementar validación de horas trabajadas al 100%
+        private bool ValidateEmployeeHours(EmployeeCalculationDto dto, backend.Models.Payroll.PayrollPeriodType periodType, out string reason)
+        {   
+            reason = string.Empty;
+            return true;
+            if (dto == null) {
+                reason = "DTO nulo";
+                return false;
+            }
+
+            var hours = dto.HorasTrabajadas > 0 ? dto.HorasTrabajadas : dto.horas;
+
+            var tipo = (dto.TipoEmpleado ?? string.Empty).ToLowerInvariant();
+
+            var isMensual = periodType == backend.Models.Payroll.PayrollPeriodType.Mensual;
+            var isQuincenal = periodType == backend.Models.Payroll.PayrollPeriodType.Quincenal;
+
+            if (tipo.Contains("completo"))
+            {
+                if (isMensual)
+                {
+                    if (hours <= 45)
+                    {
+                        reason = $"Horas insuficientes: {hours}. Empleado 'Tiempo completo' (Mensual) requiere más de 45 horas por periodo.";
+                        return false;
+                    }
+                }
+                else if (isQuincenal)
+                {
+                    if (hours <= 22)
+                    {
+                        reason = $"Horas insuficientes: {hours}. Empleado 'Tiempo completo' (Quincenal) requiere más de 22 horas por periodo.";
+                        return false;
+                    }
+                }
+            }
+            else if (tipo.Contains("medio"))
+            {
+                if (isMensual)
+                {
+                    if (hours <= 22)
+                    {
+                        reason = $"Horas insuficientes: {hours}. Empleado 'Medio tiempo' (Mensual) requiere más de 22 horas por periodo.";
+                        return false;
+                    }
+                }
+                else if (isQuincenal)
+                {
+                    if (hours <= 11)
+                    {
+                        reason = $"Horas insuficientes: {hours}. Empleado 'Medio tiempo' (Quincenal) requiere más de 11 horas por periodo.";
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
 
         private async Task<decimal> ObtenerSalarioEmpleado(int cedula)
         {
@@ -400,30 +522,72 @@ namespace backend.Services
 
         private async Task<PayrollCalculationResult> CalculatePayrollWithoutSaving(PayrollPreviewRequest request)
         {
-            var empleados = _employeeService.GetByEmpresa(request.CompanyId);
+            var resolvedPeriod = await _payrollPeriodService.ResolvePayrollPeriodAsync(request.CompanyId.ToString(), request.PeriodDate, allowProcessed: true);
+            DateTime fechaInicio = request.PeriodDate;
+            DateTime fechaFin = request.PeriodDate;
+
+            if (resolvedPeriod != null)
+            {
+                fechaInicio = resolvedPeriod.StartDate;
+                fechaFin = resolvedPeriod.EndDate;
+            }
+            else
+            {
+                _logger.LogDebug("Preview: no se resolvió periodo para fecha {PeriodDate} en compañía {CompanyId}; usando fecha simple", request.PeriodDate.ToString("yyyy-MM-dd"), request.CompanyId);
+            }
+
+            var employeeDtos = _employeeService.GetEmployeeCalculationDtos(request.CompanyId, fechaInicio, fechaFin);
             var result = new PayrollCalculationResult();
 
-            _logger.LogInformation("Calculando preview para {EmployeeCount} empleados", empleados.Count);
+            _logger.LogInformation("Calculando preview para {EmployeeCount} empleados", employeeDtos.Count);
 
-            foreach (var empleado in empleados)
+            foreach (var _dto in employeeDtos)
             {
-                var empleadoDto = new EmployeeCalculationDto
+                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                _logger.LogDebug("Preview DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
+                    _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
+
+                if (_dto.SalarioBruto <= 0)
                 {
-                    CedulaEmpleado = empleado.Cedula,
-                    NombreEmpleado = empleado.Nombre,
-                    SalarioBruto = await ObtenerSalarioEmpleado(empleado.Cedula),
-                    TipoEmpleado = empleado.TipoContrato
-                };
+                    try
+                    {
+                        var salarioFallback = await ObtenerSalarioEmpleado((int)_dto.CedulaEmpleado);
+                        if (salarioFallback > 0)
+                        {
+                            _logger.LogInformation("Preview Fallback: salario bruto actualizado desde DB para empleado {Cedula}: {Salario}", _dto.CedulaEmpleado, salarioFallback);
+                            _dto.SalarioBruto = salarioFallback;
+                        }
+                        else
+                        {
+                            _logger.LogDebug("Preview Fallback: no se encontró salario >0 para empleado {Cedula}", _dto.CedulaEmpleado);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Preview: Error obteniendo salario por fallback para empleado {Cedula}", _dto.CedulaEmpleado);
+                    }
+                }
+            }
+
+            foreach (var empleadoDto in employeeDtos)
+            {
+                    var previewPeriodType = resolvedPeriod?.PeriodType ?? backend.Models.Payroll.PayrollPeriodType.Mensual;
+                    if (!ValidateEmployeeHours(empleadoDto, previewPeriodType, out var invalidReasonPreview))
+                {
+                    _logger.LogDebug("Preview: empleado {Cedula} ({Nombre}) omitido por horas insuficientes: {Reason}",
+                        empleadoDto.CedulaEmpleado, empleadoDto.NombreEmpleado, invalidReasonPreview);
+                    continue;
+                }
 
                 var deductions = await _calculationService.CalculateDeductionsAsync(empleadoDto, request.CompanyId, 0);
                 var benefits = await _calculationService.CalculateBenefitsAsync(empleadoDto, request.CompanyId, 0);
 
                 var empleadoModel = new EmpleadoModel
                 {
-                    id = empleado.Cedula,
-                    name = empleado.Nombre,
+                    id = (int)empleadoDto.CedulaEmpleado,
+                    name = empleadoDto.NombreEmpleado,
                     salary = (int)empleadoDto.SalarioBruto,
-                    employmentType = empleado.TipoContrato,
+                    employmentType = empleadoDto.TipoEmpleado,
                     department = "",
                     idCompny = request.CompanyId
                 };
@@ -431,30 +595,34 @@ namespace backend.Services
                 result.AddEmployeeCalculation(new EmployeeCalculation(empleadoModel, deductions, benefits));
             }
 
-            var totalEmployeeDeductions = 0m;
-            foreach (var employeeCalc in result.EmployeeCalculations)
-            {
-                var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
-                var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
-                    empleadoDto, request.CompanyId, 0);
-                totalEmployeeDeductions += employerDeductions;
-            }
+               var totalEmployerDeductions = 0m;
+                foreach (var employeeCalc in result.EmployeeCalculations)
+                {
+                    var empleadoDto = employeeDtos.FirstOrDefault(e => e.CedulaEmpleado == employeeCalc.Employee.id);
+                    if (empleadoDto != null)
+                    {
+                        var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
+                            empleadoDto, request.CompanyId, 0);
+                        totalEmployerDeductions += employerDeductions;
+                    }
+                }
 
             var totalGrossSalary = result.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalBenefits = result.EmployeeCalculations.Sum(x => x.Benefits);
             var totalNetSalary = result.EmployeeCalculations.Sum(x => x.NetSalary);
-            var totalEmployerDeductions = result.EmployeeCalculations.Sum(x => x.Deductions);
+            var totalEmployeeDeductions = result.EmployeeCalculations.Sum(x => x.Deductions);
 
             result.TotalGrossSalary = totalGrossSalary;
             result.TotalEmployeeDeductions = totalEmployeeDeductions;
             result.TotalEmployerDeductions = totalEmployerDeductions;
             result.TotalNetSalary = totalNetSalary;
-            result.TotalEmployerCost = totalGrossSalary + totalEmployeeDeductions + totalBenefits;
+            result.TotalEmployerCost = totalGrossSalary + totalEmployerDeductions + totalBenefits;
             _logger.LogInformation(
                 "Preview calculado - Empleados: {EmployeeCount}, Bruto: {GrossSalary}, Neto: {NetSalary}",
                 result.ProcessedEmployees, result.TotalGrossSalary, result.TotalNetSalary);
 
             return result;
         }
+        
     }
 }

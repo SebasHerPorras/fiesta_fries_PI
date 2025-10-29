@@ -6,6 +6,6 @@
         public DateTime EndDate { get; set; }
         public string Description { get; set; } = string.Empty;
         public bool IsProcessed { get; set; }
-        public string PeriodType { get; set; } = string.Empty; // "Quincenal", "Mensual"
+        public PayrollPeriodType PeriodType { get; set; } = PayrollPeriodType.Mensual; // Mensual, Quincenal
     }
 }
