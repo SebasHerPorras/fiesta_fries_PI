@@ -89,7 +89,7 @@ const router = createRouter({
       },
     },
     {
-      path: "/FormBeneficios",
+      path: "/FormBeneficios/:id?",
       name: "FormBeneficios",
       component: FormBeneficios,
       meta: {

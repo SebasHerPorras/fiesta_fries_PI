@@ -135,6 +135,7 @@
                     <th>Quien Asume</th>
                     <th>Valor</th>
                     <th>Etiqueta</th>
+                    <th>Editar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -159,6 +160,11 @@
                       <span class="etiqueta-badge" :class="getEtiquetaClass(beneficio.etiqueta)">
                         {{ beneficio.etiqueta }}
                       </span>
+                    </td>
+                    <td>
+                      <button @click="editarBeneficio(beneficio)" class="btn-editar">
+                          Editar
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -378,6 +384,11 @@ export default {
       return beneficio.valor ? `₡${beneficio.valor.toLocaleString()}` : 'API';
     }
   },
+
+  editarBeneficio(beneficio) {
+    this.$router.push({ name: 'FormBeneficios', params: { id: beneficio.idBeneficio } });
+  },
+
     // Obtener clase CSS para departamento
     getDepartmentClass(departamento) {
       const classes = {
@@ -854,6 +865,19 @@ export default {
 .type-badge.default {
   background: rgba(108, 117, 125, 0.2);
   color: #6c757d;
+}
+
+.btn-editar {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
 }
 
 /* Badges para quien asume */
