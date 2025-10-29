@@ -170,41 +170,168 @@
         </div>
   
 
-      <!-- Vista de PAYROLL -->
-      <div v-else-if="mostrandoPayroll">
-        <div class="payroll-list">
-          <div class="section-header">
-            <h3>📝 Planillas de Pago</h3>
-            <span class="count-badge">{{ payrolls.length }} planillas</span>
+         <!-- Vista de PAYROLL -->
+        <div v-else-if="mostrandoPayroll" class="payroll-management">
+          <div class="payroll-header">
+            <h3>📝 Gestión de Planillas - {{ selectedCompany?.nombre }}</h3>
+            <span class="count-badge">{{ payrolls.length }} planillas históricas</span>
           </div>
-          <div class="table-container">
-            <table class="payroll-table">
-              <thead>
-                <tr>
-                  <th>Fecha de Pago</th>
-                  <th>Salario Bruto</th>
-                  <th>Deducciones Empleador</th>
-                  <th>Deducciones Empleados</th>
-                  <th>Beneficios</th>
-                  <th>Salario Neto</th>
-                  <th>Costo Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="payroll in payrolls" :key="payroll.payrollId" class="payroll-row">
-                  <td>{{ formatDate(payroll.periodDate) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalGrossSalary) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalEmployerDeductions) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalEmployeeDeductions) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalBenefits) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalNetSalary) }}</td>
-                  <td>₡{{ formatCurrency(payroll.totalEmployerCost) }}</td>
-                </tr>
-              </tbody>
-            </table>
+
+          <div v-if="payrollLoading" class="loading">
+            ⏳ Cargando información de nóminas...
+          </div>
+
+          <div v-else class="payroll-content">
+            
+            <!-- 📅 INFORMACIÓN DEL PERIODO SELECCIONADO -->
+            <transition name="fade">
+              <div v-if="selectedPeriod" key="period-detail" class="selected-period-detail">
+                <h4>📅 Información del Periodo Seleccionado</h4>
+                <table class="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th>Salario Bruto</th>
+                      <th>Deducciones Empleado</th> 
+                      <th>Deducciones Empleador</th> 
+                      <th>Beneficios</th>
+                      <th>Salario Neto</th>
+                      <th>Costo Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ selectedPeriod.description }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalGrossSalary) }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalEmployeeDeductions) }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalEmployerDeductions) }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalBenefits) }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalNetSalary) }}</td>
+                      <td>₡{{ formatCurrency(selectedPeriod.totalEmployerCost) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- 🚀 BOTÓN PROCESAR -->
+                <div class="process-section">
+                  <button 
+                    @click="procesarPlanilla" 
+                    class="btn-process-main"
+                    :disabled="payrollLoading"
+                  >
+                    {{ payrollLoading ? '⏳ Procesando...' : '🚀 Procesar Nómina' }}
+                  </button>
+                  <!--  Sección del período seleccionado -->
+                  <div class="selected-period-info">
+                    Periodo seleccionado: <strong>{{ selectedPeriod.description }} (Día de pago: {{ getDiaPagoEmpresa() }})</strong>
+                  </div>
+                </div>
+              </div>
+            </transition>
+
+            <!-- 📋 PERIODOS PENDIENTES -->
+            <div class="pending-section">
+              <div class="section-title">
+                <h4>📋 Periodos Pendientes</h4>
+                <span class="count-badge">{{ getProcessablePendingPeriods().length }} procesables</span>
+              </div>
+              
+              <div v-if="getProcessablePendingPeriods().length === 0" class="empty-periods">
+                <p>No hay periodos pendientes procesables</p>
+                <p class="period-help">Solo se pueden procesar nóminas para períodos pasados o actuales</p>
+              </div>
+
+              <div v-else class="periods-list">
+                <div 
+                  v-for="period in getProcessablePendingPeriods()" 
+                  :key="period.startDate"
+                  class="period-card" 
+                  :class="[getPeriodClass(period), { 'selected': selectedPeriod?.startDate === period.startDate }]"
+                  @click="selectPeriod(period)"
+                >
+                  <div class="period-content">
+                    <div class="period-icon">{{ getPeriodIcon(period) }}</div>
+                    <div class="period-main-info">
+                      <div class="period-title">{{ period.description }}</div>
+                    </div>
+                    <button 
+                      @click.stop="selectPeriod(period)" 
+                      class="btn-select"
+                      :class="{ 'active': selectedPeriod?.startDate === period.startDate }"
+                    >
+                      {{ selectedPeriod?.startDate === period.startDate ? 'Seleccionado' : 'Seleccionar' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 📅 PERIODOS FUTUROS -->
+            <div v-if="hasFuturePeriods()" class="future-section">
+              <div class="section-title">
+                <h4>📅 Periodos Futuros</h4>
+                <span class="count-badge">{{ getFuturePeriods().length }} futuros</span>
+              </div>
+              <div class="periods-list">
+                <div 
+                  v-for="period in getFuturePeriods()" 
+                  :key="period.startDate"
+                  class="period-card future" 
+                >
+                  <div class="period-content">
+                    <div class="period-icon">🔵</div>
+                    <div class="period-main-info">
+                      <div class="period-title">{{ period.description }}</div>
+                      <div class="period-help">Disponible a partir de {{ formatDate(period.startDate) }}</div>
+                    </div>
+                    <button class="btn-select disabled" disabled>
+                      Futuro
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 📊 HISTORIAL -->
+            <div class="history-section">
+              <div class="section-title">
+                <h4>📊 Historial de Planillas</h4>
+                <span class="count-badge">{{ payrolls.length }} procesadas</span>
+              </div>
+              
+              <div v-if="payrolls.length === 0" class="empty-history">
+                <p>No hay planillas procesadas</p>
+              </div>
+
+              <div v-else class="table-container">
+                <table class="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th>Salario Bruto</th>
+                      <th>Deducciones Empleado</th>
+                      <th>Deducciones Empleador</th> 
+                      <th>Beneficios</th>
+                      <th>Salario Neto</th>
+                      <th>Costo Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="payroll in payrolls" :key="payroll.payrollId" class="payroll-row">
+                      <td>{{ formatDate(payroll.periodDate) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalGrossSalary) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalEmployeeDeductions) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalEmployerDeductions) }}</td> 
+                      <td>₡{{ formatCurrency(payroll.totalBenefits) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalNetSalary) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalEmployerCost) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
    </div> 
       <!-- Mensajes de éxito/error -->
       <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
@@ -245,6 +372,11 @@ export default {
       empleadosQuemados: [],
       beneficios: [],
       payrolls: [],
+      pendingPeriods: [],
+      overduePeriods: [], 
+      nextPeriod: null,
+      selectedPeriod: null,
+      payrollLoading: false,
       selectedCompany: null,
       selectedCompanyId: null,
       selectedCompanyCedula: null  
@@ -381,76 +513,98 @@ export default {
         this.loading = false;
       }
     },
-        async generarNuevaPlanilla() {
-  if (!this.selectedCompanyCedula) {
-    this.showMessage('No hay empresa seleccionada', 'error');
-    return;
-  }
 
-  this.loading = true;
-  try {
-    const request = {
-      periodDate: new Date().toISOString(),
-      companyId: parseInt(this.selectedCompanyCedula),
-      approvedBy: 'Sistema'
-    };
-
-    console.log('Generando nueva planilla:', request);
-    
-    const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
-
-    console.log('Respuesta de generación:', response.data);
-
-    if (response.data.success) {
-      this.showMessage(`${response.data.message}`, 'success');
+    getDiaPagoEmpresa() {
+      if (!this.selectedCompany) return 'No definido';
       
-      console.log('Obteniendo planilla completa...');
-      const payrollsResponse = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+      const diaPago = this.selectedCompany.diaPago;
+      const frecuencia = this.selectedCompany.frecuenciaPago;
       
-      if (payrollsResponse.data && Array.isArray(payrollsResponse.data) && payrollsResponse.data.length > 0) {
-        const planillaMasReciente = payrollsResponse.data[0];
-        
-        console.log(' Planilla completa obtenida:', planillaMasReciente);
-        
-        this.payrolls = [planillaMasReciente];
-      } else {
-
-        console.log(' No se pudo obtener planilla completa, usando datos básicos');
-        const nuevaPlanilla = {
-          payrollId: response.data.payrollId,
-          periodDate: request.periodDate,
-          companyId: this.selectedCompanyCedula,
-          isCalculated: true,
-          approvedBy: request.approvedBy,
-          lastModified: new Date().toISOString(),
-          totalGrossSalary: response.data.totalAmount || 0,
-          totalEmployerDeductions: response.data.totalDeductions || 0,
-          totalEmployeeDeductions: 0,
-          totalBenefits: response.data.totalBenefits || 0,
-          totalNetSalary: response.data.totalAmount || 0,
-          totalEmployerCost: response.data.totalAmount || 0
-        };
-        this.payrolls = [nuevaPlanilla];
+      if (frecuencia === 'quincenal') {
+        return `Día ${diaPago}`;
+      } else if (frecuencia === 'mensual') {
+        return `Día ${diaPago}`;
       }
       
-    } else {
-      this.showMessage(`${response.data.message}`, 'error');
-      this.payrolls = [];
-    }
-  } catch (error) {
-    console.error('Error generando planilla:', error);
-    
-    let errorMessage = 'Error al generar la planilla';
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    }
-    
-    this.showMessage(`${errorMessage}`, 'error');
-    this.payrolls = [];
-  } finally {
-    this.loading = false;
-  }
-},
+      return `${diaPago}`;
+    },
+
+     async hacerPreview(period) {
+      if (!period || !this.selectedCompanyCedula) return;
+        
+      this.payrollLoading = true;
+      try {
+        const periodDate = new Date(period.startDate);
+        const formattedDate = periodDate.toISOString().split('T')[0];
+
+        const request = {
+          companyId: parseInt(this.selectedCompanyCedula),
+          periodDate: formattedDate
+        };
+
+        const response = await axios.post(API_ENDPOINTS.PAYROLL_PREVIEW, request);
+
+        if (response.data.success) {
+          this.selectedPeriod = {
+            ...period,
+            ...response.data.previewData,
+            totalEmployeeDeductions: response.data.previewData.totalEmployeeDeductions || 0,
+            totalEmployerDeductions: response.data.previewData.totalEmployerDeductions || 0,
+            totalBenefits: response.data.previewData.totalBenefits || 0,
+            totalNetSalary: response.data.previewData.totalNetSalary || 0,
+            totalEmployerCost: response.data.previewData.totalEmployerCost || 0,
+            totalAmount: response.data.totalAmount
+          };
+          
+          this.showMessage(`Preview calculado - ${response.data.message}`, 'success');
+        } else {
+          this.showMessage(`${response.data.message}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error en preview:', error);
+        this.showMessage('Error al calcular preview', 'error');
+      } finally {
+        this.payrollLoading = false;
+      }
+    },
+       
+   async generarNuevaPlanilla() {
+      if (!this.loadSelectedCompany()) {
+        this.showMessage('No hay empresa seleccionada', 'error');
+        return;
+      }
+
+      this.loading = true;
+      try {
+        const request = {
+          companyId: parseInt(this.selectedCompanyCedula),
+          approvedBy: 'Sistema'
+        };
+
+        console.log('🔄 Solicitando generación de planilla...');
+        
+        const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS_NEXT, request);
+
+        if (response.data.success) {
+          this.showMessage(`${response.data.message}`, 'success');
+          await this.mostrarPlanillaReciente();
+        } else {
+          this.showMessage(response.data.message, 'info');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        this.showMessage('Error al generar planilla', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async mostrarPlanillaReciente() {
+      const response = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+      if (response.data && response.data.length > 0) {
+        this.payrolls = [response.data[0]];
+      }
+    },
 
   // Obtener clase CSS para tipo de beneficio
   getTypeClass(tipo) {
@@ -621,68 +775,297 @@ export default {
       }
     },
 
-       async togglePayroll() {
+      async togglePayroll() {
         this.mostrandoEmpleados = false;
         this.mostrandoBeneficios = false;
         this.mostrandoPayroll = !this.mostrandoPayroll;
         
         if (this.mostrandoPayroll) {
           if (this.loadSelectedCompany()) {
-            await this.generarNuevaPlanilla(); 
+            await this.loadPayrollData(); 
           } else {
             this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
             this.mostrandoPayroll = false;
           }
-        } else {
-          this.showMessage('Mostrando lista de empresas', 'success');
         }
       },
 
-      async loadPayrollsReales() {
+  async loadPayrollData() {
+    this.payrollLoading = true;
+    try {
+      const [payrolls, nextPeriod, pendingPeriods, overduePeriods] = await Promise.all([
+        axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula)),
+        axios.get(API_ENDPOINTS.PAYROLL_NEXT_PERIOD(this.selectedCompanyCedula)),
+        axios.get(API_ENDPOINTS.PAYROLL_PENDING_PERIODS(this.selectedCompanyCedula)),
+        axios.get(API_ENDPOINTS.PAYROLL_OVERDUE_PERIODS(this.selectedCompanyCedula))
+      ]);
+
+      this.payrolls = payrolls.data || [];
+      this.nextPeriod = nextPeriod.data;
+      this.pendingPeriods = pendingPeriods.data || [];
+      this.overduePeriods = overduePeriods.data || [];
+      
+      this.filterProcessablePeriods();
+      
+      this.showMessage(`Sistema listo. ${this.overduePeriods.length} periodos atrasados detectados`, 'success');
+    } catch (error) {
+      console.error('Error loading payroll data:', error);
+      
+      let errorMessage = 'Error al cargar datos de nóminas';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      this.showMessage(errorMessage, 'error');
+      
+      this.payrolls = [];
+      this.pendingPeriods = [];
+      this.overduePeriods = [];
+    } finally {
+      this.payrollLoading = false;
+    }
+  },
+
+  selectOldestPendingPeriod() {
+      const processablePeriods = this.getProcessablePendingPeriods();
+      
+      if (processablePeriods.length > 0) {
+        const today = new Date();
+        const minAllowedDate = new Date(today);
+        minAllowedDate.setFullYear(today.getFullYear() - 1);
+        
+        const validPeriods = processablePeriods.filter(period => {
+          const periodDate = new Date(period.startDate);
+          return periodDate >= minAllowedDate;
+        });
+        
+        if (validPeriods.length > 0) {
+          const oldestValidPeriod = validPeriods
+            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
+          this.selectedPeriod = oldestValidPeriod;
+        } else {
+          const mostRecentPeriod = processablePeriods
+            .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))[0];
+          this.selectedPeriod = mostRecentPeriod;
+        }
+      } else {
+        this.selectedPeriod = null;
+      }
+    },
+
+    isPeriodProcessable(period) {
+      if (!period || !period.startDate) return false;
+      const today = new Date();
+      const periodStart = new Date(period.startDate);
+      return periodStart <= today;
+    },
+
+    getPeriodType(period) {
+        if (!period || !period.startDate || !period.endDate) return 'future';
+        
+        const today = new Date();
+        const startDate = new Date(period.startDate);
+        const endDate = new Date(period.endDate);
+
+        if (endDate < today) {
+          return 'overdue';
+        } else if (startDate <= today && endDate >= today) {
+          return 'current';
+        } else {
+          return 'future';
+        }
+      },
+
+
+    selectPeriod(period) {
+      this.selectedPeriod = period;
+      this.hacerPreview(period);
+    },
+
+     async procesarPlanilla() {
+      if (!this.selectedPeriod) {
+        this.showMessage('Selecciona un periodo primero', 'error');
+        return;
+      }
+
+      if (!this.isPeriodProcessable(this.selectedPeriod)) {
+        this.showMessage('No se pueden procesar nóminas para periodos futuros', 'error');
+        return;
+      }
+
       if (!this.selectedCompanyCedula) {
         this.showMessage('No hay empresa seleccionada', 'error');
         return;
       }
 
-      this.loading = true;
+      this.payrollLoading = true;
       try {
-        console.log('Cargando payrolls para empresa:', this.selectedCompanyCedula);
-        
-        const response = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+        const periodDate = new Date(this.selectedPeriod.startDate);
+        const formattedDate = periodDate.toISOString().split('T')[0];
 
-        console.log('Respuesta payrolls:', response.data);
-        
-        this.payrolls = Array.isArray(response.data) ? response.data : [];
-        
-        this.showMessage(
-          `Se cargaron ${this.payrolls.length} planilla(s) de ${this.selectedCompany?.nombre || 'la empresa'}`,
-          'success'
-        );
+        const request = {
+          companyId: parseInt(this.selectedCompanyCedula),
+          periodDate: formattedDate,
+          approvedBy: 'Usuario'
+        };
+
+        const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
+
+        if (response.data.success) {
+          this.showMessage(`Planilla procesada exitosamente`, 'success');
+          await this.loadPayrollData();
+        } else {
+          this.showMessage(`Error al procesar planilla`, 'error');
+        }
       } catch (error) {
-        console.error('Error cargando payrolls:', error);
-        this.payrolls = [];
+        console.error('Error procesando planilla:', error);
         
-        let errorMessage = 'Error al cargar planillas';
-        if (error.response?.status === 404) {
-          errorMessage = 'No se encontraron planillas para esta empresa';
-        } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
+        let errorMessage = 'Error al procesar nómina';
+        if (error.response?.data) {
+          const errorData = error.response.data;
+          
+          if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors) {
+            errorMessage = Object.values(errorData.errors).flat().join(', ');
+          }
         }
         
         this.showMessage(errorMessage, 'error');
       } finally {
-        this.loading = false;
+        this.payrollLoading = false;
       }
     },
 
-    // Formatear fecha
+      getProcessablePendingPeriods() {
+        if (!this.pendingPeriods) return [];
+        
+        const today = new Date();
+        const minAllowedDate = new Date(today);
+        minAllowedDate.setFullYear(today.getFullYear() - 1);
+        
+        return this.pendingPeriods.filter(period => {
+          const isProcessable = this.isPeriodProcessable(period);
+          const isWithinLimit = new Date(period.startDate) >= minAllowedDate;
+          return isProcessable && isWithinLimit;
+        });
+      },
+
+      filterProcessablePeriods() {
+        const today = new Date();
+        const minAllowedDate = new Date(today);
+        minAllowedDate.setFullYear(today.getFullYear() - 1);
+        
+        if (this.nextPeriod && this.nextPeriod.startDate) {
+          const nextPeriodStart = new Date(this.nextPeriod.startDate);
+          if (nextPeriodStart > today || nextPeriodStart < minAllowedDate) {
+            this.nextPeriod = null;
+          }
+        }
+
+    
+        if (this.pendingPeriods && this.pendingPeriods.length > 0) {
+          this.pendingPeriods = this.pendingPeriods.filter(period => {
+            if (!period.startDate) return false;
+            const periodStart = new Date(period.startDate);
+            return periodStart >= minAllowedDate && periodStart <= today;
+          });
+        }
+        
+        this.selectOldestPendingPeriod();
+      },
+
+    getFuturePeriods() {
+    if (!this.pendingPeriods) return [];
+    const today = new Date();
+    return this.pendingPeriods.filter(period => {
+      if (!period.startDate) return false;
+      const periodStart = new Date(period.startDate);
+      return periodStart > today;
+    });
+  },
+
+    hasFuturePeriods() {
+      return this.getFuturePeriods().length > 0;
+    },
+
+    hasProcessablePeriods() {
+      return (this.nextPeriod && this.isPeriodProcessable(this.nextPeriod)) || 
+            this.getProcessablePendingPeriods().length > 0;
+    },
+
+
+  selectFirstProcessablePeriod() {
+    if (this.overduePeriods && this.overduePeriods.length > 0) {
+      this.selectedPeriod = this.overduePeriods[0];
+    } else if (this.nextPeriod && this.isPeriodProcessable(this.nextPeriod)) {
+      this.selectedPeriod = this.nextPeriod;
+    } else if (this.getProcessablePendingPeriods().length > 0) {
+      this.selectedPeriod = this.getProcessablePendingPeriods()[0];
+    } else {
+      this.selectedPeriod = null;
+    }
+  },
+
+      getPeriodClass(period) {
+        const types = {
+          'overdue': 'period-overdue',
+          'current': 'period-current', 
+          'future': 'period-future'
+        };
+        return types[this.getPeriodType(period)] || '';
+      },
+
+      getPeriodIcon(period) {
+        const icons = {
+          'overdue': '🔴',
+          'current': '🟡',
+        };
+        return icons[this.getPeriodType(period)] || '⚪';
+      },
+
+     async loadPayrollsReales() {
+        if (!this.selectedCompanyCedula) {
+          this.showMessage('No hay empresa seleccionada', 'error');
+          return;
+        }
+
+        this.loading = true;
+        try {
+          const response = await axios.get(API_ENDPOINTS.PAYROLLS(this.selectedCompanyCedula));
+          
+          this.payrolls = Array.isArray(response.data) ? response.data : [];
+          
+          this.showMessage(
+            `Se cargaron ${this.payrolls.length} planilla(s) de ${this.selectedCompany?.nombre || 'la empresa'}`,
+            'success'
+          );
+        } catch (error) {
+          this.payrolls = [];
+          
+          let errorMessage = 'Error al cargar planillas';
+          if (error.response?.status === 404) {
+            errorMessage = 'No se encontraron planillas para esta empresa';
+          } else if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          }
+          
+          this.showMessage(errorMessage, 'error');
+        } finally {
+          this.loading = false;
+        }
+      },
+
     formatDate(dateString) {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
       return date.toLocaleDateString('es-ES');
     },
 
-    // Formatear moneda
     formatCurrency(amount) {
       if (!amount) return '0';
       return parseFloat(amount).toLocaleString('es-CR');
@@ -988,12 +1371,10 @@ export default {
   text-transform: uppercase;
 }
 
-
 .type-badge.default {
   background: rgba(108, 117, 125, 0.2);
   color: #6c757d;
 }
-
 
 .status-badge {
   padding: 3px 8px;
@@ -1123,6 +1504,7 @@ footer {
   color: #bdbdbd;
   font-size: 14px;
 }
+
 /* Estilos para la tabla de payroll */
 .payroll-table {
   width: 100%;
@@ -1155,7 +1537,235 @@ footer {
   font-family: 'Courier New', monospace;
 }
 
-/* Responsivo para pantallas pequeñas */
+.payroll-management {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.payroll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.payroll-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Contenedor principal para información del periodo seleccionado */
+.selected-period-detail {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(31, 185, 180, 0.3);
+}
+
+/* Layout mejorado para period cards */
+.periods-list {
+  display: grid;
+  gap: 12px;
+}
+
+.period-card {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.period-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.period-card.selected {
+  border-color: #1fb9b4;
+  background: rgba(31, 185, 180, 0.1);
+}
+
+.period-overdue {
+  border-left-color: #ff6b6b;
+}
+
+.period-current {
+  border-left-color: #ffd93d;
+}
+
+.period-future {
+  border-left-color: #6c757d;
+  opacity: 0.7;
+}
+
+.period-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.period-main-info {
+  flex: 1;
+}
+
+.period-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.period-help {
+  font-size: 12px;
+  color: #bdbdbd;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Botones */
+.btn-select {
+  padding: 6px 12px;
+  border: 1px solid #1fb9b4;
+  background: transparent;
+  color: #1fb9b4;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-select.active {
+  background: #1fb9b4;
+  color: white;
+}
+
+.btn-select.disabled {
+  background: #6c757d;
+  color: white;
+  cursor: not-allowed;
+  border-color: #6c757d;
+}
+
+.btn-process-main {
+  background: linear-gradient(135deg, #1fb9b4, #1aa8a4);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin: 15px 0;
+}
+
+.btn-process-main:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.3);
+}
+
+.btn-process-main:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.process-section {
+  text-align: center;
+  padding: 20px;
+  background: rgba(31, 185, 180, 0.1);
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.selected-period-info {
+  margin-top: 10px;
+  color: #bdbdbd;
+  font-size: 14px;
+  text-align: center;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estados vacíos */
+.empty-periods, .empty-history {
+  text-align: center;
+  padding: 40px 20px;
+  color: #bdbdbd;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+
+/* Pantallas grandes (>1200px) */
+@media (min-width: 1200px) {
+  .payroll-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 25px;
+    grid-template-areas: 
+      "selected-period selected-period"
+      "pending-periods history"
+      "future-periods history";
+  }
+  
+  .selected-period-detail {
+    grid-area: selected-period;
+  }
+  
+  .pending-section {
+    grid-area: pending-periods;
+  }
+  
+  .future-section {
+    grid-area: future-periods;
+  }
+  
+  .history-section {
+    grid-area: history;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .periods-list {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Tablets (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .periods-list {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* Pantallas muy grandes (>1600px) */
+@media (min-width: 1600px) {
+  .payroll-content {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas: 
+      "selected-period selected-period selected-period"
+      "pending-periods future-periods history";
+  }
+  
+  .history-section {
+    max-height: 700px;
+  }
+}
+
+/* Móviles (<768px) */
 @media (max-width: 900px) {
   .hero {
     flex-direction: column;
@@ -1181,10 +1791,57 @@ footer {
     width: 100%;
   }
 
+  .period-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .period-content {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-process-main {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .payroll-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   footer {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+}
+
+/* Móviles pequeños (<480px) */
+@media (max-width: 480px) {
+  .actions-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-info {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .section-header, .section-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .payroll-management {
+    padding: 15px;
+  }
+  
+  .content {
+    padding: 15px;
   }
 }
 </style>

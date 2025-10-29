@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
   CAN_SELECT_BENEFIT: (employeeId, benefitId) => buildApiUrl(`EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`),
   PERSON_BY_USER: (userGuid) => buildApiUrl(`person/by-user/${userGuid}`),
   EMPLOYEE_BENEFIT_SELECTED: (employeeId) => buildApiUrl(`EmployeeBenefit/selected?employeeId=${employeeId}`),
+  PAYROLL_PREVIEW: buildApiUrl("payroll/preview"),
 
 
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
@@ -71,6 +72,9 @@ export const API_ENDPOINTS = {
   EMPLEADO_CREATE: buildApiUrl("Empleado/create"),
   PAYROLLS: (cedulaEmpresa) => buildApiUrl(`Payroll/company/${cedulaEmpresa}`),
   PAYROLL_PROCESS: buildApiUrl("Payroll/process"),
+  PAYROLL_NEXT_PERIOD: (companyId) => buildApiUrl(`Payroll/${companyId}/next-period`),
+  PAYROLL_PENDING_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/pending-periods`),
+  PAYROLL_OVERDUE_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/overdue-periods`),
 };
 
 // Log de configuración (solo en desarrollo)
