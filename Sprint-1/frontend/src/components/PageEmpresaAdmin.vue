@@ -1032,10 +1032,9 @@ export default {
         return;
       }
       this.$router.push({ name: 'FormEmpresa', params: { cedula: this.selectedCompanyCedula } });
-    }
-  },
+    },
 
-      getPeriodClass(period) {
+    getPeriodClass(period) {
         const types = {
           'overdue': 'period-overdue',
           'current': 'period-current', 
