@@ -17,6 +17,7 @@ create Table Dia(
  CONSTRAINT fk_dia_week FOREIGN KEY (week_start_date, id_employee) REFERENCES Semana(start_date, id_employee)
 );
 
+GO
 CREATE PROCEDURE sp_GetOrCreateWeek
     @start_date DATE,
     @id_employee INT
@@ -103,25 +104,6 @@ BEGIN
 END;
 GO
 
-CREATE TRIGGER trg_UpdateWeekHours
-ON Dia
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    UPDATE s
-    SET s.hours_count = (
-        SELECT SUM(d.hours_count)
-        FROM Dia d
-        WHERE d.week_start_date = s.start_date
-          AND d.id_employee = s.id_employee
-    )
-    FROM Semana s
-    INNER JOIN inserted i 
-        ON s.start_date = i.week_start_date 
-       AND s.id_employee = i.id_employee;
-END;
-GO
-
 CREATE FUNCTION Fn_ObtenerHoras(@id_employee int,@start_date DATE, @end_date DATE)
 RETURNS INT
 AS 
@@ -134,7 +116,6 @@ FROM Semana WHERE [start_date] BETWEEN @start_date AND @end_date
     RETURN ISNULL(@hours_total,0);
 END;
 GO
-
 
 SELECT dbo.Fn_ObtenerHoras(119180745,'2025-10-1','2025-10-31') AS horas_semana;
 
