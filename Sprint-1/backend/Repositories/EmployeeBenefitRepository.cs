@@ -121,6 +121,16 @@ namespace backend.Repositories
             return result.AsList();
         }
 
+        public int CountBeneficiosPorEmpleado(int employeeId)
+        {
+            const string query = @"
+            SELECT COUNT(*) 
+            FROM EmployeeBenefit 
+            WHERE EmployeeId = @EmployeeId";
+
+            return _db.ExecuteScalar<int>(query, new { EmployeeId = employeeId });
+        }
+
     }
 
 }

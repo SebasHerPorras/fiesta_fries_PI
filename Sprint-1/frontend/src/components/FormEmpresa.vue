@@ -72,17 +72,19 @@
             </label>
             <div class="error">{{ errors.telefono }}</div>
           </div>
-          
           <div class="form-group">
             <label class="input">
-              <input 
-                type="number" 
+              <input
                 v-model="formData.noMaxBeneficios"
-                placeholder="🙏Número máximo de beneficios (mínimo 1) *"
-                required
-                min="0"
-                @input="validateMaxBenefits"
-              >
+                @blur="validateNoMaxBeneficios"
+                 @input="validateNoMaxBeneficios"
+                type="number"
+                class="form-control"
+                :class="{ 'is-invalid': errors.noMaxBeneficios }"
+              />
+              <div v-if="errors.noMaxBeneficios" class="invalid-feedback">
+                {{ errors.noMaxBeneficios }}
+              </div>
             </label>
             <div class="error">{{ errors.noMaxBeneficios }}</div>
           </div>
@@ -129,13 +131,13 @@
             >
               ← Volver
             </button>
-            <button 
-              class="btn btn-primary" 
+            <button
+              class="btn btn-primary"
               type="submit"
-              :disabled="loading"
+              :disabled="loading || errors.noMaxBeneficios !== ''"
             >
               <span v-if="loading">
-                ⏳ {{ modoEdicion ? 'Actualizando...' : 'Registrando...' }}
+                {{ modoEdicion ? 'Actualizando...' : 'Registrando...' }}
               </span>
               <span v-else>
                 {{ modoEdicion ? 'Actualizar Empresa' : 'Agregar Empresa' }}
@@ -250,6 +252,7 @@ export default {
           frecuenciaPago: empresa.frecuenciaPago,
           diaPago: empresa.diaPago
         };
+
       } catch (error) {
         this.successMessage = 'Error al cargar la empresa: ' + (error.response?.data?.message || error.message);
         this.messageType = 'error';
@@ -319,6 +322,7 @@ export default {
           this.errors.noMaxBeneficios = '';
         }
       }
+
     },
     
     validateFrecuenciaPago() {
@@ -341,8 +345,58 @@ export default {
         }
       }
     },
+
+    async validateNoMaxBeneficios() {
+      const cedula = this.formData.cedulaJuridica;
+      const nuevoMax = this.formData.noMaxBeneficios;
+
+      // Evita validar si el campo está vacío o no es número
+      if (!cedula || !nuevoMax || isNaN(nuevoMax)) {
+        this.errors.noMaxBeneficios = '';
+        return;
+      }
+      if (this.modoEdicion && cedula) {
+          try {
+            await axios.put(
+              API_ENDPOINTS.VALIDAR_MODIFICACION_BENEFICIOS(cedula),
+              JSON.stringify(nuevoMax),
+              { headers: { "Content-Type": "application/json" } }
+            );
+            this.errors.noMaxBeneficios = '';
+          } catch (error) {
+            if (error.response?.data?.empleados?.length) {
+              const ids = error.response.data.empleados.join(', ');
+              this.errors.noMaxBeneficios = `Empleados afectados: ${ids}`;
+            } else if (error.response?.data?.message) {
+              this.errors.noMaxBeneficios = error.response.data.message;
+            } else {
+              this.errors.noMaxBeneficios = "Error al validar beneficios.";
+            }
+          }
+        } 
+      try {
+        await axios.put(
+          API_ENDPOINTS.VALIDAR_MODIFICACION_BENEFICIOS(cedula),
+          JSON.stringify(nuevoMax),
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        this.errors.noMaxBeneficios = '';
+      } catch (error) {
+          if (error.response?.data?.empleados?.length) {
+            const ids = error.response.data.empleados.join(', ');
+            this.errors.noMaxBeneficios = `Empleados afectados: ${ids}`;
+          } else if (error.response?.data?.message) {
+            this.errors.noMaxBeneficios = error.response.data.message;
+          } else {
+            this.errors.noMaxBeneficios = "Error al validar beneficios.";
+          }
+      }
+    },
+
     
     async submitForm() {
+
       console.log('Datos del formulario capturados:');
       console.log('Cedula Juridica:', this.formData.cedulaJuridica);
       console.log('Nombre Empresa:', this.formData.nombre);
@@ -486,8 +540,9 @@ export default {
     },
 
     async actualizarEmpresaEnBackend(empresaData) {
-      try {
+      this.loading = true;
 
+      try {
         const response = await axios.put(
           API_ENDPOINTS.MODIFICAR_EMPRESA_PROPIA(empresaData.cedulaJuridica),
           empresaData,
@@ -497,13 +552,18 @@ export default {
         );
 
         console.log('Empresa modificada:', response.data);
+        this.successMessage = "Empresa actualizada correctamente.";
+        this.messageType = "success";
         return response.data;
       } catch (error) {
+        this.successMessage = "Error al actualizar empresa.";
+        this.messageType = "error";
         console.error('Error al modificar empresa:', error);
-        const serverMessage = error.response?.data?.message || error.message;
-        throw new Error(serverMessage);
+      } finally {
+        this.loading = false;
       }
     },
+
         
     resetForm() {
       this.formData = {
