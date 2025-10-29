@@ -6,6 +6,7 @@ namespace backend.Models
         public string NombreEmpleado { get; set; } = string.Empty;
         public decimal SalarioBruto { get; set; }
         public string TipoEmpleado { get; set; } = string.Empty;
+        public int HorasTrabajadas { get; set; }
         public DateTime Cumpleanos { get; set; }
         public int horas { get; set; }
     }

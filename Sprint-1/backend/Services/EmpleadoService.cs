@@ -1,6 +1,7 @@
 using System;
 using backend.Models;
 using backend.Repositories;
+using backend.Interfaces.Services;
 using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Services
 {
-    public class EmpleadoService
+    public class EmpleadoService : IEmployeeService
     {
         private readonly string _connectionString;
         private readonly PersonService _personService;
@@ -30,7 +31,7 @@ namespace backend.Services
         {
             try
             {
-                // 1) comprobar si existe la persona por su id (identidad numérica)
+                // 1) comprobar si existe la persona por su id (identidad numï¿½rica)
                 var existingPersona = _personService.GetByIdentity(req.personaId);
 
                 PersonModel personaUsed;
@@ -41,7 +42,7 @@ namespace backend.Services
                 }
                 else
                 {
-                    // Construir PersonModel desde el request y delegar la creación a PersonService
+                    // Construir PersonModel desde el request y delegar la creaciï¿½n a PersonService
                     var personToCreate = new PersonModel
                     {
                         id = req.personaId,
@@ -96,6 +97,14 @@ namespace backend.Services
             return empleadoRepository.GetByEmpresa(cedulaJuridica);
         }
 
+        public async Task<decimal> GetSalarioBrutoAsync(int cedulaEmpleado)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = "SELECT salary FROM Empleado WHERE id = @Cedula";
+            var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
+            return salario ?? 0;
+        }
+        
         public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
         {
             try
