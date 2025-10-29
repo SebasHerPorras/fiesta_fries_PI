@@ -91,19 +91,9 @@ namespace backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
                 connection.Open();
 
-                var query = @"
-                SELECT 
-                    p.id AS CedulaEmpleado,
-                    p.firstName + ' ' + p.secondName AS NombreEmpleado,
-                    e.salary AS SalarioBruto,
-                    e.employmentType AS TipoEmpleado,
-                    p.birthdate AS Cumpleanos,
-                    dbo.Fn_ObtenerHoras(e.id, @FechaInicio, @FechaFin) AS horas
-                FROM Empleado e
-                INNER JOIN Persona p ON e.id = p.id
-                INNER JOIN [User] u ON p.uniqueUser = u.PK_User
-                WHERE e.idCompny = @CedulaJuridica
-                ORDER BY e.department, p.firstName";
+                const string query = @"
+                    EXEC SP_GetEmployeesForPayroll 
+                    @CedulaJuridica, @FechaInicio, @FechaFin";
 
                 return connection.Query<EmployeeCalculationDto>(query, new 
                 { 
