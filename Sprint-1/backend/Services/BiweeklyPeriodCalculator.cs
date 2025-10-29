@@ -94,7 +94,7 @@ namespace backend.Services.Strategies
                 StartDate = startDate,
                 EndDate = endDate,
                 Description = $"Quincena {startDate:dd/MM} - {endDate:dd/MM/yyyy}",
-                PeriodType = "biweekly",
+                PeriodType = backend.Models.Payroll.PayrollPeriodType.Quincenal,
                 IsProcessed = false
             };
         }

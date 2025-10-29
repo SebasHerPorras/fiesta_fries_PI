@@ -10,5 +10,6 @@ namespace backend.Interfaces.Services
         Task<PayrollPeriod> CalculateCurrentPeriodAsync(string companyId);
         Task<List<PayrollPeriod>> GetPendingPeriodsAsync(string companyId, int months = 6);
         Task<bool> IsPeriodProcessedAsync(string companyId, DateTime period);
+        Task<PayrollPeriod?> ResolvePayrollPeriodAsync(string companyId, DateTime periodDate, bool allowProcessed = false);
     }
 }

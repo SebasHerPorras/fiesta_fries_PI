@@ -1,0 +1,4 @@
+﻿USE Fiesta_Fries_DB;
+GO
+
+AlTER TABLE EMPRESA ADD [FechaCreacion] DATETIME NOT NULL;

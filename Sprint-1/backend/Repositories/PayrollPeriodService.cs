@@ -5,6 +5,8 @@ using backend.Models;
 using backend.Models.Common;
 using backend.Models.Payroll;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace backend.Services
 {
@@ -134,6 +136,108 @@ namespace backend.Services
             ValidateCompanyId(companyId);
             var company = await GetCompanyAsync(companyId);
             return CalculatePeriodByFrequency(company, DateTime.Now);
+        }
+
+    
+        public async Task<PayrollPeriod?> ResolvePayrollPeriodAsync(string companyId, DateTime periodDate, bool allowProcessed = false)
+        {
+            ValidateCompanyId(companyId);
+
+            var periods = new List<PayrollPeriod>();
+
+            try
+            {
+                var pending = await GetPendingPeriodsAsync(companyId, 12);
+                if (pending != null && pending.Any()) periods.AddRange(pending);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to retrieve pending periods for company {CompanyId}", companyId);
+            }
+
+            try
+            {
+                var overdue = await GetOverduePeriodsAsync(companyId);
+                if (overdue != null && overdue.Any()) periods.AddRange(overdue);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to retrieve overdue periods for company {CompanyId}", companyId);
+            }
+
+            try
+            {
+                var current = await CalculateCurrentPeriodAsync(companyId);
+                if (current != null) periods.Add(current);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to calculate current period for company {CompanyId}", companyId);
+            }
+
+            try
+            {
+                var next = await CalculateNextPendingPeriodAsync(companyId);
+                if (next != null) periods.Add(next);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to calculate next pending period for company {CompanyId}", companyId);
+            }
+
+            if (!periods.Any())
+            {
+                _logger.LogInformation("No candidate periods found for company {CompanyId}", companyId);
+                return null;
+            }
+
+            var deduped = periods
+                .GroupBy(p => p.StartDate.Date)
+                .Select(g => g.OrderBy(p => p.IsProcessed ? 1 : 0).First())
+                .ToList();
+
+            var matches = deduped
+                .Where(p => periodDate.Date >= p.StartDate.Date && periodDate.Date <= p.EndDate.Date)
+                .Where(p => allowProcessed || !p.IsProcessed)
+                .OrderBy(p => p.StartDate)
+                .ToList();
+
+            if (matches.Any())
+            {
+                var chosen = matches.First();
+                _logger.LogDebug("Resolved period {Description} ({Start} - {End}) for date {Date} (company {CompanyId})",
+                    chosen.Description, chosen.StartDate.ToString("yyyy-MM-dd"), chosen.EndDate.ToString("yyyy-MM-dd"), periodDate.ToString("yyyy-MM-dd"));
+                return chosen;
+            }
+
+            // Si no hay un periodo que contenga la fecha busca el próximo periodo no procesado
+            var future = deduped
+                .Where(p => p.StartDate.Date > periodDate.Date)
+                .Where(p => allowProcessed || !p.IsProcessed)
+                .OrderBy(p => p.StartDate)
+                .FirstOrDefault();
+
+            if (future != null)
+            {
+                _logger.LogDebug("Selected next future period {Description} ({Start} - {End}) for date {Date}", future.Description, future.StartDate.ToString("yyyy-MM-dd"), future.EndDate.ToString("yyyy-MM-dd"), periodDate.ToString("yyyy-MM-dd"));
+                return future;
+            }
+
+            // De lo contrario selecciona el periodo anterior no procesado más cercano
+            var previous = deduped
+                .Where(p => p.EndDate.Date < periodDate.Date)
+                .Where(p => allowProcessed || !p.IsProcessed)
+                .OrderByDescending(p => p.StartDate)
+                .FirstOrDefault();
+
+            if (previous != null)
+            {
+                _logger.LogDebug("Selected previous period {Description} ({Start} - {End}) for date {Date}", previous.Description, previous.StartDate.ToString("yyyy-MM-dd"), previous.EndDate.ToString("yyyy-MM-dd"), periodDate.ToString("yyyy-MM-dd"));
+                return previous;
+            }
+
+            _logger.LogInformation("No matching (respecting allowProcessed={AllowProcessed}) period found for date {Date} in company {CompanyId}", allowProcessed, periodDate.ToString("yyyy-MM-dd"), companyId);
+            return null;
         }
 
         public async Task<bool> IsPeriodProcessedAsync(string companyId, DateTime period)
