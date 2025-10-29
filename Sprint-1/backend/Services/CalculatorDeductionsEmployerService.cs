@@ -26,6 +26,27 @@ namespace backend.Services
             if (empleado.SalarioBruto <= 0)
                 throw new ArgumentException("El salario bruto debe ser mayor a cero");
 
+            // Verificar si es empleado "Por horas" - NO aplican cargas sociales del empleador
+            if (string.Equals(empleado.TipoEmpleado?.Trim(), "Por horas", StringComparison.OrdinalIgnoreCase))
+            {
+                // Registrar que no aplican deducciones para este tipo de empleado
+                var deduccionesSinCargo = new List<EmployerSocialSecurityByPayrollDto>
+                {
+                    new EmployerSocialSecurityByPayrollDto
+                    {
+                        ReportId = idReporte,
+                        EmployeeId = empleado.CedulaEmpleado,
+                        ChargeName = "Sin cargas sociales - Empleado por horas",
+                        Amount = 0,
+                        Percentage = 0,
+                        CedulaJuridicaEmpresa = cedulaJuridicaEmpresa
+                    }
+                };
+
+                _payrollService.SaveEmployerDeductions(deduccionesSinCargo);
+                return 0;
+            }
+
             if (_cargasSociales == null || !_cargasSociales.Any())
             {
                 throw new ArgumentException("La lista de cargas sociales es requerida y no puede estar vacia");
