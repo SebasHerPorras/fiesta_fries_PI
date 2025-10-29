@@ -112,7 +112,8 @@ namespace backend.Controllers
 
                 if (!Guid.TryParse(request.UserId, out Guid userId))
                     return BadRequest("UserId inválido");
-
+                
+                var persona = _personService.GetByUserId(userId);
                 if (persona.personType != "Empleador")
                     return BadRequest("Solo los usuarios tipo Empleador pueden modificar beneficios");
 
