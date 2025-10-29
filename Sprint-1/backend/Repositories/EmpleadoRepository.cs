@@ -123,5 +123,56 @@ namespace backend.Repositories
 
             return connection.Query<EmpleadoModel>(query, new { CedulaEmpresa = cedulaEmpresa }).ToList();
         }
+
+        public EmpleadoModel? GetById(int id_)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"SELECT* FROM Empleado WHERE id = @id";
+            Console.WriteLine("Querry realizado con éxito\n");
+
+            return connection.QuerySingleOrDefault<EmpleadoModel>(query, new { id = id_ });
+        }
+
+        public async Task UpdateAsync(EmpleadoModel empleado)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = @"
+                UPDATE Empleado SET
+                    position = @Position,
+                    department = @Department,
+                    salary = @Salary
+                WHERE id = @Id";
+
+            await connection.ExecuteAsync(query, new
+            {
+                empleado.position,
+                empleado.department,
+                empleado.salary,
+                empleado.id
+            });
+        }
+
+        public async Task<EmpleadoUpdateDto?> GetEmpleadoPersonaByIdAsync(int id)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = @"
+                SELECT 
+                    e.id,
+                    p.firstName,
+                    p.secondName,
+                    p.direction,
+                    p.personalPhone,
+                    p.homePhone,
+                    e.position,
+                    e.department,
+                    e.salary
+                FROM Empleado e
+                INNER JOIN Persona p ON e.id = p.id
+                WHERE e.id = @id";
+
+            return await connection.QuerySingleOrDefaultAsync<EmpleadoUpdateDto>(query, new { id });
+        }
+
     }
 }
