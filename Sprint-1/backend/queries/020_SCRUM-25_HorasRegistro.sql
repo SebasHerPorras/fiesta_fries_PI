@@ -119,3 +119,8 @@ GO
 
 SELECT dbo.Fn_ObtenerHoras(119180745,'2025-10-1','2025-10-31') AS horas_semana;
 
+
+--
+
+
+
