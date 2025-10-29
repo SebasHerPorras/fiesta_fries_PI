@@ -85,5 +85,12 @@ namespace backend.Services
                 return null;
             }
         }
+
+        public EmpresaModel GetEmpresaByCedula(long cedulaJuridica)
+        {
+            return _empresaRepository.GetByCedula(cedulaJuridica);
+        }
+
+
     }
 }

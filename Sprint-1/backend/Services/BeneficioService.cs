@@ -40,6 +40,33 @@ namespace backend.Handlers.backend.Services
             return _beneficioRepository.CreateBeneficio(beneficio);
         }
 
+        public string UpdateBeneficio(int id, BeneficioModel beneficio)
+        {
+          try
+          {
+            var repo = new BeneficioRepository();
+            var beneficioExistente = repo.GetById(id);
+            if (beneficioExistente == null)
+                return "Beneficio no encontrado";
+
+            // Actualizar
+            beneficioExistente.Nombre = beneficio.Nombre;
+            beneficioExistente.Tipo = beneficio.Tipo;
+            beneficioExistente.QuienAsume = beneficio.QuienAsume;
+            beneficioExistente.Valor = beneficio.Valor;
+            beneficioExistente.Etiqueta = beneficio.Etiqueta;
+
+            var actualizado = repo.Update(beneficioExistente);
+            return actualizado ? "" : "No se pudo actualizar el beneficio";
+          }
+          catch (Exception ex)
+          {
+              Console.WriteLine($"[ERROR] UpdateBeneficio Service: {ex.Message}");
+              return "Error interno al actualizar beneficio";
+          }
+        }
+
+
         public List<BeneficioModel> GetAll()
         {
             return _beneficioRepository.GetAll();

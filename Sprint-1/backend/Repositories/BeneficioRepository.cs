@@ -134,5 +134,43 @@ namespace backend.Handlers.backend.Repositories
             }
         }
 
+        public bool Update(BeneficioModel beneficio)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                const string query = @"
+                    UPDATE Beneficio
+                    SET 
+                        Nombre = @Nombre,
+                        Tipo = @Tipo,
+                        QuienAsume = @QuienAsume,
+                        Valor = @Valor,
+                        Etiqueta = @Etiqueta
+                    WHERE IdBeneficio = @IdBeneficio";
+
+                Console.WriteLine($"Actualizando beneficio ID: {beneficio.IdBeneficio}");
+
+                var filasAfectadas = connection.Execute(query, new
+                {
+                    beneficio.Nombre,
+                    beneficio.Tipo,
+                    beneficio.QuienAsume,
+                    beneficio.Valor,
+                    beneficio.Etiqueta,
+                    beneficio.IdBeneficio
+                });
+
+                Console.WriteLine($"Filas afectadas: {filasAfectadas}");
+                return filasAfectadas > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Repository Update: {ex.Message}");
+                return false;
+            }
+        }
+
     }
 }

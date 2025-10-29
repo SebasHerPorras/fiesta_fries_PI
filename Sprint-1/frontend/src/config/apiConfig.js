@@ -54,6 +54,10 @@ export const API_ENDPOINTS = {
 
 
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
+  UPDATE_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
+  GET_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
+
+
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
   USER_EMAIL_VERIFY: (email) =>
     `${buildApiUrl("user/emailverify")}?email=${encodeURIComponent(email)}`,
