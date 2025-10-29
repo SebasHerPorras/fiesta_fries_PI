@@ -91,6 +91,10 @@ namespace backend.Services
             return _empresaRepository.GetByCedula(cedulaJuridica);
         }
 
+        public void UpdateEmpresa(EmpresaModel empresa)
+        {
+            _empresaRepository.Update(empresa);
+        }
 
     }
 }

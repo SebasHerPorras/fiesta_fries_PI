@@ -11,13 +11,14 @@
         <!-- Título y subtítulo -->
         <div class="texts">
           <h1>Fiesta Fries</h1>
-          <p>Crear Nueva Empresa</p>
+          <p>{{ modoEdicion ? 'Modificar Empresa' : 'Crear Nueva Empresa' }}</p>
         </div>
       </div>
 
       <!-- Card del formulario -->
       <aside class="form-card">
-        <h2>Crea Nueva Empresa</h2>
+      <h2>{{ modoEdicion ? 'Modificar Empresa' : 'Crea Nueva Empresa' }}</h2>
+
         
         <form @submit.prevent="submitForm">
           <div class="form-group">
@@ -25,8 +26,9 @@
               <input 
                 type="text" 
                 v-model="formData.cedulaJuridica"
+                :disabled="modoEdicion"
+                :required="!modoEdicion" 
                 placeholder="🪪Cédula jurídica *"
-                required
                 maxlength="10" 
                 @input="validateCedulaJuridica"
               >
@@ -88,13 +90,14 @@
           <div class="form-group">
             <label class="input">
               <select 
-                v-model="formData.frecuenciaPago"
-                required
+                v-model="formData.frecuenciaPago" 
+                :disabled="modoEdicion"
+                :required="!modoEdicion"
                 @change="validateFrecuenciaPago"
               >
                 <option value="" disabled selected>💵Frecuencia de Pago *</option>
-                <option value="quincenal">Quincenal</option>
-                <option value="mensual">Mensual</option>
+                <option value="Quincenal">Quincenal</option>
+                <option value="Mensual">Mensual</option>
               </select>
             </label>
             <div class="error">{{ errors.frecuenciaPago }}</div>
@@ -105,8 +108,9 @@
               <input 
                 type="number" 
                 v-model="formData.diaPago"
+                :disabled="modoEdicion"
+                :required="!modoEdicion"
                 placeholder="📅Día de pago (1-30) *"
-                required
                 min="1"
                 max="31"
                 @input="validateDiaPago"
@@ -130,8 +134,12 @@
               type="submit"
               :disabled="loading"
             >
-              <span v-if="loading">⏳ Registrando...</span>
-              <span v-else>Agregar Empresa</span>
+              <span v-if="loading">
+                ⏳ {{ modoEdicion ? 'Actualizando...' : 'Registrando...' }}
+              </span>
+              <span v-else>
+                {{ modoEdicion ? 'Actualizar Empresa' : 'Agregar Empresa' }}
+              </span>
             </button>
           </div>
           
@@ -164,6 +172,7 @@ export default {
   name: 'FormEmpresa',
   data() {
     return {
+      modoEdicion: false,
       formData: {
         cedulaJuridica: '',
         nombre: '',
@@ -191,11 +200,19 @@ export default {
 
   mounted() {
     this.obtenerUserId();
+
+    const cedula = this.$route.params.cedula;
+    if (cedula) {
+      this.modoEdicion = true;
+      this.cargarEmpresaPorCedula(cedula);
+    } else {
+      this.modoEdicion = false;
+    }
   },
 
   methods: {
     volverAlHome() {
-      this.$router.go(-1);
+      this.$router.push('/Profile');
     },
 
     obtenerUserId() {
@@ -217,9 +234,31 @@ export default {
       }
     },
 
+    async cargarEmpresaPorCedula(cedula) {
+      try {
+        console.log('Ruta generada:', API_ENDPOINTS.GET_EMPRESA_POR_CEDULA(cedula));
+        const response = await axios.get(API_ENDPOINTS.GET_EMPRESA_POR_CEDULA(cedula));
+        const empresa = response.data.empresa;
+        console.log('Empresa recibida:', empresa);
+
+        this.formData = {
+          cedulaJuridica: empresa.cedulaJuridica,
+          nombre: empresa.nombre,
+          direccionEspecifica: empresa.direccionEspecifica,
+          telefono: empresa.telefono,
+          noMaxBeneficios: empresa.noMaxBeneficios,
+          frecuenciaPago: empresa.frecuenciaPago,
+          diaPago: empresa.diaPago
+        };
+      } catch (error) {
+        this.successMessage = 'Error al cargar la empresa: ' + (error.response?.data?.message || error.message);
+        this.messageType = 'error';
+      }
+    },
+
     validateCedulaJuridica() {
-      const cedula = this.formData.cedulaJuridica.trim();
-  
+      const cedula = String(this.formData.cedulaJuridica).trim();
+
       if (!cedula) {
         this.errors.cedulaJuridica = 'La cédula jurídica es obligatoria.';
       } else if (!/^\d+$/.test(cedula)) {
@@ -246,7 +285,7 @@ export default {
     validateDireccion() {
       const direccion = this.formData.direccionEspecifica;
       
-      if (direccion.length > 200) {
+      if (direccion && direccion.length > 200) {
         this.errors.direccionEspecifica = 'La direccion no debe exceder 200 caracteres.';
       } else {
         this.errors.direccionEspecifica = '';
@@ -352,16 +391,22 @@ export default {
         this.messageType = 'error';
         return;
       }
-      
-      const empresaData = {
-        cedulaJuridica: Number(this.formData.cedulaJuridica),
-        nombre: this.formData.nombre.trim(),
-        direccionEspecifica: this.formData.direccionEspecifica.trim() || null,
-        telefono: this.formData.telefono ? Number(this.formData.telefono) : null,
-        noMaxBeneficios: Number(this.formData.noMaxBeneficios),
-        frecuenciaPago: this.formData.frecuenciaPago,
-        diaPago: Number(this.formData.diaPago)
-      };
+
+    const empresaData = {
+      cedulaJuridica: Number(this.formData.cedulaJuridica) || 0, // fallback si es NaN
+      nombre: typeof this.formData.nombre === 'string' ? this.formData.nombre.trim() : '',
+      direccionEspecifica: typeof this.formData.direccionEspecifica === 'string'
+        ? this.formData.direccionEspecifica.trim()
+        : null,
+      telefono: this.formData.telefono !== null && this.formData.telefono !== undefined
+        ? Number(this.formData.telefono)
+        : null,
+      noMaxBeneficios: Number(this.formData.noMaxBeneficios) || 0,
+      frecuenciaPago: typeof this.formData.frecuenciaPago === 'string'
+        ? this.formData.frecuenciaPago.trim() : '',
+      diaPago: Number(this.formData.diaPago) || 0
+    };
+
 
       console.log('=== VERIFICACION DE TIPOS ===');
       console.log('Tipo de cedula:', typeof empresaData.cedulaJuridica);
@@ -373,9 +418,13 @@ export default {
       
       if (this.loading) return; 
       this.loading = true;
-
+  
       try {
-        await this.guardarEmpresaEnBackend(empresaData);
+        if (this.modoEdicion) {
+          await this.actualizarEmpresaEnBackend(empresaData);
+        } else {
+          await this.guardarEmpresaEnBackend(empresaData);
+        }
         
         this.successMessage = 'Empresa registrada correctamente.';
         this.messageType = 'success';
@@ -411,9 +460,6 @@ export default {
           userId: this.userId,
           empresa: empresaData
         };
-        
-        console.log('Datos completos a enviar:', requestData);
-        
 
         const response = await axios.post(
           API_ENDPOINTS.CREATE_EMPRESA,
@@ -438,6 +484,26 @@ export default {
         }
       }
     },
+
+    async actualizarEmpresaEnBackend(empresaData) {
+      try {
+
+        const response = await axios.put(
+          API_ENDPOINTS.MODIFICAR_EMPRESA_PROPIA(empresaData.cedulaJuridica),
+          empresaData,
+          {
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+
+        console.log('Empresa modificada:', response.data);
+        return response.data;
+      } catch (error) {
+        console.error('Error al modificar empresa:', error);
+        const serverMessage = error.response?.data?.message || error.message;
+        throw new Error(serverMessage);
+      }
+    },
         
     resetForm() {
       this.formData = {
@@ -453,7 +519,7 @@ export default {
       for (const key in this.errors) {
         this.errors[key] = '';
       }
-    }
+    },
   }
 }
 </script>

@@ -68,6 +68,9 @@ export const API_ENDPOINTS = {
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),
   EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
+  GET_EMPRESA_POR_CEDULA: cedula => buildApiUrl(`/empresa/por-cedula/${cedula}`),
+  MODIFICAR_EMPRESA_PROPIA: (cedula) => buildApiUrl(`empresa/modificar-empresa/${cedula}`),
+
 
   BENEFICIOS_POR_EMPRESA: (cedulaEmpresa) =>
     buildApiUrl(`Beneficio/por-empresa/${cedulaEmpresa}`),
