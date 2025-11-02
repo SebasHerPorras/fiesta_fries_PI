@@ -8,10 +8,10 @@ namespace backend.Services
 {
     public class EmployeeBenefitService : IEmployeeBenefitService
     {
-        private readonly EmployeeBenefitRepository _repository;
-        private readonly EmpleadoRepository _empleadoRepository;
+        private readonly IEmployeeBenefitRepository _repository;
+        private readonly IEmpleadoRepository _empleadoRepository;
 
-        public EmployeeBenefitService(EmployeeBenefitRepository repository, EmpleadoRepository empleadoRepository)
+        public EmployeeBenefitService(IEmployeeBenefitRepository repository, IEmpleadoRepository empleadoRepository)
         {
             _empleadoRepository = empleadoRepository ?? throw new ArgumentNullException(nameof(empleadoRepository));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
