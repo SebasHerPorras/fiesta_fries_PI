@@ -12,6 +12,7 @@ CREATE TABLE [dbo].[Empresa](
     [NoMaxBeneficios] INT NOT NULL,
     [DiaPago] SMALLINT NOT NULL,
     [FrecuenciaPago] VARCHAR(30) NOT NULL,
+    [FechaCreacion] DATETIME NOT NULL DEFAULT GETDATE(), 
     CONSTRAINT [PK_Empresa] PRIMARY KEY CLUSTERED 
     (
         [CedulaJuridica] ASC
@@ -25,6 +26,8 @@ ALTER TABLE [dbo].[Empresa]
     FOREIGN KEY([DueñoEmpresa])
     REFERENCES [dbo].[Persona] ([id]);
 GO
+
+
 
 ALTER TABLE [dbo].[Empresa] 
     CHECK CONSTRAINT [FK_Empresa_Persona];

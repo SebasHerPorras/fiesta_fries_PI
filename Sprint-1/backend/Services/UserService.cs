@@ -72,5 +72,19 @@ namespace backend.Services
             return true;
             
         }
+
+        public void CreateUser(Guid id,string email, string password)
+        {
+            //Armo el objeto y se lo mando al repositorio
+            var newUser = new UserModel
+            {
+                Id = id,
+                Email = email,
+                PasswordHash = password
+            };
+            // Aquí le doy el objeto
+            this.userRepository.Insert(newUser);
+             
+        }
     }
 }

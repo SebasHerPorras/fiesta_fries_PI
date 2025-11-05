@@ -1,6 +1,7 @@
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace backend.Controllers
 {
@@ -24,7 +25,7 @@ namespace backend.Controllers
             if (req.personaId <= 0)
                 return BadRequest("El campo personaId es requerido y debe ser mayor que 0.");
 
-            // Validaciones mínimas: email/password si la persona no existe se usarán para crear el user
+            // Validaciones mï¿½nimas: email/password si la persona no existe se usarï¿½n para crear el user
             var empleado = empleadoService.CreateEmpleadoWithPersonaAndUser(req);
 
             // Retorna el empleado creado (puedes retornar solo el id si prefieres)
@@ -35,9 +36,91 @@ namespace backend.Controllers
         public ActionResult<List<EmpleadoListDto>> GetByEmpresa(long cedulaJuridica)
         {
             var empleados = empleadoService.GetByEmpresa(cedulaJuridica);
-            Console.WriteLine("\n\n\n\nEmpleados obtenidos:");
-            Console.Write(empleados);
             return Ok(empleados);
         }
+
+
+        [HttpPost("EmailNotificationMessage")]
+        public ActionResult notyfyEmployer(UserModel request)
+        {
+            EmailEmployeeNotificationService service = new EmailEmployeeNotificationService();
+
+            service.buildEmail(request);
+
+            return Ok();
+        }
+
+        [HttpGet("GetEmployeeHireDate")]
+        public ActionResult getHireDate([FromQuery] int id)
+        {
+            var hireDate = this.empleadoService.GetHireDate(id);
+
+            return Ok(hireDate);
+        }
+
+        [HttpGet("GetEmployeeWorkDayHours")]
+        public ActionResult getWorkDayHours([FromQuery] DateTime dateW, DateTime dateD,int id)
+        {
+            EmployeeWorkDayHoursService service = new EmployeeWorkDayHoursService();
+
+            EmployeeWorkDayModel? workHours = service.GetWorkDay(dateW, dateD, id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("El Dï¿½a asociado a este empleado no existe");
+        }
+
+        [HttpGet("AddWorkHours")]
+        public ActionResult AddWorkHours([FromQuery] DateTime dateW,DateTime dateD, int hours, int id)
+        {
+            EmployeeWorkDayHoursService service = new EmployeeWorkDayHoursService();
+
+            EmployeeWorkDayModel? workHours = service.AddHours(dateW,dateD, hours,id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("No se pudieron aï¿½adir las horas");
+        }
+        [HttpGet("GetWorkHoursWeek")]
+        public ActionResult getWeekHours([FromQuery] DateTime date, int id)
+        {
+            EmployeeWorkWeekService service = new EmployeeWorkWeekService();
+
+            WeekEmployeeModel? workHours = service.GetWeek(date, id);
+
+            if (workHours != null)
+            {
+                return Ok(workHours);
+            }
+
+            return BadRequest("No se pudieron traer las horas");
+
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetEmpleadoPorId(int id)
+        {
+            var dto = await empleadoService.GetEmpleadoPersonaByIdAsync(id);
+            if (dto == null) return NotFound();
+            return Ok(dto);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateEmpleado(int id, [FromBody] EmpleadoUpdateDto dto)
+        {
+            var result = await empleadoService.UpdateEmpleadoAsync(id, dto);
+            if (!result)
+                return StatusCode(500, "Error al actualizar");
+
+            return NoContent();
+        }
+
+
     }
 }

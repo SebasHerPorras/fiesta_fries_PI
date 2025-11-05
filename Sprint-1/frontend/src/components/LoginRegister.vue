@@ -42,7 +42,7 @@
         <div class="login-footer">
           <p>
             ¿No tienes una cuenta de Empleador?
-            <a href="/LogINEmpleadores">Regístrate</a>
+            <a href="/SignInEmpleadores">Regístrate</a>
           </p>
         </div>
       </aside>
@@ -66,6 +66,7 @@
 
 // imports necesarios para el login
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: "LoginRegister", // Nombre del componente principal
@@ -85,7 +86,7 @@ export default {
       this.passwordError = "";
       this.loading = true;
       try {
-        const url = "https://localhost:7056/api/user/login";
+        const url = API_ENDPOINTS.USER_LOGIN;
         const res = await axios.post(url, {
           email: this.email.trim(),
           password: this.password

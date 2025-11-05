@@ -116,6 +116,21 @@ namespace backend.Repositories
             }
         }
 
+        public void Update(PersonModel persona)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+                UPDATE Persona SET
+                    firstName = @firstName,
+                    secondName = @secondName,
+                    direction = @direction,
+                    personalPhone = @personalPhone,
+                    homePhone = @homePhone
+                WHERE id = @id";
+
+            connection.Execute(query, persona);
+        }
 
 
     }

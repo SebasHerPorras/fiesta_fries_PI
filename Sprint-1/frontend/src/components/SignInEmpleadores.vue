@@ -12,7 +12,7 @@
             </div>
 
             <aside class="register-card">
-                <h2>Formulario Empleado</h2>
+                <h2>Formulario Empleador</h2>
                 <form id="EmployerLogIn" @submit.prevent="handleSubmit" @reset="handleReset">
                     <label class="input">
                         <input type="text"
@@ -31,14 +31,6 @@
                                required />
                     </label>
 
-                    <div class="input">
-                        <select id="role" name="role" v-model="payMethod" required>
-                            <option value="" disabled selected style="color: #ece6e6ff">Método de pago</option>
-                            <option value="cash" style="color: #ece6e6ff"> Efectivo</option>
-                            <option value=" bankAccount" style="color: #ece6e6ff">Cuenta de Banco</option>
-                        </select>
-                    </div>
-
                     <label class="input">
                         <input type="text"
                                id="Id"
@@ -49,6 +41,15 @@
                     <div v-if="idError" class="error-msg">{{ idError }}</div>
                     <div v-if="idFormatError" class="error-msg">{{ idFormatError }}</div>
 
+                    <label class="input">
+                        <input type="email"
+                               id="Email"
+                               v-model="form.email"
+                               placeholder="📧 Email"
+                               required />
+
+                    </label>
+                    <div v-if="emailError" class="error-msg">{{ emailError }}</div>
 
                     <label class="input">
                         <input type="date"
@@ -65,6 +66,7 @@
                                placeholder="📱 Teléfono"
                                required />
                     </label>
+
                     <div v-if="numberError" class="error-msg">{{numberError}}</div>
 
                     <label class="input">
@@ -74,12 +76,12 @@
                                placeholder="☎ Teléfono casa" />
                     </label>
 
-                    <div v-if="numberError" class="error-msg">{{numberError}}</div>
+                   <div v-if="numberError" class="error-msg">{{numberError}}</div>
 
                     <label class="input">
                         <input type="password"
                                id="Password"
-                               v-model="password"
+                               v-model="form.password"
                                placeholder="🔒 Contraseña"
                                required />
                     </label>
@@ -88,7 +90,7 @@
                     <label class="input">
                         <input type="password"
                                id="Password_Confirm"
-                               v-model="passwordConfirmation"
+                               v-model="form.passwordConfirm"
                                placeholder="🔒 Confirmar Contraseña"
                                required />
                     </label>
@@ -107,12 +109,13 @@
 
                     <div class="buttons">
                         <button class="btn" type="submit">Enviar</button>
+                        <button class="btn cancel" @click="returnLogin()">Regresar</button>
                     </div>
                 </form>
             </aside>
         </main>
 
-        <!-- Aquí vamo a dejar el footer -->
+        <!-- Aqpi vamo a dejar el footer -->
         <footer>
             <div>©2025 Fiesta Fries</div>
             <div class="socials">
@@ -128,47 +131,42 @@
 
 
 <script>
-    import axios from 'axios';
-    export default {
+   import axios from 'axios';
+   import { API_ENDPOINTS } from '../config/apiConfig';
+    export default{
         name: "employerFomr",
-        data() {
-            return {
-                form: {
-                    uniqueUser: "",
-                    id: "",
-                    firstName: "",
-                    secondName: "",
-                    email:"",
-                    personalPhone: "",
-                    homePhone: "",
-                    birthdate: "",
-                    personType: "Empleado",
-                    direction: "",
-                },
-                payMethod: "",
-                passwordError: "",
-                firstNameError: "",
-                birthdateError: "",
-                idError: "",
-                directionError: "",
-                passwordConfirmationError: "",
-                email: "",
-                workstation: "",
-                employmentType: "",
-                password: "",
-                passwordConfirmation: "",
-                idFormatError: "",
-                numberError: "",
-                salary: "",
-                date: "",
-                idC: "",
-                departament: "",
-            };
+        data(){
+           return{
+               form: {
+                 uniqueUser: "",
+                 id: "",
+                 firstName: "",
+                 secondName: "",
+                 email: "",
+                 personalPhone: "",
+                 homePhone: "",
+                 birthdate: "",
+                 personType: "Empleador",
+                 direction: "",
+               },
+               passwordError:"",
+               firstNameError:"",
+               birthdateError: "",
+               idError: "",
+               directionError: "",
+               passwordConfirmationError: "",
+               emailError: "",
+               idFormatError: "",
+               numberError: "",
+           };
         },
 
         methods: {
+            returnLogin() {
+                this.$router.push({ path: "/" });
+            },
             validateNumberFormat() {
-                if ((this.form.homePhone && /^\d+$/.test(this.form.homePhone)) && (this.form.personalPhone && /^\d+$/.test(this.form.personalPhone)) && (this.form.homePhone.length === 8 && this.form.personalPhone.length === 8)) {
+                if ((this.form.homePhone && /^\d+$/.test(this.form.homePhone))&& (this.form.personalPhone &&  /^\d+$/.test(this.form.personalPhone))&&(this.form.homePhone.length === 8 && this.form.personalPhone.length === 8)) {
 
                     return true;
                 }
@@ -188,47 +186,26 @@
             ShowIDFomratError(message) {
                 this.idFormatError = message;
             },
-            getDepartament() {
-                const get = this.$route.query.departamento || "";
-                this.departament = get;
-                console.log(this.departament);
-            },
-            getIdcrl() {
-                const get = this.$route.query.idC || "";
-                this.idC = get;
-                console.log(this.idC);
-            },
-            getDateUrl() {
-                const getDateFromUrl = this.$route.query.fechaC || "";
-                this.date = getDateFromUrl;
-                console.log(this.date);
-            },
-            getSalaryUrl() {
-                const getSalaryUrl = this.$route.query.salario || "";
-                this.salary = getSalaryUrl;
-                console.log(this.salary);
-            },
-            getType() {
-                const getTypeUrl = this.$route.query.tipoEmpleo || "";
-                this.employmentType = getTypeUrl;
-                console.log(getTypeUrl);
-            },
-            getEmailUrl() {
-                const getEmailFromUrl = this.$route.query.email || "";
-                this.email = getEmailFromUrl;
-                console.log(this.email);
-            },
-            getPuestoURL() {
-                const getPuestoFromUrl = this.$route.query.puesto || "";
-                this.workstation = getPuestoFromUrl;
-                console.log(getPuestoFromUrl);
-            },
             validatePassword(password) {
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
                 return regex.test(password);
             },
             showpasswordError(message) {
                 this.passwordError = message;
+            },
+            async validateEmail() {
+                const validateEmailUrl = API_ENDPOINTS.USER_EMAIL_VERIFY;
+
+                const response = await axios.get(validateEmailUrl);
+
+                console.log("Respuesta importante\n");
+                console.log(response.data.result)
+
+                return response.data.result === true;
+
+            },
+            showEmailError(message) {
+                this.emailError = message;
             },
             validateConfirmationPassword(firstPassword, secondPassword) {
                 if (firstPassword == secondPassword) {
@@ -242,7 +219,7 @@
             },
             isAdult(birthDate) {
                 //El día de hoy
-
+                
                 const today = new Date();
                 const birth = new Date(birthDate);
                 console.log(today);
@@ -278,18 +255,18 @@
             },
             async validateID() {
                 // tengo que llamar aquí a la api
-                const validateidurl = "http://localhost:5081/api/idverification/idvalidate";
+                const validateidurl = API_ENDPOINTS.ID_VALIDATE;
                 console.log("Entra aquí jijij");
                 let ageInt = parseInt(this.form.id, 10);
                 console.log(ageInt);
-                const response = await axios.post(validateidurl, ageInt, { headers: { "Content-Type": "application/json" } });
+                const response = await axios.post(validateidurl, ageInt, {headers: { "Content-Type": "application/json" }} );
                 console.log("pasa de aquí\n");
 
                 console.log(response);
                 if (response.data.result) {
                     // tengo que llamar al método que haga return ojito
                     this.showidError();
-
+                    
                     return false;
                 }
 
@@ -298,160 +275,127 @@
             showidError() {
                 this.idError = "Este id ya está registrado, ingrse otro";
             },
-
+            
             isNameValid(name) {
                 name = name.trim();
-                return name.length > 5;
+                return name.length >= 3;
             },
             showfisrtNameError(errorMessage) {
                 this.firstNameError = errorMessage;
             },
 
 
-            async handleSubmit() {
-                const JSondata = JSON.stringify(this.form, null, 2);
+           async handleSubmit(){
+                const JSondata = JSON.stringify(this.form,null,2);
                 console.log("Datos capaturados correctamente\n");
                 console.log(JSondata);
-                this.getEmailUrl();
-                this.getPuestoURL();
-                this.getType();
-
-                
                 //Aquí justo es donde tengo que aprender a hacer lo nuevo
-                //Ojito qe primero vamos
-                try {
-                    this.clearErrors();
-                    const createUserUrl = "http://localhost:5081/api/user/create";
-                    //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
-                    console.log(this.password);
-                    console.log(this.passwordConfirmation);
-                    const userData = {
-                        Email: this.email,
-                        PasswordHash: this.password
-                    };
+                //Ojito qe primero vamos 
+               try {
+                   this.clearErrors();
+                   const createUserUrl = API_ENDPOINTS.USER_CREATE;
+                   //Vamo a crear otro Jsoncito para almacenar la data que neceito para la api de user
+                   const userData = {
+                       Email: this.form.email.trim(),
+                       PasswordHash: this.form.password
+                   };
 
-                    this.form.email = this.email;
+                   const event1 = await this.validateEmail();
+                   if (!event1) {
+                       console.log("Entra aquí\n");
+                       this.showEmailError("Este correo elctrónico ya está registrado, ingrese otro");
+                       return;
+                   }
 
-                    if (!(this.isNameValid(this.form.firstName))) {
-                        this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
-                        return;
-                    }
+                   if (!this.validateIDFormat()) {
+                       console.log("Entra aquí pepe\n");
+                       this.ShowIDFomratError("El formato de la cédula no es correcto");
+                       return;
+                   } 
 
-                    const event = await this.validateID();
-                    if (!event) {
-                        return;
-                    }
-                    if (!this.validateIDFormat()) {
-                        console.log("Entra aquí pepe\n");
-                        this.ShowIDFomratError("El formato de la cédula no es correcto");
-                        return;
-                    }
+                   if (!this.validateNumberFormat()) {
+                       this.ShowNumberError("Número no sigue el formato adecuado");
+                       return;
+                   }
 
-                    if (!this.validateNumberFormat()) {
-                        this.ShowNumberError("Número no sigue el formato adecuado");
-                        return;
-                    }
 
-                    if (!(this.isAdult(this.form.birthdate))) {
-                        this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
-                        console.log("Entra aquí4\n");
-                        return;
-                    }
+                   if (!(this.isNameValid(this.form.firstName))) {
+                       this.showfisrtNameError("El nombre debe de contener al menos 5 carácteres");
+                       return;
+                   }
 
-                    if (!this.validateDirectionLength()) {
-                        this.showDirectionError("La dirección no puede exceder los 200 carácteres");
-                        return;
-                    }
-                    if (!this.validatePassword(this.password)) {
-                        this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
-                        return;
-                    }
 
-                    if (!this.validateConfirmationPassword(this.password, this.passwordConfirmation)) {
+                   const event = await this.validateID();
+                   if (!event) {
+                       return;
+                   }
+
+                   if (!(this.isAdult(this.form.birthdate))) {
+                       this.showbirthdateError('La fecha de nacimiento es inválida, debes de ser mayor de edad para registrarte en nuestra plataforma');
+                       console.log("Entra aquí4\n");
+                       return;
+                   }
+
+                   if (!this.validateDirectionLength()) {
+                       this.showDirectionError("La dirección no puede exceder los 200 carácteres");
+                       return;
+                   }
+                   if (!this.validatePassword(this.form.password)) {
+                       this.showpasswordError('La contraseña no cumple con el formato esperado, mínimo 8 caracteres, max 16) (Mínimo 1 char mayúscula, 1 char mínúscula, 1 char especial) ');
+                       return;
+                   }
+
+
+                   if (!this.validateConfirmationPassword(this.form.password, this.form.passwordConfirm)) {
                         this.showpasswordConfirmationError("La contraseña debe de coincidir con la original");
                         return;
-                    }
-
-                    this.clearErrors();
+                   }
+                   this.clearErrors();
 
                     console.log("Va a llegar a la primera conexión\n");
                     const userResponse = await axios.post(createUserUrl, userData);
                     console.log("Conexión exitosa\n");
                     console.log("Usuario:", userResponse.data);
 
-                    // Aquí apartir de la respuesta me traigo el id del usuario para trabajar el empleado
+                    // Aquí apartir de la respuesta me traigo el id del usuario para trabajar la persona
                     const userId = userResponse.data.id;
 
                     this.form.uniqueUser = userId;
 
-                    const personUrl = "http://localhost:5081/api/person/create";
+                    const personUrl = API_ENDPOINTS.PERSON_CREATE;
 
                     const persRes = await axios.post(personUrl, this.form);
                     console.log("Usuario y Persona creados correctamente:");
                     console.log("Persona:", persRes.data);
-
-                    this.getSalaryUrl();
-                    this.getDateUrl();
-                    this.getIdcrl();
-                    this.getDepartament() 
-
-                    const empleado = {
-                        personaId: this.form.id,
-                        firstName: this.form.firstName,
-                        secondName: this.form.secondName,
-                        birthdate: this.form.birthdate,
-                        direction: this.form.direction,
-                        personalPhone: this.form.personalPhone,
-                        homePhone: this.form.homePhone,
-                        personType: this.form.personType,
-                        userEmail: this.email,
-                        userPassword: this.password,
-                        position: this.workstation,
-                        employmentType: this.employmentType,
-                        salary: this.salary,
-                        hireDate: this.date,
-                        idCompny: this.idC,
-                        departament:this.departament,
-                    };
-
-
-                    console.log(empleado);
-
-                    // Aquí vamos a crear la persona
-                    const EmpleadoUrl = "http://localhost:5081/api/Empleado/create-with-person";
-
-                    const EmpleadoRes = await axios.post(EmpleadoUrl, empleado);
-                    console.log("Usuario y Persona creados correctamente:");
-                    console.log("Persona:", EmpleadoRes.data);
 
                     this.$router.push({ path: "/" }).then(() => {
                         alert("El formulario fue compleatado con éxito revise su correo para activar su usuario")
                     });
 
                 } catch (error) {
-                    console.log("Error crando usuario o persona", error);
+                    console.log("Error crando usuario o persona",error);
                 }
 
 
                 //Aquí vamos a crear la persona ojito
 
             },
-            handleReset() {
+            handleReset(){
 
-                //ojito tomamos la vaina y la rechazamos
+                //ojito tomamos la vaina y la rechazamos 
                 this.form = {
-                    name: "",
-                    secondNames: "",
-                    id: "",
-                    email: "",
-                    date: "",
-                    phoneNumber: "",
-                    password: "",
-                    passwordConfirm: "",
-                    direction: "",
+                      name: "",
+                      secondNames:"",
+                      id:"",
+                      email: "",
+                      date: "",
+                      phoneNumber: "",
+                      password: "",
+                      passwordConfirm:"",
+                      direction: "",
 
                 };
-
+            
             },
 
         },
@@ -485,7 +429,6 @@
         max-width: 45%;
         margin-top: 40px;
     }
-
     #EmployerLogIn {
         margin-top: 20px;
         margin-bottom: 20px;
@@ -498,7 +441,6 @@
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
         height: 700px;
     }
-
     .logo-box {
         width: 84px;
         height: 84px;
@@ -524,7 +466,6 @@
         margin: 6px 0 0;
         color: #bdbdbd;
     }
-
     .register-card {
         width: 410px;
         background: rgb(71, 69, 69);
@@ -532,7 +473,7 @@
         padding: 24px;
         border-radius: 10px;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-        height: 800px;
+        height:800px;
     }
 
         .register-card h2 {
@@ -587,6 +528,11 @@
         color: white;
     }
 
+        .btn.cancel {
+            background: #444;
+            color: #ccc;
+        }
+
     footer {
         background: #fff;
         padding: 28px 64px;
@@ -614,21 +560,6 @@
             color: #bdbdbd;
             font-size: 14px;
         }
-    .input select {
-        background: transparent;
-        border: 0;
-        outline: 0;
-        color: whitesmoke;
-        width: 100%;
-        font-size: 14px;
-        appearance: none;
-        cursor: pointer;
-    }
-
-        .input select option {
-            background: #1e1e1e;
-            color: whitesmoke;
-        }
 
     @media (max-width: 900px) {
         .hero {
@@ -654,4 +585,3 @@
         }
     }
 </style>
-

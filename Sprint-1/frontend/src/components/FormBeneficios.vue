@@ -1,127 +1,127 @@
 <template>
-  <div class="formulario-container">
-    <div class="container">
-      <div class="header">
-        <div class="logo">
-          <span class="logo-text">F</span>
+  <div class="wrap">
+    <main class="hero">
+      <div class="brand">
+        <div class="logo-box">
+          <span class="f">F</span>
         </div>
-        <div class="brand-text">
+        <div class="texts">
           <h1>Fiesta Fries</h1>
-          <p>Crear Nuevo Beneficio</p>
+          <p>Gestor de Planillas</p>
         </div>
       </div>
-      
-      <div class="form-card">
-        <h2 class="form-title">Crea Nuevo Beneficio</h2>
-        
-        <form id="benefitForm" @submit.prevent="submitForm">
-          <div class="form-group">
-            <input 
-              type="text" 
-              id="name" 
+
+      <form id="EmployerLogIn" @submit.prevent="submitForm" novalidate>
+        <h2 style="color: #eee; margin: 0 0 20px; font-weight: 600; font-size: 18px; text-align: center;">
+          {{ modoEdicion ? 'Editar Beneficio' : 'Registrar Beneficio' }}
+        </h2>
+
+        <div class="field-group">
+          <label class="input">
+            <input
+              type="text"
               v-model="formData.nombre"
-              class="form-control" 
-              placeholder="Nombre del beneficio *"
+              placeholder=" Nombre del beneficio*"
               required
               maxlength="100"
               @input="validateNombre"
-            >
-            <div class="error" id="nombreError">{{ errors.nombre }}</div>
-          </div>
-          
-          <div class="form-group">
-            <select 
-              id="tipo" 
-              v-model="formData.tipo"
-              class="form-control" 
-              required
-              @change="validateTipo"
-            >
-              <option value="" disabled selected>Tipo de cálculo *</option>
+            />
+          </label>
+          <div class="error-msg">{{ errors.nombre }}</div>
+        </div>
+
+        <div class="field-group">
+          <label class="input">
+            <select v-model="formData.tipo"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateTipo">
+              <option value="" disabled selected>Tipo de Beneficio</option>
               <option value="Monto Fijo">Monto Fijo</option>
               <option value="Porcentual">Porcentual</option>
               <option value="API">API</option>
             </select>
-            <div class="error" id="tipoError">{{ errors.tipo }}</div>
-          </div>
-          
-          <div class="form-group">
-            <select 
-              id="quienAsume" 
-              v-model="formData.quienAsume"
-              class="form-control" 
-              required
-              @change="validateQuienAsume"
-            >
+          </label>
+          <div class="error-msg">{{ errors.tipo }}</div>
+        </div>
+
+        <div class="field-group">
+          <label class="input">
+            <select v-model="formData.quienAsume"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateQuienAsume">
               <option value="" disabled selected>¿Quién asume el costo? *</option>
               <option value="Empresa">Empresa</option>
               <option value="Empleado">Empleado</option>
               <option value="Ambos">Ambos</option>
             </select>
-            <div class="error" id="quienAsumeError">{{ errors.quienAsume }}</div>
-          </div>
-          
-          <div class="form-group">
-            <input 
-              type="number" 
-              id="valor" 
+          </label>
+          <div class="error-msg">{{ errors.quienAsume }}</div>
+        </div>
+
+        <div class="field-group">
+          <label class="input">
+            <input
+              type="number"
               v-model="formData.valor"
-              class="form-control" 
-              placeholder="Valor *"
+              :readonly="modoEdicion"
+              placeholder=" Valor*"
               required
               min="0"
               step="0.01"
               @input="validateValor"
-            >
-            <div class="error" id="valorError">{{ errors.valor }}</div>
-          </div>
-          
-          <div class="form-group">
-            <select 
-              id="etiqueta" 
-              v-model="formData.etiqueta"
-              class="form-control" 
-              required
-              @change="validateEtiqueta"
-            >
+            />
+          </label>
+          <div class="error-msg">{{ errors.valor }}</div>
+        </div>
+
+        <div class="field-group">
+          <label class="input">
+            <select v-model="formData.etiqueta"
+              :disabled = "modoEdicion"
+              :required="!modoEdicion"
+              @change="validateEtiqueta">
               <option value="" disabled selected>Etiqueta *</option>
               <option value="Beneficio">Beneficio</option>
               <option value="Deducción">Deducción</option>
             </select>
-            <div class="error" id="etiquetaError">{{ errors.etiqueta }}</div>
+          </label>
+          <div class="error-msg">{{ errors.etiqueta }}</div>
+        </div>
+
+        <div class="buttons-row">
+          <button class="btn btn-secondary" type="button" @click="volverAtras">← Volver</button>
+          <button class="btn btn-primary" type="submit" :disabled="loading">
+            <span v-if="loading"> Guardando...</span>
+            <span v-else>{{ modoEdicion ? 'Actualizar' : 'Registrar' }}</span>
+          </button>
+        </div>
+
+        <div class="field-group">
+          <div class="message" v-if="successMessage" :class="{ error: messageType === 'error', success: messageType === 'success' }">
+            {{ successMessage }}
           </div>
-          
-          <div class="form-actions">
-            <button 
-              type="button" 
-              class="btn-secondary"
-              @click="volverAHome"
-            >
-              ← Volver al Inicio
-            </button>
-            <button 
-              type="submit" 
-              class="btn-primary"
-              :disabled="loading"
-            >
-              <span v-if="loading">⏳ Registrando...</span>
-              <span v-else>Registrar Beneficio</span>
-            </button>
-          </div>
-          
-          <div class="success" id="successMessage" :class="{ error: messageType === 'error' }">{{ successMessage }}</div>
-        </form>
-      </div>
-    </div>
-    
-    <div class="footer">
+        </div>
+      </form>
+    </main>
+
+    <footer>
       <div>©2025 Fiesta Fries</div>
-    </div>
+      <div class="socials">
+        <a href="#" aria-label="Facebook">f</a>
+        <a href="#" aria-label="LinkedIn">in</a>
+        <a href="#" aria-label="YouTube">▶</a>
+        <a href="#" aria-label="Instagram">✶</a>
+      </div>
+    </footer>
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
+import { API_ENDPOINTS } from '../config/apiConfig';
 
 export default {
   name: 'FormBeneficios',
@@ -145,13 +145,22 @@ export default {
       messageType: 'success',
       selectedCompany: null,
       userId: '',
-      loading: false 
+      loading: false,
+      modoEdicion: false,
+      beneficioId: null
     }
   },
 
   mounted() {
     this.obtenerUserId();
     this.obtenerEmpresaSeleccionada();
+
+    const id = this.$route.params.id;
+    if (id) {
+      this.modoEdicion = true;
+      this.beneficioId = id;
+      this.cargarBeneficioExistente(id);
+    }
   },
 
   methods: {
@@ -204,6 +213,26 @@ export default {
         }, 2000);
       }
     },
+
+    async cargarBeneficioExistente(id) {
+      try {
+        const response = await axios.get(API_ENDPOINTS.GET_BENEFICIO(id));
+        const beneficio = response.data?.beneficio;
+
+        this.formData = {
+          nombre: beneficio.nombre,
+          tipo: beneficio.tipo,
+          quienAsume: beneficio.quienAsume,
+          valor: beneficio.valor,
+          etiqueta: beneficio.etiqueta
+        };
+        console.log('Formulario cargado con datos existentes:', this.formData);
+      } catch (error) {
+        console.error('Error al cargar beneficio existente:', error);
+        this.mostrarError('No se pudo cargar el beneficio para editar.');
+      }
+    },
+
     
     validateNombre() {
       const nombre = this.formData.nombre.trim();
@@ -248,6 +277,8 @@ export default {
     },
     
     async submitForm() {
+      this.errors = {};
+
       console.log('Datos del formulario capturados:');
       console.log('Nombre:', this.formData.nombre);
       console.log('Tipo:', this.formData.tipo);
@@ -276,15 +307,6 @@ export default {
       const faltanCamposObligatorios = camposObligatorios.some(campo => 
         campo !== 0 && !campo  
       );
-
-      console.log('=== DEBUG DETALLADO DE CAMPOS OBLIGATORIOS ===');
-      console.log('nombre:', this.formData.nombre, '¿Vacío?:', !this.formData.nombre);
-      console.log('tipo:', this.formData.tipo, '¿Vacío?:', !this.formData.tipo);
-      console.log('quienAsume:', this.formData.quienAsume, '¿Vacío?:', !this.formData.quienAsume);
-      console.log('valor:', this.formData.valor, '¿Vacío?:', !this.formData.valor);
-      console.log('etiqueta:', this.formData.etiqueta, '¿Vacío?:', !this.formData.etiqueta);
-      console.log('faltanCamposObligatorios:', faltanCamposObligatorios);
-      console.log('===============================================');
 
       if (hasErrors || faltanCamposObligatorios) {
         console.log('SE DETIENE POR VALIDACIONES');
@@ -331,8 +353,10 @@ export default {
         this.successMessage = 'Beneficio registrado correctamente.';
         this.messageType = 'success';
         
-        // Solo limpiamos el formulario después del éxito, sin redirigir
-        this.resetForm();
+        // Redirigir después de 2s
+        setTimeout(() => {
+          this.$router.push({ name: "PageEmpresaAdmin" });
+        }, 2000);
         
       } catch (error) {
         console.error('Error al guardar beneficio:', error);
@@ -342,52 +366,35 @@ export default {
         this.loading = false; 
       }
     },
-    
+        
     async guardarBeneficioEnBackend(beneficioData) {
       try {
-        console.log('INICIANDO ENVIO AL BACKEND - BENEFICIO');
-        console.log('Datos recibidos en guardarBeneficioEnBackend:', beneficioData);
-        console.log('UserId a enviar:', this.userId);
-        
-        if (!this.userId) {
-          throw new Error('Usuario no autenticado. Por favor, inicie sesión.');
-        }
-        
-        // Crear el objeto request según la estructura del backend
         const requestData = {
           UserId: this.userId,
           Beneficio: beneficioData
         };
-        
-        console.log('Datos completos a enviar:', requestData);
-        console.log('JSON completo request:', JSON.stringify(requestData));
-        
-        const response = await axios.post(
-          "https://localhost:7056/api/Beneficio", 
-          requestData,  
-          {
-            headers: { "Content-Type": "application/json" }
-          }
-        );
 
-        console.log('Status de respuesta:', response.status);
-        console.log('Respuesta del servidor:', response.data);
-        
+        let response;
+        if (this.modoEdicion && this.beneficioId) {
+          response = await axios.put(API_ENDPOINTS.UPDATE_BENEFICIO(this.beneficioId), requestData, {
+            headers: { "Content-Type": "application/json" }
+          });
+        } else {
+          response = await axios.post(API_ENDPOINTS.CREATE_BENEFICIO, requestData, {
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
         return response.data;
-        
       } catch (error) {
         console.error('Error en guardarBeneficioEnBackend:', error);
-        if (error.response && error.response.data) {
-          const serverMessage = error.response.data.message || error.response.data;
-          throw new Error(serverMessage);
-        } else {
-          throw new Error('Error de conexión con el servidor');
-        }
+        const serverMessage = error.response?.data?.message || error.message || 'Error de conexión';
+        throw new Error(serverMessage);
       }
     },
     
-    volverAHome() {
-      this.$router.push('/Profile');
+    volverAtras() {
+      this.$router.go(-1);
     },
     
     mostrarError(mensaje) {
@@ -412,227 +419,31 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Los estilos se mantienen igual */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+<style
 
-.formulario-container {
-  background-color: #1e1e1e;
-  color: whitesmoke;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
+  src="@/assets/style/RegisterEmpleado.css">
 
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  width: 100%;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.logo {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-}
-
-.logo-text {
-  font-weight: 800;
-  font-size: 30px;
-  color: white;
-}
-
-.brand-text h1 {
-  font-size: 24px;
-  margin-bottom: 5px;
-}
-
-.brand-text p {
-  color: #bdbdbd;
-  font-size: 14px;
-}
-
-.form-card {
-  background: rgb(71,69,69);
-  border: 1px solid rgba(255,255,255,0.12);
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-}
-
-.form-title {
+.register-card h2 {
   font-size: 22px;
-  margin-bottom: 20px;
-  color: #eee;
-  text-align: center;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #ddd;
-}
-
-.form-control {
-  width: 100%;
-  padding: 12px 15px;
-  border-radius: 6px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: whitesmoke;
-  font-size: 14px;
-  transition: border-color 0.3s;
-}
-
-select.form-control {
-  color: #bdbdbd;
-}
-
-select.form-control:valid,
-select.form-control:focus {
-  color: whitesmoke;
-}
-
-select option {
-  color: whitesmoke;
-  background: rgb(71,69,69);
-}
-
-select option[disabled] {
-  color: #bdbdbd;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #1fb9b4;
-  box-shadow: 0 0 0 2px rgba(31, 185, 180, 0.2);
-}
-
-.form-control::placeholder {
-  color: #bdbdbd;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.btn-primary, .btn-secondary {
-  flex: 1;
-  padding: 12px 20px;
-  border-radius: 6px;
   font-weight: 600;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.3s, transform 0.1s;
-  border: none;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
-.btn-primary {
-  background: #1fb9b4;
-  color: white;
+.field-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #ccc;
 }
 
-.btn-primary:hover {
-  background: #1aa8a4;
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-.btn-primary:disabled {
-  background: #6c757d;
+.readonly-field input,
+.readonly-field select {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #aaa;
   cursor: not-allowed;
-  transform: none;
+  border: 1px solid #555;
 }
 
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-}
 
-.btn-secondary:hover {
-  background: #5a6268;
-}
-
-.btn-secondary:active {
-  transform: scale(0.98);
-}
-
-.error {
-  color: #ff6b6b;
-  font-size: 13px;
-  margin-top: 5px;
-  min-height: 18px;
-}
-
-.success {
-  color: #9fe6cf;
-  font-size: 13px;
-  margin-top: 10px;
-  text-align: center;
-  min-height: 18px;
-}
-
-.success.error {
-  color: #ff6b6b;
-}
-
-.footer {
-  background: #2c2c2c;
-  padding: 20px;
-  text-align: center;
-  margin-top: 40px;
-  color: #8b8b8b;
-  border-radius: 8px;
-}
-
-@media (max-width: 600px) {
-  .container {
-    padding: 15px;
-  }
-  
-  .form-card {
-    padding: 20px;
-  }
-  
-  .header {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .logo {
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-}
 </style>

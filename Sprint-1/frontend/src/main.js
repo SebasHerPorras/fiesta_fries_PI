@@ -5,12 +5,14 @@ import LoginRegister from "./components/LoginRegister.vue";
 import PageEmpresaAdmin from "./components/PageEmpresaAdmin.vue";
 import FormEmpresa from "./components/FormEmpresa.vue";
 import RegisterEmpleado from "./components/RegisterEmpleado.vue";
-import LogINE from "./components/LogInEmpleadores.vue";
-import LogE from "./components/LoginEmpleado.vue";
+import EditEmpleado from "./components/EditEmpleado.vue";
+import SignInEmpleador from "./components/SignInEmpleadores.vue";
 import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
+import RegisterHoras from "./components/RegisterHoras.vue";
+import SelectBeneficios from "./components/SelectBeneficios.vue";
 
-const DEVELOPMENT_MODE = false;
+const DEVELOPMENT_MODE = true;
 
 const router = createRouter({
   history: createWebHistory(),
@@ -46,31 +48,30 @@ const router = createRouter({
         allowedRoles: ["admin", "empleador"],
       },
     },
+        {
+      path: "/SelectBeneficios",
+      name: "SelectBeneficios",
+      component: SelectBeneficios,
+      meta: {
+        requiresAuth: true,
+        public: false,
+        allowedRoles: ["empleado"],
+      },
+    },
     {
-      path: "/FormEmpresa",
-      name: "FormEmpresa",
+      path: '/FormEmpresa/:cedula?',
+      name: 'FormEmpresa',
       component: FormEmpresa,
       meta: {
         requiresAuth: true,
         public: false,
-        allowedRoles: ["admin", "empleador"],
+        allowedRoles: ["empleador"],
       },
     },
     {
-      path: "/LogINEmpleadores",
-      name: "LogInE",
-      component: LogINE,
-      meta: {
-        requiresAuth: false,
-        public: true,
-        allowedRoles: ["any"],
-        blockIfLoggedIn: true,
-      },
-    },
-    {
-      path: "/LogInEmpleado",
-      name: "LogE",
-      component: LogE,
+      path: "/SignInEmpleadores",
+        name: "SignInEmpleador",
+       component: SignInEmpleador,
       meta: {
         requiresAuth: false,
         public: true,
@@ -89,7 +90,17 @@ const router = createRouter({
       },
     },
     {
-      path: "/FormBeneficios",
+      path: "/EditEmpleado/:id",
+      name: "EditEmpleado",
+      component: EditEmpleado,
+      meta: {
+        requiresAuth: true,
+        public: false,
+        allowedRoles: ["empleador"],
+      },
+    },
+    {
+      path: "/FormBeneficios/:id?",
       name: "FormBeneficios",
       component: FormBeneficios,
       meta: {
@@ -97,7 +108,17 @@ const router = createRouter({
         public: false,
         allowedRoles: ["empleador"],
       },
-    },
+      },
+    {
+      path: "/RegisterHoras",
+      name: "RegisterHoras",
+      component: RegisterHoras,
+      meta: {
+       requieresAuth: false,
+       public: true,
+       allowedRoles: ["empleado"],
+      },
+    }, 
   ],
 });
 
