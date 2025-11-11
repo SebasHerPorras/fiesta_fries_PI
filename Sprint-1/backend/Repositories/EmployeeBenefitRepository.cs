@@ -1,4 +1,7 @@
 ﻿using backend.Models;
+using backend.Interfaces;
+using System.Threading.Tasks;
+using System;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
@@ -7,7 +10,7 @@ using System.Data.SqlClient;
 
 namespace backend.Repositories
 {
-    public class EmployeeBenefitRepository
+    public class EmployeeBenefitRepository : IEmployeeBenefitRepository
     {
         private readonly IDbConnection _db;
 

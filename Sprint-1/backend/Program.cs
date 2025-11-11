@@ -43,8 +43,8 @@ builder.Services.AddScoped<IEmployerSocialSecurityContributionsService, Employer
 builder.Services.AddScoped<IEmployerSocialSecurityByPayrollService, EmployerSocialSecurityByPayrollService>();
 builder.Services.AddScoped<ICalculatorDeductionsEmployerService, CalculatorDeductionsEmployerService>();
 builder.Services.AddScoped<IEmployeeBenefitService, EmployeeBenefitService>();
-builder.Services.AddScoped<EmployeeBenefitRepository>();
-builder.Services.AddScoped<EmpleadoRepository>();
+builder.Services.AddScoped<IEmployeeBenefitRepository, EmployeeBenefitRepository>();
+builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
 builder.Services.AddScoped<IEmployeeSocialSecurityContributionsService, EmployeeSocialSecurityContributionsService>();
 builder.Services.AddScoped<IPersonalIncomeTaxService, PersonalIncomeTaxService>();
 builder.Services.AddScoped<IEmployeeDeductionsByPayrollService, EmployeeDeductionsByPayrollService>();

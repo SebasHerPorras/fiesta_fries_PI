@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using backend.Models;
+using backend.Interfaces;
 using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 
 namespace backend.Repositories
 {
-    public class EmpleadoRepository
+    public class EmpleadoRepository : IEmpleadoRepository
     {
         private readonly string _connectionString;
 
