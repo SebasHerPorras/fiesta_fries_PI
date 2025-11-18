@@ -1,5 +1,6 @@
+﻿using backend.Interfaces;
 using backend.Models;
-using backend.Interfaces;
+using System.Globalization;
 using System.Text.Json;
 
 namespace backend.Services
@@ -34,32 +35,68 @@ namespace backend.Services
         {
             try
             {
-                var url = $"{_baseUrl}/api/asociacionsolidarista/aporte-empleado?cedulaEmpresa={request.CompanyLegalId}&salarioBruto={request.GrossSalary}";
-                
+                var formattedSalary = request.GrossSalary.ToString("F2", CultureInfo.InvariantCulture);
+
+                var url = $"{_baseUrl}/api/asociacionsolidarista/aporte-empleado?cedulaEmpresa={request.CompanyLegalId}&salarioBruto={formattedSalary}";
+
+                Console.WriteLine("=== DIAGNÓSTICO API ASOCIACIÓN SOLIDARISTA ===");
+                Console.WriteLine("URL: " + url);
+                Console.WriteLine("Salario original: " + request.GrossSalary);
+                Console.WriteLine("Salario formateado: " + formattedSalary);
+
                 var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                
+
                 var jsonContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("RESPUESTA CRUDA: " + jsonContent);
+
+                try
+                {
+                    using JsonDocument doc = JsonDocument.Parse(jsonContent);
+                    var root = doc.RootElement;
+                    Console.WriteLine("ESTRUCTURA JSON:");
+                    Console.WriteLine(JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true }));
+                }
+                catch (Exception jsonEx)
+                {
+                    Console.WriteLine("Error parseando JSON: " + jsonEx.Message);
+                }
+
                 var apiResponse = JsonSerializer.Deserialize<ExternalApiResponse>(jsonContent, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
+                Console.WriteLine("API Response después de deserializar:");
+                Console.WriteLine("Deductions count: " + (apiResponse?.Deductions?.Count ?? 0));
+
+                if (apiResponse?.Deductions != null)
+                {
+                    foreach (var deduction in apiResponse.Deductions)
+                    {
+                        Console.WriteLine("Deducción - Tipo: " + deduction.Type + ", Monto: " + deduction.Amount);
+                    }
+                }
+
+                if (apiResponse?.Deductions != null)
+                {
+                    foreach (var deduction in apiResponse.Deductions)
+                    {
+                        if (deduction.Amount > request.GrossSalary)
+                        {
+                            Console.WriteLine("VALOR ANORMAL: " + deduction.Amount + " > salario " + request.GrossSalary);
+                            Console.WriteLine("Calculando valor conservador (1% del salario)");
+                            deduction.Amount = Math.Round(request.GrossSalary * 0.01m, 2);
+                            Console.WriteLine("Nuevo valor: " + deduction.Amount);
+                        }
+                    }
+                }
+
                 return apiResponse ?? new ExternalApiResponse();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"HTTP Error calling SolidarityAssociation API: {ex.Message}");
-                return new ExternalApiResponse();
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"JSON Error parsing SolidarityAssociation response: {ex.Message}");
-                return new ExternalApiResponse();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"General Error calling SolidarityAssociation API: {ex.Message}");
+                Console.WriteLine("Error en API Asociación Solidarista: " + ex.Message);
                 return new ExternalApiResponse();
             }
         }

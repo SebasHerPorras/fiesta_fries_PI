@@ -1,5 +1,6 @@
-using backend.Models;
 using backend.Interfaces;
+using backend.Models;
+using System.Globalization;
 using System.Text.Json;
 
 namespace backend.Services
@@ -20,32 +21,33 @@ namespace backend.Services
         {
             try
             {
-                var url = $"{_baseUrl}/?planType={request.PlanType}&grossSalary={request.GrossSalary}";
-                
+                var formattedSalary = request.GrossSalary.ToString("F2", CultureInfo.InvariantCulture);
+
+                var url = $"{_baseUrl}/?planType={request.PlanType}&grossSalary={formattedSalary}";
+
+                Console.WriteLine("Llamando API Pensiones: " + url);
+
                 var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                
+
                 var jsonContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Respuesta API Pensiones: " + jsonContent);
+
                 var apiResponse = JsonSerializer.Deserialize<ExternalApiResponse>(jsonContent, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                return apiResponse ?? new ExternalApiResponse();
+                if (apiResponse == null)
+                {
+                    return new ExternalApiResponse();
+                }
+
+                return apiResponse;
             }
-            catch (HttpRequestException ex)
+            catch (Exception)
             {
-                Console.WriteLine($"HTTP Error calling VoluntaryPensions API: {ex.Message}");
-                return new ExternalApiResponse();
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"JSON Error parsing VoluntaryPensions response: {ex.Message}");
-                return new ExternalApiResponse();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"General Error calling VoluntaryPensions API: {ex.Message}");
+                Console.WriteLine("Error llamando API Pensiones Voluntarias");
                 return new ExternalApiResponse();
             }
         }
