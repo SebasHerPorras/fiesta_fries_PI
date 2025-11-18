@@ -101,6 +101,7 @@
                     <th>Departamento</th>
                     <th>Tipo Contrato</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,7 +125,11 @@
                         Editar
                       </button>
                     </td>
-                      
+                    <td>
+                      <button @click="abrirModalEliminarEmpleado(empleado)" class="btn-eliminar">
+                        Eliminar
+                      </button>
+                    </td>
 
                   </tr>
                 </tbody>
@@ -182,8 +187,8 @@
                       </button>
                     </td>
                     <td>
-                      <button @click="abrirModalEliminarBeneficio(beneficio)" class="btn-eliminar">
-                          Borrar
+                      <button @click="abrirModalEliminarEmpleado(empleado)" class="btn-eliminar">
+                          Eliminar
                       </button>
                     </td>
                   </tr>
@@ -1150,6 +1155,20 @@ export default {
     confirmarEliminarBeneficio(nombre) {
       console.log("Confirmado eliminar beneficio:", nombre);
       console.log("Objeto seleccionado:", this.selectedBeneficio);
+
+      this.showDeleteModal = false;
+    },
+
+    abrirModalEliminarEmpleado(empleado) {
+      this.selectedEmpleado = empleado;
+      this.showDeleteModal = true;
+
+      console.log("Empleado a eliminar:", empleado.nombre);
+    },
+
+    confirmarEliminarEmpleado(nombre) {
+      console.log("Confirmado eliminar empleado:", nombre);
+      console.log("Objeto seleccionado:", this.selectedEmpleado);
 
       this.showDeleteModal = false;
     }

@@ -30,7 +30,7 @@ export default {
   name: "ModalWarning",
   props: {
     visible: { type: Boolean, required: true },
-    itemName: { type: String, required: true },
+    itemName: { type: String,  default: "" },
     submitting: { type: Boolean, default: false }
   },
   methods: {
