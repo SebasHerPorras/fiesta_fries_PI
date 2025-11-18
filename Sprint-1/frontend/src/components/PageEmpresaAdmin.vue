@@ -150,6 +150,7 @@
                     <th>Valor</th>
                     <th>Etiqueta</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -178,6 +179,11 @@
                     <td>
                       <button @click="editarBeneficio(beneficio)" class="btn-editar">
                           Editar
+                      </button>
+                    </td>
+                    <td>
+                      <button @click="abrirModalEliminarBeneficio(beneficio)" class="btn-eliminar">
+                          Borrar
                       </button>
                     </td>
                   </tr>
@@ -357,6 +363,25 @@
       </div>
     </div>
 
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
     <!-- Footer de la página con copyright y redes sociales -->
     <footer>
       <div>©2025 Fiesta Fries</div>
@@ -375,9 +400,13 @@
 <script>
 import axios from "axios";
 import { API_ENDPOINTS } from '../config/apiConfig';
+import ModalWarning from "./ModalWarning.vue"; 
 
 export default {
   name: 'EmpresaAdmin',
+  components: {
+    ModalWarning
+  },
   data() {
     return {
       empresas: [],
@@ -397,7 +426,11 @@ export default {
       payrollLoading: false,
       selectedCompany: null,
       selectedCompanyId: null,
-      selectedCompanyCedula: null  
+      selectedCompanyCedula: null,
+      selectedBeneficio: null,
+      selectedEmpleado: null,
+      showDeleteModal: false,
+      isDeleting: false
     }
   },
   mounted() {
@@ -1106,7 +1139,20 @@ export default {
       if (!amount) return '0';
       return parseFloat(amount).toLocaleString('es-CR');
     },
-    
+
+    abrirModalEliminarBeneficio(beneficio) {
+      this.selectedBeneficio = beneficio;
+      this.showDeleteModal = true;
+
+      console.log("Beneficio a eliminar:", beneficio.nombre);
+    },
+
+    confirmarEliminarBeneficio(nombre) {
+      console.log("Confirmado eliminar beneficio:", nombre);
+      console.log("Objeto seleccionado:", this.selectedBeneficio);
+
+      this.showDeleteModal = false;
+    }
   }
 }
 </script>
@@ -1448,6 +1494,19 @@ export default {
 
 .btn-editar {
   background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.btn-eliminar {
+  background: #a00101;
   color: white;
   border: none;
   padding: 8px 16px;
