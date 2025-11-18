@@ -419,9 +419,9 @@
               </div>
             </div>
 
-            <!-- VISOR DE REPORTE -->
+            <!-- VISOR DE REPORTES -->
             <transition name="fade">
-              <div v-if="reportUrl" class="report-viewer">
+              <div v-if="reportUrl || currentReportText" class="report-viewer">
                 <div class="viewer-header">
                   <h4>📄 Vista Previa del Reporte</h4>
                   <div class="viewer-actions">
@@ -435,7 +435,7 @@
                 </div>
 
                 <!-- IFRAME PARA PDF -->
-                <div v-if="currentReportFormat === 'pdf'" class="pdf-viewer">
+                <div v-if="currentReportFormat === 'pdf' && reportUrl" class="pdf-viewer">
                   <iframe 
                     :src="reportUrl" 
                     width="100%" 
@@ -444,15 +444,24 @@
                   ></iframe>
                 </div>
 
-                <!-- MENSAJE PARA CSV -->
+                <!-- PREVIEW PARA CSV -->
+                <div v-else-if="currentReportFormat === 'csv' && currentReportText" class="csv-preview-wrapper">
+                  <div class="csv-message">
+                    <div class="csv-icon">📊</div>
+                    <h3>CSV - Vista Previa</h3>
+                    <p>Contenido de la planilla (solo lectura) — use "Descargar" para obtener el archivo.</p>
+                  </div>
+
+                  <div class="csv-preview">
+                    <pre class="csv-preview-text">{{ currentReportText }}</pre>
+                  </div>
+                </div>
+
+                <!-- MENSAJE SI NO HAY PREVIEW -->
                 <div v-else class="csv-message">
-                  <div class="csv-icon">📊</div>
-                  <h3>CSV Generado Exitosamente</h3>
-                  <p>El archivo CSV está listo para descargar</p>
-                  <button @click="downloadReport" class="btn-download-big">
-                    ⬇️ Descargar CSV
-                  </button>
-                  <p class="csv-hint">💡 El archivo se abrirá automáticamente en Excel</p>
+                  <div class="csv-icon">📄</div>
+                  <h3>Previsualización no disponible</h3>
+                  <p>Use "Descargar" para obtener el archivo.</p>
                 </div>
               </div>
             </transition>
@@ -508,6 +517,10 @@ export default {
       reportLoading: false,
       generatingReport: false,
       
+      // Guardar blob para preview / descarga segura
+      currentReportBlob: null,
+      currentReportText: null,
+
       selectedCompany: null,
       selectedCompanyId: null,
       selectedCompanyCedula: null  
@@ -1304,52 +1317,111 @@ export default {
 
     async generateReport(payrollId) {
       const format = this.reportFormats[payrollId] || 'pdf';
-      
       this.generatingReport = true;
       this.selectedReportPayrollId = payrollId;
       this.currentReportFormat = format;
+      
+      // limpiar vista previa previa (revoca URL si existe)
       this.clearReport();
+       this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+      this.currentReportFormat = format;
+      
 
       try {
+        const urlPdf = API_ENDPOINTS.PAYROLL_REPORT_PDF(payrollId);
+        const urlCsv = API_ENDPOINTS.PAYROLL_REPORT_CSV(payrollId);
+
         if (format === 'pdf') {
-          // Generar URL para PDF
-          this.reportUrl = API_ENDPOINTS.PAYROLL_REPORT_PDF(payrollId);
-          this.showMessage('PDF generado exitosamente', 'success');
+          // Traer PDF como blob para evitar descarga forzada por headers y permitir preview en iframe
+          const resp = await axios.get(urlPdf, { responseType: 'blob' });
+          const pdfBlob = new Blob([resp.data], { type: 'application/pdf' });
+          this.currentReportBlob = pdfBlob;
+          this.reportUrl = window.URL.createObjectURL(pdfBlob); // usado por iframe
+          this.showMessage('PDF listo para vista previa', 'success');
         } else {
-          // Para CSV, solo preparamos la descarga
-          this.reportUrl = API_ENDPOINTS.PAYROLL_REPORT_CSV(payrollId);
-          this.showMessage('CSV generado exitosamente', 'success');
+          // Traer CSV como blob y extraer texto para mostrar en vista previa
+          const resp = await axios.get(urlCsv, { responseType: 'blob' });
+          const csvBlob = new Blob([resp.data], { type: 'text/csv' });
+          this.currentReportBlob = csvBlob;
+          this.currentReportText = await csvBlob.text(); // texto para preview
+          // opcional: también crear blob url por si se quiere abrir en nueva pestaña
+          this.reportUrl = window.URL.createObjectURL(csvBlob);
+          this.showMessage('CSV listo para vista previa', 'success');
         }
       } catch (error) {
         console.error('Error generando reporte:', error);
         this.showMessage('Error al generar reporte', 'error');
+        // limpieza por si algo quedó
+        this.clearReport();
       } finally {
         this.generatingReport = false;
       }
     },
 
     async downloadReport() {
-      if (!this.reportUrl) return;
+      // No hacer nada si no hay nada para descargar
+      if (!this.currentReportBlob && !this.currentReportText && !this.reportUrl) return;
 
       try {
-        if (this.currentReportFormat === 'pdf') {
-          // Descargar PDF
-          window.open(this.reportUrl, '_blank');
-        } else {
-          // Descargar CSV
-          const response = await axios.get(this.reportUrl, {
-            responseType: 'blob'
-          });
+        // construir nombre: Reporte_Planilla_Nombre_Empresa_idPayrrol
+        const rawName = this.selectedCompany?.nombre || 'Empresa';
+        const safeName = rawName.replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+        const payrollIdPart = this.selectedReportPayrollId || 'unknown';
+        const fileBase = `Reporte_Planilla_${safeName}_${payrollIdPart}`; // sigue patrón solicitado
 
-          const blob = new Blob([response.data], { type: 'text/csv' });
-          const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
-          link.download = `Planilla_${this.selectedReportPayrollId}.csv`;
-          link.click();
-          
-          window.URL.revokeObjectURL(link.href);
-          
-          this.showMessage('CSV descargado exitosamente', 'success');
+        if (this.currentReportFormat === 'pdf') {
+          // descargar blob PDF
+          if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.pdf`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('PDF descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            // fallback
+            window.open(this.reportUrl, '_blank');
+          }
+        } else {
+          // CSV: si tenemos texto, creamos blob y forzamos descarga
+          if (this.currentReportText != null) {
+            const blob = new Blob([this.currentReportText], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            const resp = await axios.get(this.reportUrl, { responseType: 'blob' });
+            const blob = new Blob([resp.data], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          }
         }
       } catch (error) {
         console.error('Error descargando reporte:', error);
@@ -1358,8 +1430,18 @@ export default {
     },
 
     clearReport() {
+      // revocar object URL si existe
+      try {
+        if (this.reportUrl && this.reportUrl.startsWith('blob:')) {
+          window.URL.revokeObjectURL(this.reportUrl);
+        }
+      } catch (e) {
+        // noop
+      }
+
       this.reportUrl = null;
       this.selectedReportPayrollId = null;
+      this.currentReportBlob = null;
     },
 
     // ... RESTO DE TUS MÉTODOS EXISTENTES ...
