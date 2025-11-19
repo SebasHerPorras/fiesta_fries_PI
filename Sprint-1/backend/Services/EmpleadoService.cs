@@ -105,16 +105,52 @@ namespace backend.Services
             var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
             return salario ?? 0;
         }
-        
+
         public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
         {
+            Console.WriteLine("=== DEBUG GetEmployeeCalculationDtos ===");
+            Console.WriteLine("Parametros recibidos:");
+            Console.WriteLine("  - Cedula Juridica: " + cedulaJuridica);
+            Console.WriteLine("  - Fecha Inicio: " + fechaInicio.ToString("yyyy-MM-dd"));
+            Console.WriteLine("  - Fecha Fin: " + fechaFin.ToString("yyyy-MM-dd"));
+
             try
             {
-                return _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+                Console.WriteLine("Llamando a _empleadoService.GetEmployeesForPayroll()...");
+                var resultado = _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+
+                Console.WriteLine("Metodo completado exitosamente");
+                Console.WriteLine("Registros retornados: " + (resultado?.Count ?? 0));
+
+                if (resultado == null || resultado.Count == 0)
+                {
+                    Console.WriteLine("La lista retornada esta vacia o es nula");
+                }
+                else
+                {
+                    foreach (var emp in resultado)
+                    {
+                        Console.WriteLine("EMPLEADO: " + emp.NombreEmpleado);
+                        Console.WriteLine("  horas: " + emp.horas); 
+                        Console.WriteLine("  ---");
+                    }
+
+                    var conHoras = resultado.Count(e => e.horas > 0);
+                    var sinHoras = resultado.Count(e => e.horas == 0);
+
+                    Console.WriteLine("ESTADISTICAS:");
+                    Console.WriteLine("  - Empleados con horas > 0: " + conHoras);
+                    Console.WriteLine("  - Empleados sin horas: " + sinHoras);
+
+                }
+
+                Console.WriteLine("=== FIN DEBUG ===");
+                return resultado;
             }
             catch (Exception ex)
             {
-               return new List<EmployeeCalculationDto>();
+                Console.WriteLine("ERROR: " + ex.Message);
+                return new List<EmployeeCalculationDto>();
             }
         }
 

@@ -255,7 +255,7 @@ namespace backend.Services
 
             foreach (var _dto in employeeDtos)
             {
-                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                var reportedHours = _dto.horas;
                 _logger.LogDebug("Empleado DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
                     _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
 
@@ -394,17 +394,16 @@ namespace backend.Services
             };
         }
 
-        // No se pudo implementar validación de horas trabajadas al 100%
+        // hay que revisarlo
         private bool ValidateEmployeeHours(EmployeeCalculationDto dto, backend.Models.Payroll.PayrollPeriodType periodType, out string reason)
         {   
             reason = string.Empty;
-            return true;
             if (dto == null) {
                 reason = "DTO nulo";
                 return false;
             }
 
-            var hours = dto.HorasTrabajadas > 0 ? dto.HorasTrabajadas : dto.horas;
+            var hours = dto.horas;
 
             var tipo = (dto.TipoEmpleado ?? string.Empty).ToLowerInvariant();
 
@@ -543,9 +542,10 @@ namespace backend.Services
 
             foreach (var _dto in employeeDtos)
             {
-                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                var reportedHours = _dto.horas;
+                Console.WriteLine($"DEBUG - Cedula: {_dto.CedulaEmpleado}, Nombre: {_dto.NombreEmpleado}, Horas: {reportedHours}");
                 _logger.LogDebug("Preview DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
-                    _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
+                _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
 
                 if (_dto.SalarioBruto <= 0)
                 {
