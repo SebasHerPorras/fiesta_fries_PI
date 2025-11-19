@@ -26,8 +26,8 @@ namespace backend.Repositories
                 {
                     const string query = @"
                         EXEC SP_InsertEmployerBenefitDeduction 
-                        @ReportId, @EmployeeId, @CedulaJuridicaEmpresa, 
-                        @BenefitName, @DeductionAmount, @BenefitType, @Percentage";
+                        @ReportId, @EmployeeId, @CedulaJuridicaEmpresa,
+                        @BenefitName, @BenefitId, @DeductionAmount, @BenefitType, @Percentage";
 
                     connection.Execute(query, new
                     {
@@ -35,6 +35,7 @@ namespace backend.Repositories
                         EmployeeId = deduction.EmployeeId,
                         CedulaJuridicaEmpresa = deduction.CedulaJuridicaEmpresa,
                         BenefitName = deduction.BenefitName,
+                        BenefitId = deduction.BenefitId,
                         DeductionAmount = deduction.DeductionAmount,
                         BenefitType = deduction.BenefitType,
                         Percentage = deduction.Percentage
@@ -61,6 +62,7 @@ namespace backend.Repositories
                         EmployeeId,
                         CedulaJuridicaEmpresa,
                         BenefitName,
+                        BenefitId,
                         DeductionAmount,
                         BenefitType,
                         Percentage,
@@ -92,6 +94,7 @@ namespace backend.Repositories
                         EmployeeId,
                         CedulaJuridicaEmpresa,
                         BenefitName,
+                        BenefitId,
                         DeductionAmount,
                         BenefitType,
                         Percentage,

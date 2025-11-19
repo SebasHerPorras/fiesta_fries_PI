@@ -39,7 +39,7 @@ namespace backend.Services
             }
 
             decimal totalEmployerCost = 0;
-            var employerDeductions = new List<EmployerBenefitDeductionDto>();
+            var employerDeductions = new List<EmployerBenefitDeductionDto>(); 
             var employeeDeductions = new List<EmployeeDeductionsByPayrollDto>(); 
 
             foreach (var employeeBenefit in employeeBenefits)
@@ -53,18 +53,19 @@ namespace backend.Services
                 if (result.employerAmount > 0)
                 {
                     employerDeductions.Add(new EmployerBenefitDeductionDto
-                    {
+                    {   
                         ReportId = reportId,
                         EmployeeId = (int)employee.CedulaEmpleado,
                         CedulaJuridicaEmpresa = cedulaJuridicaEmpresa,
                         BenefitName = employeeBenefit.ApiName ?? "Beneficio",
+                        BenefitId = employeeBenefit.BenefitId,
                         DeductionAmount = result.employerAmount,
                         BenefitType = employeeBenefit.BenefitType ?? "Unknown",
                         Percentage = employeeBenefit.BenefitType == "Porcentual" ? employeeBenefit.BenefitValue : null
                     });
                 }
 
-                // Acumular deducciones del empleado (NO guardar todavía)
+                // Acumular deducciones del empleado (NO guardar todavï¿½a)
                 if (result.employeeDeductions.Any())
                 {
                     employeeDeductions.AddRange(result.employeeDeductions);
@@ -79,7 +80,7 @@ namespace backend.Services
                 _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
             }
 
-            Console.WriteLine("SE GUARDO DEDUCUOIN DE EMPLEADO");
+            Console.WriteLine("SE GUARDO DEDUCUOIN DE EMPLEADO: " + employeeDeductions);
 
             // Guardar todas las deducciones del empleador
             if (employerDeductions.Any())
@@ -208,7 +209,7 @@ namespace backend.Services
 
         public List<BenefitDto> GetBenefitsList(long cedulaJuridicaEmpresa)
         {
-            // DEPRECATED: Este método ya no se usa
+            // DEPRECATED: Este mï¿½todo ya no se usa
             return new List<BenefitDto>();
         }
     }
