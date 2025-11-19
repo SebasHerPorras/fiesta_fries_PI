@@ -255,7 +255,6 @@ namespace backend.Services
 
         public List<BenefitDto> GetBenefitsList(long cedulaJuridicaEmpresa)
         {
-            // DEPRECATED: Este método ya no se usa
             return new List<BenefitDto>();
         }
     }
