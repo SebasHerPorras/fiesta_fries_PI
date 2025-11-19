@@ -35,6 +35,14 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "API para el cálculo de deducciones patronales y gestión de empleados"
     });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT Authorization header",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey
+    });
 });
 
 // ===== REGISTRO DE DEPENDENCIAS =====
@@ -86,6 +94,11 @@ builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>(
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+
+// Payroll Reports employee
+builder.Services.AddScoped<PayrollReportRepository>();
+builder.Services.AddScoped<PayrollPdfService>();
+builder.Services.AddScoped<PayrollCsvService>();
 
 var app = builder.Build();
 
