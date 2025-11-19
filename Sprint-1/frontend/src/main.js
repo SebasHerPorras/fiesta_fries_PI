@@ -11,7 +11,8 @@ import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
 import RegisterHoras from "./components/RegisterHoras.vue";
 import SelectBeneficios from "./components/SelectBeneficios.vue";
-
+import DashBoardEmpleado from "./components/DashboardEmpleado.vue";
+import DashBoardEmpleador from "./components/DashboardEmpleador.vue";
 const DEVELOPMENT_MODE = true;
 
 const router = createRouter({
@@ -118,7 +119,28 @@ const router = createRouter({
        public: true,
        allowedRoles: ["empleado"],
       },
-    }, 
+      },
+    {
+      path: "/DashBoardEmpleado",
+      name: "DashBoardEmpleado",
+      component: DashBoardEmpleado,
+      meta: {
+       requieresAuth: false,
+       public: true,
+       allowedRoles: ["empleado"],
+      },
+      },
+      {
+       path: "/DashBoardEmpleador",
+       name: "DashBoardEmpleador",
+       component: DashBoardEmpleador,
+       meta: {
+           requieresAuth: false,
+           public: true,
+           allowedRoles:["empleador"]
+       },
+      },
+
   ],
 });
 
