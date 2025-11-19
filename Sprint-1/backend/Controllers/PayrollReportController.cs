@@ -26,9 +26,7 @@ namespace backend.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Obtiene las últimas 12 planillas de una empresa
-        /// </summary>
+
         [HttpGet("company/{companyId}/last-12")]
         public async Task<IActionResult> GetLast12Payrolls(long companyId)
         {
@@ -44,9 +42,7 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Obtiene el reporte completo de una planilla en formato JSON
-        /// </summary>
+
         [HttpGet("{payrollId}")]
         public async Task<IActionResult> GetFullReport(int payrollId)
         {
@@ -62,9 +58,6 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Genera y descarga el reporte en formato PDF
-        /// </summary>
         [HttpGet("{payrollId}/pdf")]
         [Produces("application/pdf", "application/json")] // ?? AGREGAR JSON como fallback
         public async Task<IActionResult> GeneratePdf(int payrollId)
@@ -90,9 +83,7 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Genera y descarga el reporte en formato CSV
-        /// </summary>
+
         [HttpGet("{payrollId}/csv")]
         [Produces("text/csv")]
         public async Task<IActionResult> GenerateCsv(int payrollId)
