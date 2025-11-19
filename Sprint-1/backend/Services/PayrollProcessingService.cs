@@ -394,7 +394,6 @@ namespace backend.Services
             };
         }
 
-        // hay que revisarlo
         private bool ValidateEmployeeHours(EmployeeCalculationDto dto, backend.Models.Payroll.PayrollPeriodType periodType, out string reason)
         {   
             reason = string.Empty;
