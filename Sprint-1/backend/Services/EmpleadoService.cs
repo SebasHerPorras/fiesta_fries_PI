@@ -6,6 +6,7 @@ using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
