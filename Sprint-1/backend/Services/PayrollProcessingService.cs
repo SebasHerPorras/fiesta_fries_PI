@@ -542,7 +542,6 @@ namespace backend.Services
             foreach (var _dto in employeeDtos)
             {
                 var reportedHours = _dto.horas;
-                Console.WriteLine($"DEBUG - Cedula: {_dto.CedulaEmpleado}, Nombre: {_dto.NombreEmpleado}, Horas: {reportedHours}");
                 _logger.LogDebug("Preview DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
                 _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
 
