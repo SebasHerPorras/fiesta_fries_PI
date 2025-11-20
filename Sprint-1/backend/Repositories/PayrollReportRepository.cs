@@ -97,6 +97,30 @@ namespace backend.Repositories
                 throw;
             }
         }
+        public async Task<DateTime?> GetLastPeriodAsync(int benefitId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            try
+            {
+                const string query = @"
+                SELECT TOP 1 p.PeriodDate
+                FROM EmployerBenefitDeductions ebd
+                INNER JOIN Payroll p ON ebd.ReportId = p.PayrollId
+                WHERE ebd.BenefitId = @BenefitId
+                ORDER BY p.PeriodDate DESC";
+
+                var lastPeriod = await connection.ExecuteScalarAsync<DateTime?>(query, new { BenefitId = benefitId });
+
+                _logger.LogInformation("Último periodo para beneficio {BenefitId}: {LastPeriod}", benefitId, lastPeriod);
+
+                return lastPeriod;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo último periodo para beneficio {BenefitId}", benefitId);
+                throw;
+            }
+        }
     }
 
     public class PayrollSummary
