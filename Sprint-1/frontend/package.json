@@ -1,6 +1,7 @@
 {
-  "name": "frontend-lab",
-  "version": "0.1.0",
+  "name": "fiesta-fries-portal",
+  "version": "1.0.0",
+  "description": "Frontend - Fiesta Fries (Panel de administración)",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

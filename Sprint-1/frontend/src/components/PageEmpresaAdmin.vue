@@ -29,25 +29,30 @@
       <button @click="togglePayroll" class="btn-info">
         📝 {{ mostrandoPayroll ? 'Ver Empresas' : 'Generar Planilla' }}
       </button>
+      <!-- NUEVO BOTÓN DE REPORTES -->
+      <button @click="toggleReportes" class="btn-info">
+        📊 {{ mostrandoReportes ? 'Ver Empresas' : 'Reportes' }}
+      </button>
       <button class="btn-info" @click="editarEmpresaPropia">
         ✏️ Modificar Empresa
       </button>
-
     </div>
 
     <div class="content">
       <!-- Estado de carga -->
       <div v-if="loading" class="loading">
-    ⏳ {{  mostrandoEmpleados ? 'Cargando empleados...' : 
-            mostrandoBeneficios ? 'Cargando beneficios...' : 
-            mostrandoPayroll ? 'Cargando planillas...' :
-            'Cargando empresas...' 
-          }}
-        </div>
-      <!-- Vista principal con condiciones anidadas -->
+        ⏳ {{ mostrandoEmpleados ? 'Cargando empleados...' : 
+               mostrandoBeneficios ? 'Cargando beneficios...' : 
+               mostrandoPayroll ? 'Cargando planillas...' :
+               mostrandoReportes ? 'Cargando reportes...' :
+               'Cargando empresas...' 
+            }}
+      </div>
+
+      <!-- Vista principal -->
       <div v-else>
         <!-- Vista de EMPRESAS -->
-        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios && !mostrandoPayroll">
+        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios && !mostrandoPayroll && !mostrandoReportes">
           <!-- Lista de empresas -->
           <div v-if="empresas.length > 0" class="empresas-list">
             <div class="table-container">
@@ -361,7 +366,122 @@
             </div>
           </div>
         </div>
-   </div> 
+
+        <!-- 📊 NUEVA VISTA DE REPORTES -->
+        <div v-else-if="mostrandoReportes" class="reportes-management">
+          <div class="reportes-header">
+            <h3>📊 Reportes de Planillas - {{ selectedCompany?.nombre }}</h3>
+            <span class="count-badge">{{ last12Payrolls.length }} reportes disponibles</span>
+          </div>
+
+          <div v-if="reportLoading" class="loading">
+            ⏳ Cargando reportes...
+          </div>
+
+          <div v-else class="reportes-content">
+            <!-- LISTA DE ÚLTIMAS 12 PLANILLAS -->
+            <div class="reportes-list-section">
+              <h4>📋 Seleccione una planilla para generar reporte</h4>
+              
+              <div v-if="last12Payrolls.length === 0" class="empty-state">
+                <p>No hay planillas procesadas disponibles</p>
+              </div>
+
+              <div v-else class="table-container">
+                <table class="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th>Costo Total</th>
+                      <th>Salario Neto</th>
+                      <th>Formato</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="payroll in last12Payrolls" :key="payroll.payrollId" 
+                        class="payroll-row"
+                        :class="{ 'selected-row': selectedReportPayrollId === payroll.payrollId }">
+                      <td>{{ formatDate(payroll.periodDate) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalEmployerCost) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalNetSalary) }}</td>
+                      <td>
+                        <select 
+                          v-model="reportFormats[payroll.payrollId]"
+                          class="format-selector"
+                          @change="clearReport"
+                        >
+                          <option value="pdf">📄 PDF</option>
+                          <option value="csv">📊 CSV</option>
+                        </select>
+                      </td>
+                      <td>
+                        <button 
+                          @click="generateReport(payroll.payrollId)"
+                          class="btn-generate"
+                          :disabled="generatingReport"
+                        >
+                          {{ generatingReport && selectedReportPayrollId === payroll.payrollId 
+                             ? '⏳ Generando...' 
+                             : '🚀 Generar' }}
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- VISOR DE REPORTES -->
+            <transition name="fade">
+              <div v-if="reportUrl || currentReportText" class="report-viewer">
+                <div class="viewer-header">
+                  <h4>📄 Vista Previa del Reporte</h4>
+                  <div class="viewer-actions">
+                    <button @click="downloadReport" class="btn-download">
+                      ⬇️ Descargar {{ currentReportFormat.toUpperCase() }}
+                    </button>
+                    <button @click="clearReport" class="btn-close-viewer">
+                      ✕ Cerrar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- IFRAME PARA PDF -->
+                <div v-if="currentReportFormat === 'pdf' && reportUrl" class="pdf-viewer">
+                  <iframe 
+                    :src="reportUrl" 
+                    width="100%" 
+                    height="700px"
+                    frameborder="0"
+                  ></iframe>
+                </div>
+
+                <!-- PREVIEW PARA CSV -->
+                <div v-else-if="currentReportFormat === 'csv' && currentReportText" class="csv-preview-wrapper">
+                  <div class="csv-message">
+                    <div class="csv-icon">📊</div>
+                    <h3>CSV - Vista Previa</h3>
+                    <p>Contenido de la planilla (solo lectura) — use "Descargar" para obtener el archivo.</p>
+                  </div>
+
+                  <div class="csv-preview">
+                    <pre class="csv-preview-text">{{ currentReportText }}</pre>
+                  </div>
+                </div>
+
+                <!-- MENSAJE SI NO HAY PREVIEW -->
+                <div v-else class="csv-message">
+                  <div class="csv-icon">📄</div>
+                  <h3>Previsualización no disponible</h3>
+                  <p>Use "Descargar" para obtener el archivo.</p>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+      </div>
+
       <!-- Mensajes de éxito/error -->
       <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
         {{ message }}
@@ -387,11 +507,30 @@
       @confirm="confirmarEliminarEmpleado"
     />
 
-    <!-- Footer de la página con copyright y redes sociales -->
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
+    <!-- Footer -->
+    
     <footer>
       <div>©2025 Fiesta Fries</div>
       <div class="socials">
-        <!-- Enlaces a redes sociales (solo íconos, no funcionales) -->
         <a href="#" aria-label="Facebook">f</a>
         <a href="#" aria-label="LinkedIn">in</a>
         <a href="#" aria-label="YouTube">▶</a>
@@ -400,7 +539,6 @@
     </footer>
   </div> 
 </template>
-
 
 <script>
 import axios from "axios";
@@ -421,14 +559,24 @@ export default {
       mostrandoEmpleados: false,
       mostrandoBeneficios: false,
       mostrandoPayroll: false,
+      mostrandoReportes: false, // NUEVO
       empleadosQuemados: [],
       beneficios: [],
       payrolls: [],
-      pendingPeriods: [],
-      overduePeriods: [], 
-      nextPeriod: null,
-      selectedPeriod: null,
-      payrollLoading: false,
+      
+      // NUEVOS DATOS PARA REPORTES
+      last12Payrolls: [],
+      reportFormats: {}, // { payrollId: 'pdf' | 'csv' }
+      reportUrl: null,
+      currentReportFormat: 'pdf',
+      selectedReportPayrollId: null,
+      reportLoading: false,
+      generatingReport: false,
+      
+      // Guardar blob para preview / descarga segura
+      currentReportBlob: null,
+      currentReportText: null,
+
       selectedCompany: null,
       selectedCompanyId: null,
       selectedCompanyCedula: null,
@@ -1171,7 +1319,219 @@ export default {
       console.log("Objeto seleccionado:", this.selectedEmpleado);
 
       this.showDeleteModal = false;
+    },
+    // ============================================
+    // NUEVOS MÉTODOS PARA REPORTES
+    // ============================================
+    async toggleReportes() {
+      this.mostrandoEmpleados = false;
+      this.mostrandoBeneficios = false;
+      this.mostrandoPayroll = false;
+      this.mostrandoReportes = !this.mostrandoReportes;
+      
+      if (this.mostrandoReportes) {
+        if (this.loadSelectedCompany()) {
+          await this.loadLast12Payrolls();
+        } else {
+          this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
+          this.mostrandoReportes = false;
+        }
+      } else {
+        this.clearReport();
+        this.showMessage('Mostrando lista de empresas', 'success');
+      }
+    },
+
+    async loadLast12Payrolls() {
+  console.log('🔍 INICIANDO loadLast12Payrolls');
+  console.log('Cedula empresa:', this.selectedCompanyCedula);
+  
+  if (!this.selectedCompanyCedula) {
+    console.error('❌ No hay cedula de empresa');
+    this.showMessage('No hay empresa seleccionada', 'error');
+    return;
+  }
+
+  this.reportLoading = true;
+  try {
+    const url = API_ENDPOINTS.PAYROLL_REPORT_LAST_12(this.selectedCompanyCedula);
+    console.log('📡 Llamando a:', url);
+    
+    const response = await axios.get(url);
+    console.log('📥 Respuesta completa:', response);
+    console.log('📦 Datos recibidos:', response.data);
+
+    let payrolls = [];
+    
+    if (response.data && response.data.success) {
+      payrolls = response.data.payrolls || [];
+      console.log('✅ Formato con success:', payrolls);
+    } else if (Array.isArray(response.data)) {
+      payrolls = response.data;
+      console.log('✅ Formato array directo:', payrolls);
+    } else {
+      console.warn('⚠️ Formato inesperado:', response.data);
+      payrolls = [];
     }
+
+    this.last12Payrolls = payrolls;
+    console.log('📋 Planillas asignadas:', this.last12Payrolls.length);
+
+    // Inicializar formatos
+    const formats = {};
+    payrolls.forEach(payroll => {
+      formats[payroll.payrollId] = 'pdf';
+    });
+    this.reportFormats = formats;
+    console.log('🎨 Formatos inicializados:', this.reportFormats);
+
+    this.showMessage(
+      `${payrolls.length} reporte(s) disponible(s)`, 
+      payrolls.length > 0 ? 'success' : 'error'
+    );
+  } catch (error) {
+    console.error('❌ ERROR COMPLETO:', error);
+    console.error('Respuesta de error:', error.response?.data);
+    console.error('Status:', error.response?.status);
+    
+    this.last12Payrolls = [];
+    this.showMessage('Error al cargar reportes: ' + (error.response?.data?.message || error.message), 'error');
+  } finally {
+    this.reportLoading = false;
+    console.log('✅ Carga finalizada');
+  }
+},
+
+    async generateReport(payrollId) {
+      const format = this.reportFormats[payrollId] || 'pdf';
+      this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+      this.currentReportFormat = format;
+      
+      // limpiar vista previa previa (revoca URL si existe)
+      this.clearReport();
+       this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+      this.currentReportFormat = format;
+      
+
+      try {
+        const urlPdf = API_ENDPOINTS.PAYROLL_REPORT_PDF(payrollId);
+        const urlCsv = API_ENDPOINTS.PAYROLL_REPORT_CSV(payrollId);
+
+        if (format === 'pdf') {
+          // Traer PDF como blob para evitar descarga forzada por headers y permitir preview en iframe
+          const resp = await axios.get(urlPdf, { responseType: 'blob' });
+          const pdfBlob = new Blob([resp.data], { type: 'application/pdf' });
+          this.currentReportBlob = pdfBlob;
+          this.reportUrl = window.URL.createObjectURL(pdfBlob); // usado por iframe
+          this.showMessage('PDF listo para vista previa', 'success');
+        } else {
+          // Traer CSV como blob y extraer texto para mostrar en vista previa
+          const resp = await axios.get(urlCsv, { responseType: 'blob' });
+          const csvBlob = new Blob([resp.data], { type: 'text/csv' });
+          this.currentReportBlob = csvBlob;
+          this.currentReportText = await csvBlob.text(); // texto para preview
+          // opcional: también crear blob url por si se quiere abrir en nueva pestaña
+          this.reportUrl = window.URL.createObjectURL(csvBlob);
+          this.showMessage('CSV listo para vista previa', 'success');
+        }
+      } catch (error) {
+        console.error('Error generando reporte:', error);
+        this.showMessage('Error al generar reporte', 'error');
+        // limpieza por si algo quedó
+        this.clearReport();
+      } finally {
+        this.generatingReport = false;
+      }
+    },
+
+    async downloadReport() {
+      // No hacer nada si no hay nada para descargar
+      if (!this.currentReportBlob && !this.currentReportText && !this.reportUrl) return;
+
+      try {
+        // construir nombre: Reporte_Planilla_Nombre_Empresa_idPayrrol
+        const rawName = this.selectedCompany?.nombre || 'Empresa';
+        const safeName = rawName.replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+        const payrollIdPart = this.selectedReportPayrollId || 'unknown';
+        const fileBase = `Reporte_Planilla_${safeName}_${payrollIdPart}`; // sigue patrón solicitado
+
+        if (this.currentReportFormat === 'pdf') {
+          // descargar blob PDF
+          if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.pdf`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('PDF descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            // fallback
+            window.open(this.reportUrl, '_blank');
+          }
+        } else {
+          // CSV: si tenemos texto, creamos blob y forzamos descarga
+          if (this.currentReportText != null) {
+            const blob = new Blob([this.currentReportText], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            const resp = await axios.get(this.reportUrl, { responseType: 'blob' });
+            const blob = new Blob([resp.data], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          }
+        }
+      } catch (error) {
+        console.error('Error descargando reporte:', error);
+        this.showMessage('Error al descargar reporte', 'error');
+      }
+    },
+
+    clearReport() {
+      // revocar object URL si existe
+      try {
+        if (this.reportUrl && this.reportUrl.startsWith('blob:')) {
+          window.URL.revokeObjectURL(this.reportUrl);
+        }
+      } catch (e) {
+        // noop
+      }
+
+      this.reportUrl = null;
+      this.selectedReportPayrollId = null;
+      this.currentReportBlob = null;
+    },
+
+    // ... RESTO DE TUS MÉTODOS EXISTENTES ...
   }
 }
 </script>
@@ -1969,6 +2329,227 @@ footer {
   
   .content {
     padding: 15px;
+  }
+}
+
+/* ============================================ */
+/* NUEVOS ESTILOS PARA REPORTES */
+/* ============================================ */
+
+.reportes-management {
+  width: 100%;
+}
+
+.reportes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.reportes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.reportes-list-section h4 {
+  color: #1fb9b4;
+  margin-bottom: 15px;
+}
+
+.format-selector {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: whitesmoke;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.format-selector:focus {
+  outline: none;
+  border-color: #1fb9b4;
+}
+
+.btn-generate {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 12px;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: #1aa8a4;
+  transform: translateY(-1px);
+}
+
+.btn-generate:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.selected-row {
+  background: rgba(31, 185, 180, 0.1);
+  border-left: 3px solid #1fb9b4;
+}
+
+/* VISOR DE REPORTES */
+.report-viewer {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(31, 185, 180, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.viewer-header h4 {
+  color: #1fb9b4;
+  margin: 0;
+}
+
+.viewer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-download {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+  background: #1aa8a4;
+  transform: translateY(-1px);
+}
+
+.btn-close-viewer {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pdf-viewer {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-viewer iframe {
+  border-radius: 8px;
+}
+
+/* MENSAJE CSV */
+.csv-message {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.csv-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.csv-message h3 {
+  color: #1fb9b4;
+  margin-bottom: 10px;
+}
+
+.csv-message p {
+  color: #bdbdbd;
+  margin-bottom: 20px;
+}
+
+.btn-download-big {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-download-big:hover {
+  background: #1aa8a4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.3);
+}
+
+.csv-hint {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #888;
+}
+
+/* TRANSICIONES */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .reportes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .viewer-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .viewer-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-download,
+  .btn-close-viewer {
+    width: 100%;
   }
 }
 </style>
