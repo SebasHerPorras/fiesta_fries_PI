@@ -89,6 +89,13 @@ export const API_ENDPOINTS = {
   PAYROLL_NEXT_PERIOD: (companyId) => buildApiUrl(`Payroll/${companyId}/next-period`),
   PAYROLL_PENDING_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/pending-periods`),
   PAYROLL_OVERDUE_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/overdue-periods`),
+
+  // Reportes de Planilla
+  PAYROLL_REPORT_LAST_12: (companyId) => buildApiUrl(`PayrollReport/company/${companyId}/last-12`),
+  PAYROLL_REPORT_PDF: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}/pdf`),
+  PAYROLL_REPORT_CSV: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}/csv`),
+  PAYROLL_REPORT_JSON: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}`),
+
 };
 
 // Log de configuración (solo en desarrollo)
