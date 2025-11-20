@@ -13,7 +13,7 @@ CREATE OR ALTER PROCEDURE SP_DeleteEmployee_Physical
 AS
 BEGIN
     SET NOCOUNT ON;
-    
+       
     -- Variables para control
     DECLARE @UserId UNIQUEIDENTIFIER;
     DECLARE @PaymentCount INT = 0;
@@ -55,15 +55,23 @@ BEGIN
         WHERE EmployeeId = @PersonaId;
         
         -- 4.2. Horas trabajadas (días)
-        DELETE FROM EmployeeWorkDay 
+        DELETE FROM Dia 
         WHERE id_employee = @PersonaId;
         
         -- 4.3. Horas trabajadas (semanas)
-        DELETE FROM EmployeeWorkWeek 
+        DELETE FROM Semana 
         WHERE id_employee = @PersonaId;
         
         -- 4.4. Deducciones por planilla (si existen, aunque no debería)
         DELETE FROM EmployeeDeductionsByPayroll 
+        WHERE EmployeeId = @PersonaId;
+        
+        -- 4.5. Beneficios patronales por planilla
+        DELETE FROM EmployerBenefitDeductions 
+        WHERE EmployeeId = @PersonaId;
+        
+        -- 4.6. Cargas sociales patronales por planilla
+        DELETE FROM EmployerSocialSecurityByPayroll 
         WHERE EmployeeId = @PersonaId;
         
         -- 5. Eliminar registro de Empleado
@@ -80,6 +88,13 @@ BEGIN
         -- 6. Eliminar registro de Persona
         DELETE FROM Persona 
         WHERE id = @PersonaId;
+        
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SELECT 0 AS Success, 'No se pudo eliminar el registro de Persona' AS Message;
+            RETURN;
+        END
         
         -- 7. Eliminar User SOLO si no es dueño de empresa
         IF @UserId IS NOT NULL 
@@ -115,3 +130,17 @@ BEGIN
     END CATCH
 END;
 GO
+
+-- =============================================
+-- PRUEBAS DEL SP
+-- =============================================
+/*
+-- Test 1: Intentar borrar empleado CON pagos (debe fallar)
+EXEC SP_DeleteEmployee_Physical @PersonaId = 152700726;
+
+-- Test 2: Borrar empleado SIN pagos (debe funcionar)
+EXEC SP_DeleteEmployee_Physical @PersonaId = 999999999;
+
+-- Test 3: Intentar borrar empleado que no existe
+EXEC SP_DeleteEmployee_Physical @PersonaId = 111111111;
+*/
