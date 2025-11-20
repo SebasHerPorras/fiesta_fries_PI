@@ -18,9 +18,6 @@ namespace backend.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// Método principal que orquesta la eliminación del empleado
-        /// </summary>
         public async Task<EmployeeDeletionResult> DeleteEmpleadoAsync(int personaId, long companyId)
         {
             _logger.LogInformation(
@@ -81,9 +78,6 @@ namespace backend.Services
             }
         }
 
-        /// <summary>
-        /// Verifica el estado de pagos en planilla
-        /// </summary>
         public async Task<EmployeePayrollStatus> CheckPayrollStatusAsync(int personaId)
         {
             _logger.LogDebug("Verificando estado de pagos para empleado {PersonaId}", personaId);
@@ -91,33 +85,23 @@ namespace backend.Services
             return await _repository.CheckPayrollStatusAsync(personaId);
         }
 
-        #region Private Methods - Validaciones
 
-        /// <summary>
-        /// Valida que el empleado existe y pertenece a la empresa
-        /// </summary>
+
         private async Task<bool> ValidateEmployeeExistsAsync(int personaId, long companyId)
         {
             // TODO: Implementar validación con repository
             return await _repository.ValidateEmployeeExistsAsync(personaId, companyId);
         }
 
-        /// <summary>
-        /// Valida que el empleado no sea dueño de empresa
-        /// </summary>
+
         private async Task<bool> IsCompanyOwnerAsync(int personaId)
         {
             // TODO: Implementar validación
             return await _repository.IsCompanyOwnerAsync(personaId);
         }
 
-        #endregion
+       
 
-        #region Private Methods - Ejecución de borrado
-
-        /// <summary>
-        /// Ejecuta el borrado LÓGICO (marca IsDeleted = 1)
-        /// </summary>
         private async Task<EmployeeDeletionResult> ExecuteLogicalDeleteAsync(
             int personaId, 
             EmployeePayrollStatus payrollStatus)
@@ -142,9 +126,6 @@ namespace backend.Services
             };
         }
 
-        /// <summary>
-        /// Ejecuta el borrado FÍSICO (DELETE en cascada)
-        /// </summary>
         private async Task<EmployeeDeletionResult> ExecutePhysicalDeleteAsync(
             int personaId, 
             EmployeePayrollStatus payrollStatus)
@@ -168,13 +149,6 @@ namespace backend.Services
             };
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// Crea un resultado de error estandarizado
-        /// </summary>
         private EmployeeDeletionResult CreateErrorResult(string message)
         {
             return new EmployeeDeletionResult
@@ -186,7 +160,5 @@ namespace backend.Services
                 DeletedAt = DateTime.Now
             };
         }
-
-        #endregion
     }
 }
