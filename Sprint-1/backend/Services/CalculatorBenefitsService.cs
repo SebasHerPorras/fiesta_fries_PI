@@ -26,10 +26,10 @@ namespace backend.Services
         {
             try
             {
-                Console.WriteLine("=== VALIDACIÓN DETALLADA DE BENEFICIOS ===");
-                Console.WriteLine("Empleado: " + employee.NombreEmpleado);
-                Console.WriteLine("Salario bruto: " + employee.SalarioBruto);
-                Console.WriteLine("Cédula: " + employee.CedulaEmpleado);
+                _logger.LogInformation("=== VALIDACIÓN DETALLADA DE BENEFICIOS ===");
+                _logger.LogInformation("Empleado: {NombreEmpleado}", employee.NombreEmpleado);
+                _logger.LogInformation("Salario bruto: {SalarioBruto}", employee.SalarioBruto);
+                _logger.LogInformation("Cédula: {CedulaEmpleado}", employee.CedulaEmpleado);
 
                 if (employee == null)
                     throw new ArgumentException("Los datos del empleado son requeridos");
@@ -41,7 +41,7 @@ namespace backend.Services
 
                 if (employeeBenefits == null || !employeeBenefits.Any())
                 {
-                    Console.WriteLine("No hay beneficios para este empleado");
+                    _logger.LogInformation("No hay beneficios para este empleado");
                     return 0;
                 }
 
@@ -49,26 +49,26 @@ namespace backend.Services
                 var employerDeductions = new List<EmployerBenefitDeductionDto>();
                 var employeeDeductions = new List<EmployeeDeductionsByPayrollDto>();
 
-                Console.WriteLine("Cantidad de beneficios: " + employeeBenefits.Count);
+                _logger.LogInformation("Cantidad de beneficios: {BenefitCount}", employeeBenefits.Count);
 
                 foreach (var employeeBenefit in employeeBenefits)
                 {
-                    Console.WriteLine("--- Procesando: " + employeeBenefit.ApiName + " ---");
-                    Console.WriteLine("Tipo: " + employeeBenefit.BenefitType + ", Valor: " + employeeBenefit.BenefitValue);
+                    _logger.LogInformation("--- Procesando: {ApiName} ---", employeeBenefit.ApiName);
+                    _logger.LogInformation("Tipo: {BenefitType}, Valor: {BenefitValue}", employeeBenefit.BenefitType, employeeBenefit.BenefitValue);
 
                     var result = await ProcessEmployeeBenefitAsync(employeeBenefit, employee, reportId, cedulaJuridicaEmpresa);
 
-                    Console.WriteLine("Resultado: " + result.employerAmount);
+                    _logger.LogInformation("Resultado: {EmployerAmount}", result.employerAmount);
 
                     if (employeeBenefit.BenefitType == "PORCENTUAL" && employeeBenefit.BenefitValue.HasValue)
                     {
                         var calculoEsperado = employee.SalarioBruto * (employeeBenefit.BenefitValue.Value / 100);
-                        Console.WriteLine("VALIDACIÓN PORCENTUAL: " + employeeBenefit.BenefitValue + "% de " + employee.SalarioBruto + " = " + calculoEsperado);
-                        Console.WriteLine("COINCIDENCIA: " + (result.employerAmount == calculoEsperado));
+                        _logger.LogInformation("VALIDACIÓN PORCENTUAL: {Percentage}% de {SalarioBruto} = {CalculoEsperado}", employeeBenefit.BenefitValue, employee.SalarioBruto, calculoEsperado);
+                        _logger.LogInformation("COINCIDENCIA: {Coincide}", result.employerAmount == calculoEsperado);
                     }
 
                     totalEmployerCost += result.employerAmount;
-                    Console.WriteLine("Acumulado: " + totalEmployerCost);
+                    _logger.LogInformation("Acumulado: {TotalAcumulado}", totalEmployerCost);
 
                     if (result.employerAmount > 0)
                     {
@@ -90,14 +90,14 @@ namespace backend.Services
                     }
                 }
 
-                Console.WriteLine("=== VALIDACIÓN FINAL ===");
-                Console.WriteLine("Total beneficios: " + totalEmployerCost);
+                _logger.LogInformation("=== VALIDACIÓN FINAL ===");
+                _logger.LogInformation("Total beneficios: {TotalBeneficios}", totalEmployerCost);
                 var porcentaje = (totalEmployerCost / employee.SalarioBruto) * 100;
-                Console.WriteLine("Porcentaje sobre salario: " + porcentaje + "%");
+                _logger.LogInformation("Porcentaje sobre salario: {Porcentaje}%", porcentaje);
 
                 if (totalEmployerCost > employee.SalarioBruto)
                 {
-                    Console.WriteLine("ADVERTENCIA: Beneficios superan el 100% del salario");
+                    _logger.LogWarning("ADVERTENCIA: Beneficios superan el 100% del salario");
                 }
 
                 if (employeeDeductions.Any())
@@ -114,7 +114,7 @@ namespace backend.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR en validación: " + ex.Message);
+                _logger.LogError(ex, "ERROR en validación de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
                 return 0;
             }
         }
@@ -167,11 +167,11 @@ namespace backend.Services
                             });
                         }
                     }
-                    Console.WriteLine("PASO API SIN PROBLEMAS");
+                    _logger.LogInformation("PASO API SIN PROBLEMAS");
                     break;
 
                 default:
-                    Console.WriteLine($"Tipo de beneficio no reconocido: {benefitType}");
+                    _logger.LogWarning("Tipo de beneficio no reconocido: {BenefitType}", benefitType);
                     break;
             }
 
@@ -187,15 +187,15 @@ namespace backend.Services
         {
             try
             {
-                Console.WriteLine("CALLING API: " + apiName + " para " + employee.NombreEmpleado);
+                _logger.LogInformation("CALLING API: {ApiName} para {NombreEmpleado}", apiName, employee.NombreEmpleado);
 
                 var normalizedApiName = NormalizeApiName(apiName);
-                Console.WriteLine("API normalizada: " + normalizedApiName);
+                _logger.LogInformation("API normalizada: {NormalizedApiName}", normalizedApiName);
 
                 switch (normalizedApiName)
                 {
                     case "asociacionsolidarista":
-                        Console.WriteLine("API Reconocida: Asociación Solidarista");
+                        _logger.LogInformation("API Reconocida: Asociación Solidarista");
                         var solidarityService = _apiFactory.CreateSolidarityAssociationService();
                         return await solidarityService.CalculateContributionAsync(new SolidarityAssociationRequest
                         {
@@ -214,7 +214,7 @@ namespace backend.Services
                         });
 
                     case "pensionesvoluntarias":
-                        Console.WriteLine("API Reconocida: Pensiones Voluntarias");
+                        _logger.LogInformation("API Reconocida: Pensiones Voluntaria
                         var pensionsService = _apiFactory.CreateVoluntaryPensionsService();
                         return await pensionsService.CalculatePremiumAsync(new VoluntaryPensionsRequest
                         {
@@ -223,15 +223,15 @@ namespace backend.Services
                         });
 
                     default:
-                        Console.WriteLine("API no reconocida: " + apiName);
-                        Console.WriteLine("Buscando: '" + normalizedApiName + "'");
-                        Console.WriteLine("Opciones disponibles: asociacionsolidarista, seguroprivado, pensionesvoluntarias");
+                        _logger.LogWarning("API no reconocida: {ApiName}", apiName);
+                        _logger.LogInformation("Buscando: '{NormalizedApiName}'", normalizedApiName);
+                        _logger.LogInformation("Opciones disponibles: asociacionsolidarista, seguroprivado, pensionesvoluntarias");
                         return new ExternalApiResponse();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error calling external API " + apiName + ": " + ex.Message);
+                _logger.LogError(ex, "Error calling external API {ApiName}", apiName);
                 return new ExternalApiResponse();
             }
         }
