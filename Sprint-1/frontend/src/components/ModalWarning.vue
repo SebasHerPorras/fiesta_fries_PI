@@ -35,11 +35,9 @@ export default {
   },
   methods: {
     cancel() {
-      // Emitimos el evento para que el padre cierre el modal
       this.$emit("volver");
     },
     confirm() {
-      // Emitimos el evento con el nombre del item
       this.$emit("confirm", this.itemName);
     }
   }

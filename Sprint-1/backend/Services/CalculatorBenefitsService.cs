@@ -259,9 +259,9 @@ namespace backend.Services
             return normalized;
         }
 
-        // public List<BenefitDto> GetBenefitsList(long cedulaJuridicaEmpresa)
-        // {
-        //    return new List<BenefitDto>();
-        // }
+        public List<BenefitDto> GetBenefitsList(long cedulaJuridicaEmpresa)
+        {
+            return new List<BenefitDto>();
+        }
     }
 }
