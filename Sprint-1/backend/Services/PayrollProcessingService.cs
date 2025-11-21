@@ -199,7 +199,7 @@ namespace backend.Services
             var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
             await SavePayrollResultsAsync(payroll, calculationResult);
 
-           var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
+           var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployerDeductions + calculationResult.TotalBenefits;
 
             var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalEmployeeDeductions = calculationResult.TotalEmployeeDeductions;
@@ -350,21 +350,21 @@ namespace backend.Services
             var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalBenefits = calculationResult.EmployeeCalculations.Sum(x => x.Benefits);
             var totalNetSalary = calculationResult.EmployeeCalculations.Sum(x => x.NetSalary);
-            var totalEmployerDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
+            var totalEmployeeDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
 
             _logger.LogInformation("Calculated - Gross: {Gross}, Benefits: {Benefits}, Net: {Net}, EmpDeductions: {EmpDed}",
-                totalGrossSalary, totalBenefits, totalNetSalary, totalEmployerDeductions);
+                totalGrossSalary, totalBenefits, totalNetSalary, totalEmployeeDeductions);
 
             var payments = calculationResult.ToPayments(payroll.PayrollId);
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
-            var totalEmployeeDeductions = 0m;
+            var totalEmployerDeductions = 0m;
             foreach (var employeeCalc in calculationResult.EmployeeCalculations)
             {
                 var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
                 var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
                     empleadoDto, payroll.CompanyId, payroll.PayrollId);
-                totalEmployeeDeductions += employerDeductions;
+                totalEmployerDeductions += employerDeductions;
             }
 
             payroll.IsCalculated = true;
@@ -373,7 +373,7 @@ namespace backend.Services
             payroll.TotalEmployerDeductions = totalEmployerDeductions;
             payroll.TotalBenefits = totalBenefits;
             payroll.TotalNetSalary = totalNetSalary;
-            payroll.TotalEmployerCost = totalGrossSalary + totalEmployeeDeductions + totalBenefits;
+            payroll.TotalEmployerCost = totalGrossSalary + totalEmployerDeductions + totalBenefits;
             payroll.LastModified = DateTime.Now;
 
             _logger.LogInformation("=== SAVING PAYROLL ===");
@@ -496,8 +496,9 @@ namespace backend.Services
 
                 var calculationResult = await CalculatePayrollWithoutSaving(request);
 
-
-                var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
+                var totalEmployerCost = calculationResult.TotalGrossSalary
+                                        + calculationResult.TotalEmployerDeductions
+                                        + calculationResult.TotalBenefits;
 
                 return _resultBuilder.CreatePreviewResult(
                     totalEmployerCost,  
