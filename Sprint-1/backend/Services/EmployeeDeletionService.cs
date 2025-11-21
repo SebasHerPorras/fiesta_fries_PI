@@ -7,15 +7,13 @@ namespace backend.Services
 {
     public class EmployeeDeletionService : IEmployeeDeletionService
     {
-        private readonly EmployeeDeletionRepository _repository;
+        private readonly IEmployeeDeletionRepository _repository;
         private readonly ILogger<EmployeeDeletionService> _logger;
 
-        public EmployeeDeletionService(
-            EmployeeDeletionRepository repository,
-            ILogger<EmployeeDeletionService> logger)
+        public EmployeeDeletionService(IEmployeeDeletionRepository repository, ILogger<EmployeeDeletionService> logger)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _repository = repository;
+            _logger = logger;
         }
 
         public async Task<EmployeeDeletionResult> DeleteEmpleadoAsync(int personaId, long companyId)

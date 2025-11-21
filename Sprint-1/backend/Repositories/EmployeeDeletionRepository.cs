@@ -1,3 +1,4 @@
+using backend.Interfaces;
 using backend.Models;
 using Dapper;
 using Microsoft.AspNetCore.Builder;
@@ -6,7 +7,7 @@ using System.Data.SqlClient;
 
 namespace backend.Repositories
 {
-    public class EmployeeDeletionRepository
+    public class EmployeeDeletionRepository : IEmployeeDeletionRepository
     {
         private readonly string _connectionString;
         private readonly ILogger<EmployeeDeletionRepository> _logger;
@@ -43,9 +44,7 @@ namespace backend.Repositories
             return count > 0;
         }
 
-        /// <summary>
-        /// Valida que el empleado no sea dueño de empresa
-        /// </summary>
+
         public async Task<bool> IsCompanyOwnerAsync(int personaId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -62,10 +61,6 @@ namespace backend.Repositories
 
             return count > 0;
         }
-
-        /// <summary>
-        /// Verifica si el empleado tiene pagos registrados en planilla
-        /// </summary>
         public async Task<EmployeePayrollStatus> CheckPayrollStatusAsync(int personaId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -97,10 +92,7 @@ namespace backend.Repositories
             }
         }
 
-        /// <summary>
-        /// Ejecuta el borrado LÓGICO mediante Stored Procedure
-        /// Llama a SP_DeleteEmployee_Logical (archivo 027)
-        /// </summary>
+
         public async Task<bool> ExecuteLogicalDeleteAsync(int personaId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -133,10 +125,6 @@ namespace backend.Repositories
             }
         }
 
-        /// <summary>
-        /// Ejecuta el borrado FÍSICO mediante Stored Procedure
-        /// Llama a SP_DeleteEmployee_Physical (archivo 028)
-        /// </summary>
         public async Task<bool> ExecutePhysicalDeleteAsync(int personaId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -169,9 +157,6 @@ namespace backend.Repositories
             }
         }
 
-        /// <summary>
-        /// Clase auxiliar para mapear resultado de Stored Procedures
-        /// </summary>
         private class SpResult
         {
             public int Success { get; set; }
