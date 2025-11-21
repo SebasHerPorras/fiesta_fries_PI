@@ -1,6 +1,6 @@
-﻿using backend.Handlers.backend.Services;
-using backend.Models;
+﻿using backend.Models;
 using backend.Services;
+using backend.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -12,15 +12,18 @@ namespace backend.Controllers
     [ApiController]
     public class BeneficioController : ControllerBase
     {
-        private readonly BeneficioService _beneficioService;
+        private readonly IBeneficioService _beneficioService;
         private readonly PersonService _personService;
         private readonly EmpresaService _empresaService;
 
-        public BeneficioController()
+        public BeneficioController(
+            IBeneficioService beneficioService,
+            PersonService personService,
+            EmpresaService empresaService)
         {
-            _beneficioService = new BeneficioService();
-            _personService = new PersonService();
-            _empresaService = new EmpresaService();
+            _beneficioService = beneficioService;
+            _personService = personService;
+            _empresaService = empresaService;
         }
 
         [HttpPost]
@@ -206,6 +209,49 @@ namespace backend.Controllers
                 });
             }
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteBeneficio(int id)
+        {
+            try
+            {
+                var result = _beneficioService.DeleteBeneficio(id);
+
+                if (result.Contains("Physical"))
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = $"Beneficio {id} eliminado físicamente"
+                    });
+                }
+                else if (result.Contains("Logical"))
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = $"Beneficio {id} eliminado lógicamente"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = result
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Error interno al eliminar beneficio: {ex.Message}"
+                });
+            }
+        }
+
     }
 
     public class BeneficioRequest
