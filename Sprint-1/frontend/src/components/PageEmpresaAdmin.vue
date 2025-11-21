@@ -192,7 +192,7 @@
                       </button>
                     </td>
                     <td>
-                      <button @click="abrirModalEliminarEmpleado(empleado)" class="btn-eliminar">
+                      <button @click="abrirModalEliminarBeneficio(beneficio)" class="btn-eliminar">
                           Eliminar
                       </button>
                     </td>
@@ -1294,17 +1294,41 @@ export default {
     },
 
     abrirModalEliminarBeneficio(beneficio) {
+      if (!beneficio) {
+        console.error("No se recibió beneficio válido");
+        return;
+      }
       this.selectedBeneficio = beneficio;
       this.showDeleteModal = true;
-
-      console.log("Beneficio a eliminar:", beneficio.nombre);
     },
 
-    confirmarEliminarBeneficio(nombre) {
-      console.log("Confirmado eliminar beneficio:", nombre);
-      console.log("Objeto seleccionado:", this.selectedBeneficio);
+    async confirmarEliminarBeneficio() {
+      if (!this.selectedBeneficio) return;
 
-      this.showDeleteModal = false;
+      try {
+        const response = await fetch(API_ENDPOINTS.DELETE_BENEFICIO(this.selectedBeneficio.idBeneficio), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(`Error: ${errorData.message || "No se pudo eliminar el beneficio"}`);
+        } else {
+            this.beneficios = this.beneficios.filter(
+              b => b.idBeneficio !== this.selectedBeneficio.idBeneficio
+          );
+          this.$emit("beneficioEliminado", this.selectedBeneficio.idBeneficio);
+        }
+      } catch (error) {
+        alert("Error interno al eliminar beneficio");
+      } finally {
+        this.showDeleteModal = false;
+        this.selectedBeneficio = null;
+      }
     },
 
     abrirModalEliminarEmpleado(empleado) {
@@ -1862,8 +1886,8 @@ export default {
 }
 
 .type-badge.api {
-  background: rgba(102, 16, 242, 0.2);
-  color: #6610f2;
+  background: rgba(195, 70, 245, 0.2);
+  color: #d321ff;
 }
 
 .type-badge.default {
