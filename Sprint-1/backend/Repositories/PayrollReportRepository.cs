@@ -97,6 +97,90 @@ namespace backend.Repositories
                 throw;
             }
         }
+
+        public async Task<PayrollEmployeeReport> GetPayrollEmployeeReportAsync(int payrollId, int employeeId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            try
+            {
+                using var multi = await connection.QueryMultipleAsync(
+                    "SP_GetPayrollEmployeeReport",
+                    new { PayrollId = payrollId, EmployeeId = employeeId },
+                    commandType: CommandType.StoredProcedure
+                );
+
+                var header = await multi.ReadSingleOrDefaultAsync<EmployeeReportHeader>();
+                if (header == null)
+                {
+                    _logger.LogWarning("No se encontró reporte empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                    throw new InvalidOperationException($"Reporte para planilla {payrollId}, empleado {employeeId} no encontrado");
+                }
+
+                var employeeDeductions = (await multi.ReadAsync<EmployeeDeductionItem>()).ToList();
+
+                // Calcular porcentaje: para "Impuesto sobre la Renta" usar regla de 3 basada en SalarioBruto y DeductionAmount,
+                // para el resto multiplicar por 100 (fallback si SalarioBruto == 0)
+                if (employeeDeductions != null && employeeDeductions.Count > 0)
+                {
+                    foreach (var d in employeeDeductions)
+                    {
+                        if (header.SalarioBruto > 0)
+                        {
+                            // Si el nombre sugiere impuesto sobre la renta, calcular porcentaje = (deducción / bruto) * 100
+                            if (!string.IsNullOrWhiteSpace(d.DeductionName) &&
+                                (d.DeductionName.IndexOf("impuesto", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                 d.DeductionName.IndexOf("renta", StringComparison.OrdinalIgnoreCase) >= 0))
+                            {
+                                d.Percentage = (d.DeductionAmount / header.SalarioBruto) * 100m;
+                            }
+                            else
+                            {
+                                d.Percentage = d.Percentage * 100m;
+                            }
+                        }
+                        else
+                        {
+                            // Salario bruto 0: mantener comportamiento anterior (multiplicar por 100) para evitar division por cero
+                            d.Percentage = d.Percentage * 100m;
+                        }
+                    }
+                }
+
+                var totalEmployeeDeductions = await multi.ReadSingleOrDefaultAsync<decimal>();
+                var employerBenefits = (await multi.ReadAsync<EmployerBenefitItem>()).ToList();
+
+                // Para beneficios mantenemos la multiplicación por 100 (no regla de 3 por ahora)
+                if (employerBenefits != null && employerBenefits.Count > 0)
+                {
+                    foreach (var b in employerBenefits)
+                    {
+                        b.Percentage = b.Percentage * 100m;
+                    }
+                }
+
+                var totalEmployerBenefits = await multi.ReadSingleOrDefaultAsync<decimal>();
+                var totals = await multi.ReadSingleOrDefaultAsync<EmployeeReportTotals>();
+
+                _logger.LogInformation("Reporte por empleado obtenido - Payroll: {PayrollId}, Employee: {EmployeeId}, Deducciones: {DCount}, Beneficios: {BCount}",
+                    payrollId, employeeId, employeeDeductions.Count, employerBenefits.Count);
+
+                return new PayrollEmployeeReport
+                {
+                    Header = header,
+                    EmployeeDeductions = employeeDeductions,
+                    TotalEmployeeDeductions = totalEmployeeDeductions,
+                    EmployerBenefits = employerBenefits,
+                    TotalEmployerBenefits = totalEmployerBenefits,
+                    Totals = totals ?? new EmployeeReportTotals()
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                throw;
+            }
+        }
     }
 
     public class PayrollSummary
