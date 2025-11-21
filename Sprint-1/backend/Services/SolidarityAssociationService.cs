@@ -50,7 +50,7 @@ namespace backend.Services
                 response.EnsureSuccessStatusCode();
 
                 var jsonContent = await response.Content.ReadAsStringAsync();
-                C_logger.LogDebug("RESPUESTA CRUDA: {JsonContent}", jsonContent);
+                _logger.LogDebug("RESPUESTA CRUDA: {JsonContent}", jsonContent);
 
                 try
                 {
@@ -60,7 +60,7 @@ namespace backend.Services
                 }
                 catch (Exception jsonEx)
                 {
-                    logger.LogWarning(jsonEx, "Error parseando JSON para diagnóstico");
+                    _logger.LogWarning(jsonEx, "Error parseando JSON para diagnóstico");
                 }
 
                 var apiResponse = JsonSerializer.Deserialize<ExternalApiResponse>(jsonContent, new JsonSerializerOptions

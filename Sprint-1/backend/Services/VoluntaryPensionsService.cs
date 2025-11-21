@@ -46,11 +46,11 @@ namespace backend.Services
                     _logger.LogWarning("La API de Pensiones Voluntarias retornó una respuesta nula");
                     return new ExternalApiResponse();
                 }
-                logger.LogDebug("API Pensiones procesada exitosamente - Deducciones: {DeductionsCount}", apiResponse.Deductions?.Count ?? 0);
+                _logger.LogDebug("API Pensiones procesada exitosamente - Deducciones: {DeductionsCount}", apiResponse.Deductions?.Count ?? 0);
 
                 return apiResponse;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error llamando API Pensiones Voluntarias");
                 return new ExternalApiResponse();

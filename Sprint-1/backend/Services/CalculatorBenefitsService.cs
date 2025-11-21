@@ -1,5 +1,6 @@
-﻿using backend.Models;
-using backend.Interfaces;
+﻿using backend.Interfaces;
+using backend.Models;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
@@ -9,17 +10,21 @@ namespace backend.Services
         private readonly IEmployerBenefitDeductionService _employerBenefitDeductionService;
         private readonly IExternalApiFactory _apiFactory;
         private readonly IEmployeeBenefitService _employeeBenefitService;
+        private readonly ILogger<CalculatorBenefitsService> _logger;
+
 
         public CalculatorBenefitsService(
             IEmployeeDeductionsByPayrollService employeeDeductionService,
             IEmployerBenefitDeductionService employerBenefitDeductionService,
             IExternalApiFactory apiFactory,
-            IEmployeeBenefitService employeeBenefitService)
+            IEmployeeBenefitService employeeBenefitService,
+            ILogger<CalculatorBenefitsService> logger)
         {
             _employeeDeductionService = employeeDeductionService;
             _employerBenefitDeductionService = employerBenefitDeductionService;
             _apiFactory = apiFactory;
             _employeeBenefitService = employeeBenefitService;
+            _logger = logger;
         }
 
         public async Task<decimal> CalculateBenefitsAsync(EmployeeCalculationDto employee, int reportId, long cedulaJuridicaEmpresa)
@@ -214,8 +219,8 @@ namespace backend.Services
                         });
 
                     case "pensionesvoluntarias":
-                        _logger.LogInformation("API Reconocida: Pensiones Voluntaria
-                        var pensionsService = _apiFactory.CreateVoluntaryPensionsService();
+                        _logger.LogInformation("API Reconocida: Pensiones Voluntaria");
+                        var pensionsService = _apiFactory.CreateVoluntaryPensionsService(); 
                         return await pensionsService.CalculatePremiumAsync(new VoluntaryPensionsRequest
                         {
                             PlanType = pensionType?.ToUpper() ?? "A",
