@@ -6,6 +6,7 @@ using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
@@ -15,8 +16,9 @@ namespace backend.Services
         private readonly PersonService _personService;
         private readonly PersonRepository _personRepository;
         private readonly EmpleadoRepository _empleadoService;
+        private readonly ILogger<EmpleadoService> _logger;
 
-        public EmpleadoService()
+        public EmpleadoService(ILogger<EmpleadoService> logger)
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext")
@@ -25,6 +27,7 @@ namespace backend.Services
             _personService = new PersonService();
             _personRepository = new PersonRepository();
             _empleadoService = new EmpleadoRepository(); 
+            _logger = logger;
         }
 
         // Reutiliza PersonService: si no existe la persona la crea (PersonService crea user si hace falta)
@@ -105,16 +108,52 @@ namespace backend.Services
             var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
             return salario ?? 0;
         }
-        
+
         public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
         {
+            _logger.LogInformation("=== DEBUG GetEmployeeCalculationDtos ===");
+            _logger.LogInformation("Parametros recibidos:");
+            _logger.LogInformation("  - Cedula Juridica: {CedulaJuridica}", cedulaJuridica);
+            _logger.LogInformation("  - Fecha Inicio: {FechaInicio}", fechaInicio.ToString("yyyy-MM-dd"));
+            _logger.LogInformation("  - Fecha Fin: {FechaFin}", fechaFin.ToString("yyyy-MM-dd"));
+
             try
             {
-                return _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+                _logger.LogInformation("Llamando a _empleadoService.GetEmployeesForPayroll()...");
+                var resultado = _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+
+                _logger.LogInformation("Metodo completado exitosamente");
+                _logger.LogInformation("Registros retornados: {RegistrosCount}", resultado?.Count ?? 0);
+
+                if (resultado == null || resultado.Count == 0)
+                {
+                    _logger.LogInformation("La lista retornada esta vacia o es nula");
+                }
+                else
+                {
+                    foreach (var emp in resultado)
+                    {
+                        _logger.LogInformation("EMPLEADO: {NombreEmpleado}", emp.NombreEmpleado);
+                        _logger.LogInformation("  horas: {Horas}", emp.horas); 
+                        _logger.LogInformation("  ---");
+                    }
+
+                    var conHoras = resultado.Count(e => e.horas > 0);
+                    var sinHoras = resultado.Count(e => e.horas == 0);
+
+                    _logger.LogInformation("ESTADISTICAS:");
+                    _logger.LogInformation("  - Empleados con horas > 0: {ConHoras}", conHoras);
+                    _logger.LogInformation("  - Empleados sin horas: {SinHoras}", sinHoras);
+
+                }
+
+                _logger.LogInformation("=== FIN DEBUG ===");
+                return resultado;
             }
             catch (Exception ex)
             {
-               return new List<EmployeeCalculationDto>();
+                _logger.LogError(ex, "ERROR en GetEmployeeCalculationDtos");
+                return new List<EmployeeCalculationDto>();
             }
         }
 
@@ -135,14 +174,12 @@ namespace backend.Services
             if (persona == null)
                 return false;
 
-            // Datos de Persona
             persona.firstName = dto.FirstName;
             persona.secondName = dto.SecondName;
             persona.direction = dto.Direction;
             persona.personalPhone = dto.PersonalPhone;
             persona.homePhone = dto.HomePhone;
 
-            // Datos de Empleado
             empleado.position = dto.Position;
             empleado.department = dto.Department;
             empleado.salary = dto.Salary;
