@@ -1338,11 +1338,53 @@ export default {
       console.log("Empleado a eliminar:", empleado.nombre);
     },
 
-    confirmarEliminarEmpleado(nombre) {
-      console.log("Confirmado eliminar empleado:", nombre);
-      console.log("Objeto seleccionado:", this.selectedEmpleado);
+    async confirmarEliminarEmpleado() {
+      if (!this.selectedEmpleado) return;
 
-      this.showDeleteModal = false;
+      this.isDeleting = true;
+
+      try {
+        // Obtener id del empleado (intenta varios campos comunes)
+        const empId = this.selectedEmpleado.cedula || this.selectedEmpleado.id || this.selectedEmpleado.personaId || this.selectedEmpleado.id_employee;
+        const companyId = this.selectedCompanyCedula || this.selectedCompanyId;
+
+        if (!empId || !companyId) {
+          this.showMessage('ID de empleado o cédula de empresa faltante', 'error');
+          return;
+        }
+
+        const url = API_ENDPOINTS.DELETE_EMPLEADO(empId, companyId);
+
+        const resp = await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        // Considerar distintos formatos de respuesta
+        const success = resp.status === 200 || resp.data?.success === true;
+
+        if (success) {
+          // Remover empleado de la lista local
+          this.empleadosQuemados = this.empleadosQuemados.filter(e => {
+            const idCandidate = e.cedula || e.id || e.personaId || e.id_employee;
+            return String(idCandidate) !== String(empId);
+          });
+
+          this.showMessage('Empleado eliminado correctamente', 'success');
+        } else {
+          const msg = resp.data?.message || 'No se pudo eliminar el empleado';
+          this.showMessage(msg, 'error');
+        }
+      } catch (error) {
+        console.error('Error eliminando empleado:', error);
+        const msg = error.response?.data?.message || error.message || 'Error al eliminar empleado';
+        this.showMessage(msg, 'error');
+      } finally {
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.selectedEmpleado = null;
+      }
     },
     // ============================================
     // NUEVOS MÉTODOS PARA REPORTES
