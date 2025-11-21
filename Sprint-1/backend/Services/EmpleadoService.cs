@@ -16,9 +16,8 @@ namespace backend.Services
         private readonly PersonService _personService;
         private readonly PersonRepository _personRepository;
         private readonly EmpleadoRepository _empleadoService;
-        private readonly ILogger<EmpleadoService> _logger;
 
-        public EmpleadoService(ILogger<EmpleadoService> logger)
+        public EmpleadoService()
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext")
@@ -27,7 +26,6 @@ namespace backend.Services
             _personService = new PersonService();
             _personRepository = new PersonRepository();
             _empleadoService = new EmpleadoRepository(); 
-            _logger = logger;
         }
 
         // Reutiliza PersonService: si no existe la persona la crea (PersonService crea user si hace falta)
@@ -111,48 +109,13 @@ namespace backend.Services
 
         public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
         {
-            _logger.LogInformation("=== DEBUG GetEmployeeCalculationDtos ===");
-            _logger.LogInformation("Parametros recibidos:");
-            _logger.LogInformation("  - Cedula Juridica: {CedulaJuridica}", cedulaJuridica);
-            _logger.LogInformation("  - Fecha Inicio: {FechaInicio}", fechaInicio.ToString("yyyy-MM-dd"));
-            _logger.LogInformation("  - Fecha Fin: {FechaFin}", fechaFin.ToString("yyyy-MM-dd"));
-
             try
             {
-                _logger.LogInformation("Llamando a _empleadoService.GetEmployeesForPayroll()...");
                 var resultado = _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
-
-                _logger.LogInformation("Metodo completado exitosamente");
-                _logger.LogInformation("Registros retornados: {RegistrosCount}", resultado?.Count ?? 0);
-
-                if (resultado == null || resultado.Count == 0)
-                {
-                    _logger.LogInformation("La lista retornada esta vacia o es nula");
-                }
-                else
-                {
-                    foreach (var emp in resultado)
-                    {
-                        _logger.LogInformation("EMPLEADO: {NombreEmpleado}", emp.NombreEmpleado);
-                        _logger.LogInformation("  horas: {Horas}", emp.horas); 
-                        _logger.LogInformation("  ---");
-                    }
-
-                    var conHoras = resultado.Count(e => e.horas > 0);
-                    var sinHoras = resultado.Count(e => e.horas == 0);
-
-                    _logger.LogInformation("ESTADISTICAS:");
-                    _logger.LogInformation("  - Empleados con horas > 0: {ConHoras}", conHoras);
-                    _logger.LogInformation("  - Empleados sin horas: {SinHoras}", sinHoras);
-
-                }
-
-                _logger.LogInformation("=== FIN DEBUG ===");
                 return resultado;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ERROR en GetEmployeeCalculationDtos");
                 return new List<EmployeeCalculationDto>();
             }
         }

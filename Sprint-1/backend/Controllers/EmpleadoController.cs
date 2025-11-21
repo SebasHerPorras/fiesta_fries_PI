@@ -11,9 +11,9 @@ namespace backend.Controllers
     {
         private readonly EmpleadoService empleadoService;
 
-        public EmpleadoController(EmpleadoService empleadoService)
+        public EmpleadoController()
         {
-            this.empleadoService = empleadoService;
+            empleadoService = new EmpleadoService();
         }
 
         [HttpPost("create-with-person")]
