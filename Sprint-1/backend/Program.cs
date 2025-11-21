@@ -100,6 +100,12 @@ builder.Services.AddScoped<PayrollReportRepository>();
 builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
 
+// Beneficios
+builder.Services.AddScoped<BeneficioRepository>();
+builder.Services.AddScoped<IBeneficioService, BeneficioService>();
+builder.Services.AddScoped<PersonService>();
+builder.Services.AddScoped<EmpresaService>();
+
 var app = builder.Build();
 
 // Solo habilitar Swagger en desarrollo

@@ -83,6 +83,7 @@ namespace backend.Services
                             EmployeeId = (int)employee.CedulaEmpleado,
                             CedulaJuridicaEmpresa = cedulaJuridicaEmpresa,
                             BenefitName = employeeBenefit.ApiName ?? "Beneficio",
+                            BenefitId = employeeBenefit.BenefitId,
                             DeductionAmount = result.employerAmount,
                             BenefitType = employeeBenefit.BenefitType ?? "Unknown",
                             Percentage = employeeBenefit.BenefitType == "Porcentual" ? employeeBenefit.BenefitValue : null
