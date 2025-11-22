@@ -20,10 +20,6 @@ namespace backend.Repositories
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
-        /// <summary>
-        /// Valida que el empleado existe y pertenece a la empresa
-        /// </summary>
         public async Task<bool> ValidateEmployeeExistsAsync(int personaId, long companyId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -52,7 +48,7 @@ namespace backend.Repositories
             const string query = @"
                 SELECT COUNT(1)
                 FROM Empresa
-                WHERE DueñoEmpresa = @PersonaId";
+                WHERE DueÃ±oEmpresa = @PersonaId";
 
             var count = await connection.ExecuteScalarAsync<int>(query, new
             {
@@ -107,13 +103,13 @@ namespace backend.Repositories
                 if (result?.Success == 1)
                 {
                     _logger.LogInformation(
-                        "Borrado lógico exitoso para empleado {PersonaId}", personaId);
+                        "Borrado lÃ³gico exitoso para empleado {PersonaId}", personaId);
                     return true;
                 }
 
                 var message = result?.Message ?? "Sin mensaje";
                 _logger.LogWarning(
-                    "SP_DeleteEmployee_Logical retornó Success=0 para empleado {PersonaId}. Mensaje: {Message}",
+                    "SP_DeleteEmployee_Logical retornÃ³ Success=0 para empleado {PersonaId}. Mensaje: {Message}",
                     personaId, message);
                 return false;
             }
@@ -139,13 +135,13 @@ namespace backend.Repositories
                 if (result?.Success == 1)
                 {
                     _logger.LogInformation(
-                        "Borrado físico exitoso para empleado {PersonaId}", personaId);
+                        "Borrado fÃ­sico exitoso para empleado {PersonaId}", personaId);
                     return true;
                 }
 
                 var message = result?.Message ?? "Sin mensaje";
                 _logger.LogWarning(
-                    "SP_DeleteEmployee_Physical retornó Success=0 para empleado {PersonaId}. Mensaje: {Message}",
+                    "SP_DeleteEmployee_Physical retornÃ³ Success=0 para empleado {PersonaId}. Mensaje: {Message}",
                     personaId, message);
                 return false;
             }
