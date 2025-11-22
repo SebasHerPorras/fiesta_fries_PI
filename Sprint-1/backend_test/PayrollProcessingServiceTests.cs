@@ -28,7 +28,7 @@ namespace backend_test
             var mockPeriodService = new Mock<IPayrollPeriodService>();
             var mockLogger = new Mock<ILogger<PayrollProcessingService>>();
 
-            var dto = new EmployeeCalculationDto { CedulaEmpleado = 12345, NombreEmpleado = "Juan", SalarioBruto = 1000m, HorasTrabajadas = 40 };
+            var dto = new EmployeeCalculationDto { CedulaEmpleado = 12345, NombreEmpleado = "Juan", SalarioBruto = 1000m, horas = 40 };
             mockEmployeeService.Setup(s => s.GetEmployeeCalculationDtos(It.IsAny<long>(), It.IsAny<System.DateTime>(), It.IsAny<System.DateTime>()))
                 .Returns(new List<EmployeeCalculationDto> { dto });
 
