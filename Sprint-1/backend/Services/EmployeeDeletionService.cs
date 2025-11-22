@@ -19,7 +19,7 @@ namespace backend.Services
         public async Task<EmployeeDeletionResult> DeleteEmpleadoAsync(int personaId, long companyId)
         {
             _logger.LogInformation(
-                "Iniciando proceso de eliminaci髇 para empleado {PersonaId} de empresa {CompanyId}",
+                "Iniciando proceso de eliminaci贸n para empleado {PersonaId} de empresa {CompanyId}",
                 personaId, companyId);
 
             try
@@ -30,10 +30,10 @@ namespace backend.Services
                     return CreateErrorResult("Empleado no encontrado o no pertenece a esta empresa");
                 }
 
-                // 2. Validar que no es due駉 de empresa
+                // 2. Validar que no es due帽o de empresa
                 if (await IsCompanyOwnerAsync(personaId))
                 {
-                    return CreateErrorResult("No se puede eliminar: el empleado es due駉 de una empresa");
+                    return CreateErrorResult("No se puede eliminar: el empleado es due帽o de una empresa");
                 }
 
                 // 3. Verificar estado de pagos
@@ -44,25 +44,25 @@ namespace backend.Services
 
                 if (payrollStatus.HasPayments)
                 {
-                    // BORRADO L覩ICO
+                    // BORRADO L脫GICO
                     _logger.LogInformation(
-                        "Empleado {PersonaId} tiene {Count} pagos. Aplicando borrado L覩ICO",
+                        "Empleado {PersonaId} tiene {Count} pagos. Aplicando borrado L脫GICO",
                         personaId, payrollStatus.PaymentCount);
 
                     result = await ExecuteLogicalDeleteAsync(personaId, payrollStatus);
                 }
                 else
                 {
-                    // BORRADO F蚐ICO
+                    // BORRADO F脥SICO
                     _logger.LogInformation(
-                        "Empleado {PersonaId} sin pagos. Aplicando borrado F蚐ICO",
+                        "Empleado {PersonaId} sin pagos. Aplicando borrado F脥SICO",
                         personaId);
 
                     result = await ExecutePhysicalDeleteAsync(personaId, payrollStatus);
                 }
 
                 _logger.LogInformation(
-                    "Eliminaci髇 completada exitosamente. Tipo: {Type}",
+                    "Eliminaci贸n completada exitosamente. Tipo: {Type}",
                     result.DeletionType);
 
                 return result;
@@ -87,14 +87,12 @@ namespace backend.Services
 
         private async Task<bool> ValidateEmployeeExistsAsync(int personaId, long companyId)
         {
-            // TODO: Implementar validaci髇 con repository
             return await _repository.ValidateEmployeeExistsAsync(personaId, companyId);
         }
 
 
         private async Task<bool> IsCompanyOwnerAsync(int personaId)
         {
-            // TODO: Implementar validaci髇
             return await _repository.IsCompanyOwnerAsync(personaId);
         }
 
@@ -104,19 +102,19 @@ namespace backend.Services
             int personaId, 
             EmployeePayrollStatus payrollStatus)
         {
-            _logger.LogDebug("Ejecutando borrado l骻ico para empleado {PersonaId}", personaId);
+            _logger.LogDebug("Ejecutando borrado l贸gico para empleado {PersonaId}", personaId);
 
             var success = await _repository.ExecuteLogicalDeleteAsync(personaId);
 
             if (!success)
             {
-                return CreateErrorResult("Error al ejecutar borrado l骻ico en base de datos");
+                return CreateErrorResult("Error al ejecutar borrado l贸gico en base de datos");
             }
 
             return new EmployeeDeletionResult
             {
                 Success = true,
-                Message = $"Empleado desactivado correctamente (borrado l骻ico). " +
+                Message = $"Empleado desactivado correctamente (borrado l贸gico). " +
                           $"Tiene {payrollStatus.PaymentCount} pago(s) registrado(s).",
                 DeletionType = DeletionType.Logical,
                 PayrollStatus = payrollStatus,
@@ -128,13 +126,13 @@ namespace backend.Services
             int personaId, 
             EmployeePayrollStatus payrollStatus)
         {
-            _logger.LogDebug("Ejecutando borrado f韘ico para empleado {PersonaId}", personaId);
+            _logger.LogDebug("Ejecutando borrado f铆sico para empleado {PersonaId}", personaId);
 
             var success = await _repository.ExecutePhysicalDeleteAsync(personaId);
 
             if (!success)
             {
-                return CreateErrorResult("Error al ejecutar borrado f韘ico en base de datos");
+                return CreateErrorResult("Error al ejecutar borrado f铆sico en base de datos");
             }
 
             return new EmployeeDeletionResult
