@@ -181,6 +181,59 @@ namespace backend.Repositories
                 throw;
             }
         }
+
+        // Nuevo: obtiene los Top 12 empleados (por GrossSalary) en la última planilla de la empresa
+        public async Task<List<TopEmployeeDto>> GetTop12EmployeesByCompanyAsync(long companyId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            try
+            {
+                const string lastPayrollQuery = @"
+                    SELECT TOP 1 PayrollId
+                    FROM Payroll
+                    WHERE CompanyId = @CompanyId
+                    ORDER BY PeriodDate DESC";
+
+                var payrollId = await connection.ExecuteScalarAsync<int?>(lastPayrollQuery, new { CompanyId = companyId });
+
+                if (payrollId == null)
+                {
+                    _logger.LogInformation("No hay planillas para la empresa {CompanyId}", companyId);
+                    return new List<TopEmployeeDto>();
+                }
+
+                const string query = @"
+                    SELECT TOP 12
+                        pp.EmployeeId,
+                        p.firstName + ' ' + p.secondName AS NombreEmpleado,
+                        pp.GrossSalary
+                    FROM PayrollPayment pp
+                    INNER JOIN Persona p ON pp.EmployeeId = p.id
+                    WHERE pp.PayrollId = @PayrollId
+                    ORDER BY pp.GrossSalary DESC";
+
+                var result = (await connection.QueryAsync<TopEmployeeDto>(query, new { PayrollId = payrollId.Value })).ToList();
+
+                _logger.LogInformation("Top {Count} empleados obtenidos para empresa {CompanyId} (Payroll {PayrollId})",
+                    result.Count, companyId, payrollId.Value);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo Top12 empleados para empresa {CompanyId}", companyId);
+                throw;
+            }
+        }
+    }
+
+    // DTO local al repositorio (puedes moverlo a Models si prefieres)
+    public class TopEmployeeDto
+    {
+        public int EmployeeId { get; set; }
+        public string NombreEmpleado { get; set; } = string.Empty;
+        public decimal GrossSalary { get; set; }
     }
 
     public class PayrollSummary
