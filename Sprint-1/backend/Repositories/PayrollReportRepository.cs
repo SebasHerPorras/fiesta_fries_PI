@@ -35,7 +35,7 @@ namespace backend.Repositories
                 var header = await multi.ReadSingleOrDefaultAsync<PayrollReportHeader>();
                 if (header == null)
                 {
-                    _logger.LogWarning("No se encontró la planilla {PayrollId}", payrollId);
+                    _logger.LogWarning("No se encontrÃ³ la planilla {PayrollId}", payrollId);
                     throw new InvalidOperationException($"Planilla {payrollId} no encontrada");
                 }
 
@@ -93,11 +93,12 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo últimas planillas para empresa {CompanyId}", companyId);
+                _logger.LogError(ex, "Error obteniendo Ãºltimas planillas para empresa {CompanyId}", companyId);
                 throw;
             }
         }
 
+        // ======= TU MÃ‰TODO (HEAD) =======
         public async Task<PayrollEmployeeReport> GetPayrollEmployeeReportAsync(int payrollId, int employeeId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -113,21 +114,18 @@ namespace backend.Repositories
                 var header = await multi.ReadSingleOrDefaultAsync<EmployeeReportHeader>();
                 if (header == null)
                 {
-                    _logger.LogWarning("No se encontró reporte empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                    _logger.LogWarning("No se encontrÃ³ reporte empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
                     throw new InvalidOperationException($"Reporte para planilla {payrollId}, empleado {employeeId} no encontrado");
                 }
 
                 var employeeDeductions = (await multi.ReadAsync<EmployeeDeductionItem>()).ToList();
 
-                // Calcular porcentaje: para "Impuesto sobre la Renta" usar regla de 3 basada en SalarioBruto y DeductionAmount,
-                // para el resto multiplicar por 100 (fallback si SalarioBruto == 0)
                 if (employeeDeductions != null && employeeDeductions.Count > 0)
                 {
                     foreach (var d in employeeDeductions)
                     {
                         if (header.SalarioBruto > 0)
                         {
-                            // Si el nombre sugiere impuesto sobre la renta, calcular porcentaje = (deducción / bruto) * 100
                             if (!string.IsNullOrWhiteSpace(d.DeductionName) &&
                                 (d.DeductionName.IndexOf("impuesto", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                  d.DeductionName.IndexOf("renta", StringComparison.OrdinalIgnoreCase) >= 0))
@@ -141,7 +139,6 @@ namespace backend.Repositories
                         }
                         else
                         {
-                            // Salario bruto 0: mantener comportamiento anterior (multiplicar por 100) para evitar division por cero
                             d.Percentage = d.Percentage * 100m;
                         }
                     }
@@ -150,7 +147,6 @@ namespace backend.Repositories
                 var totalEmployeeDeductions = await multi.ReadSingleOrDefaultAsync<decimal>();
                 var employerBenefits = (await multi.ReadAsync<EmployerBenefitItem>()).ToList();
 
-                // Para beneficios mantenemos la multiplicación por 100 (no regla de 3 por ahora)
                 if (employerBenefits != null && employerBenefits.Count > 0)
                 {
                     foreach (var b in employerBenefits)
@@ -182,7 +178,7 @@ namespace backend.Repositories
             }
         }
 
-        // Nuevo: obtiene los Top 12 empleados (por GrossSalary) en la última planilla de la empresa
+        // ======= TU OTRO MÃ‰TODO (HEAD) =======
         public async Task<List<TopEmployeeDto>> GetTop12EmployeesByCompanyAsync(long companyId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -226,9 +222,34 @@ namespace backend.Repositories
                 throw;
             }
         }
+
+        // ======= MÃ‰TODO QUE VIENE DE origin/develop =======
+        public async Task<DateTime?> GetLastPeriodAsync(int benefitId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            try
+            {
+                const string query = @"
+                SELECT TOP 1 p.PeriodDate
+                FROM EmployerBenefitDeductions ebd
+                INNER JOIN Payroll p ON ebd.ReportId = p.PayrollId
+                WHERE ebd.BenefitId = @BenefitId
+                ORDER BY p.PeriodDate DESC";
+
+                var lastPeriod = await connection.ExecuteScalarAsync<DateTime?>(query, new { BenefitId = benefitId });
+
+                _logger.LogInformation("Ãšltimo periodo para beneficio {BenefitId}: {LastPeriod}", benefitId, lastPeriod);
+
+                return lastPeriod;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error obteniendo Ãºltimo periodo para beneficio {BenefitId}", benefitId);
+                throw;
+            }
+        }
     }
 
-    // DTO local al repositorio (puedes moverlo a Models si prefieres)
     public class TopEmployeeDto
     {
         public int EmployeeId { get; set; }

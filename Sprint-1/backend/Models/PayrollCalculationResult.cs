@@ -36,7 +36,7 @@ namespace backend.Models.Payroll.Results
         decimal Deductions,
         decimal Benefits)
     {
-        public decimal NetSalary => Employee.salary - Deductions + Benefits;
+        public decimal NetSalary => Employee.salary - Deductions;
 
         public PayrollPayment ToPayment(int payrollId) => new()
         {

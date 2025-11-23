@@ -6,6 +6,7 @@ using Dapper;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
@@ -105,16 +106,17 @@ namespace backend.Services
             var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
             return salario ?? 0;
         }
-        
+
         public List<EmployeeCalculationDto> GetEmployeeCalculationDtos(long cedulaJuridica, DateTime fechaInicio, DateTime fechaFin)
         {
             try
             {
-                return _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+                var resultado = _empleadoService.GetEmployeesForPayroll(cedulaJuridica, fechaInicio, fechaFin);
+                return resultado;
             }
             catch (Exception ex)
             {
-               return new List<EmployeeCalculationDto>();
+                return new List<EmployeeCalculationDto>();
             }
         }
 
@@ -135,14 +137,12 @@ namespace backend.Services
             if (persona == null)
                 return false;
 
-            // Datos de Persona
             persona.firstName = dto.FirstName;
             persona.secondName = dto.SecondName;
             persona.direction = dto.Direction;
             persona.personalPhone = dto.PersonalPhone;
             persona.homePhone = dto.HomePhone;
 
-            // Datos de Empleado
             empleado.position = dto.Position;
             empleado.department = dto.Department;
             empleado.salary = dto.Salary;

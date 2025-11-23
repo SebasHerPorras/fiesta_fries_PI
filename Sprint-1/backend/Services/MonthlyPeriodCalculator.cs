@@ -12,8 +12,8 @@ namespace backend.Services.Strategies
         public PayrollPeriod CalculatePeriod(DateTime baseDate, int paymentDay)
         {
             var nextPaymentDate = CalculateNextPaymentDate(baseDate, paymentDay);
-            var periodStartDate = nextPaymentDate;
-            var periodEndDate = CalculatePeriodEndDate(periodStartDate);
+            var periodStartDate = nextPaymentDate.AddMonths(-1).AddDays(1);
+            var periodEndDate = nextPaymentDate;
 
             return CreatePayrollPeriod(periodStartDate, periodEndDate);
         }
@@ -43,20 +43,14 @@ namespace backend.Services.Strategies
             return new DateTime(year, month, actualPaymentDay);
         }
 
-        private DateTime CalculatePeriodEndDate(DateTime startDate)
-        {
-           
-            var nextPaymentDate = startDate.AddMonths(1);
-            return nextPaymentDate.AddDays(-1);
-        }
 
         private PayrollPeriod CreatePayrollPeriod(DateTime startDate, DateTime endDate)
         {
             return new PayrollPeriod
             {
                 StartDate = startDate,
-                EndDate = endDate,
-                Description = $"Mes {startDate:MMMM yyyy}",
+                EndDate = endDate, // Día de pago
+                Description = $"Periodo {startDate:dd/MM/yyyy} - {endDate:dd/MM/yyyy}",
                 PeriodType = backend.Models.Payroll.PayrollPeriodType.Mensual
             };
         }
