@@ -106,6 +106,7 @@
                     <th>Departamento</th>
                     <th>Tipo Contrato</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,6 +130,12 @@
                         Editar
                       </button>
                     </td>
+                    <td>
+                      <button @click="abrirModalEliminarEmpleado(empleado)" class="btn-eliminar">
+                        Eliminar
+                      </button>
+                    </td>
+
                   </tr>
                 </tbody>
               </table>
@@ -153,6 +160,7 @@
                     <th>Valor</th>
                     <th>Etiqueta</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,6 +189,11 @@
                     <td>
                       <button @click="editarBeneficio(beneficio)" class="btn-editar">
                           Editar
+                      </button>
+                    </td>
+                    <td>
+                      <button @click="abrirModalEliminarBeneficio(beneficio)" class="btn-eliminar">
+                          Eliminar
                       </button>
                     </td>
                   </tr>
@@ -475,7 +488,46 @@
       </div>
     </div>
 
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
     <!-- Footer -->
+    
     <footer>
       <div>©2025 Fiesta Fries</div>
       <div class="socials">
@@ -491,9 +543,13 @@
 <script>
 import axios from "axios";
 import { API_ENDPOINTS } from '../config/apiConfig';
+import ModalWarning from "./ModalWarning.vue"; 
 
 export default {
   name: 'EmpresaAdmin',
+  components: {
+    ModalWarning
+  },
   data() {
     return {
       empresas: [],
@@ -523,7 +579,11 @@ export default {
 
       selectedCompany: null,
       selectedCompanyId: null,
-      selectedCompanyCedula: null  
+      selectedCompanyCedula: null,
+      selectedBeneficio: null,
+      selectedEmpleado: null,
+      showDeleteModal: false,
+      isDeleting: false
     }
   },
   mounted() {
@@ -1232,7 +1292,100 @@ export default {
       if (!amount) return '0';
       return parseFloat(amount).toLocaleString('es-CR');
     },
-    
+
+    abrirModalEliminarBeneficio(beneficio) {
+      if (!beneficio) {
+        console.error("No se recibió beneficio válido");
+        return;
+      }
+      this.selectedBeneficio = beneficio;
+      this.showDeleteModal = true;
+    },
+
+    async confirmarEliminarBeneficio() {
+      if (!this.selectedBeneficio) return;
+
+      try {
+        const response = await fetch(API_ENDPOINTS.DELETE_BENEFICIO(this.selectedBeneficio.idBeneficio), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(`Error: ${errorData.message || "No se pudo eliminar el beneficio"}`);
+        } else {
+            this.beneficios = this.beneficios.filter(
+              b => b.idBeneficio !== this.selectedBeneficio.idBeneficio
+          );
+          this.$emit("beneficioEliminado", this.selectedBeneficio.idBeneficio);
+        }
+      } catch (error) {
+        alert("Error interno al eliminar beneficio");
+      } finally {
+        this.showDeleteModal = false;
+        this.selectedBeneficio = null;
+      }
+    },
+
+    abrirModalEliminarEmpleado(empleado) {
+      this.selectedEmpleado = empleado;
+      this.showDeleteModal = true;
+
+      console.log("Empleado a eliminar:", empleado.nombre);
+    },
+
+    async confirmarEliminarEmpleado() {
+      if (!this.selectedEmpleado) return;
+
+      this.isDeleting = true;
+
+      try {
+        // Obtener id del empleado (intenta varios campos comunes)
+        const empId = this.selectedEmpleado.cedula || this.selectedEmpleado.id || this.selectedEmpleado.personaId || this.selectedEmpleado.id_employee;
+        const companyId = this.selectedCompanyCedula || this.selectedCompanyId;
+
+        if (!empId || !companyId) {
+          this.showMessage('ID de empleado o cédula de empresa faltante', 'error');
+          return;
+        }
+
+        const url = API_ENDPOINTS.DELETE_EMPLEADO(empId, companyId);
+
+        const resp = await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        // Considerar distintos formatos de respuesta
+        const success = resp.status === 200 || resp.data?.success === true;
+
+        if (success) {
+          // Remover empleado de la lista local
+          this.empleadosQuemados = this.empleadosQuemados.filter(e => {
+            const idCandidate = e.cedula || e.id || e.personaId || e.id_employee;
+            return String(idCandidate) !== String(empId);
+          });
+
+          this.showMessage('Empleado eliminado correctamente', 'success');
+        } else {
+          const msg = resp.data?.message || 'No se pudo eliminar el empleado';
+          this.showMessage(msg, 'error');
+        }
+      } catch (error) {
+        console.error('Error eliminando empleado:', error);
+        const msg = error.response?.data?.message || error.message || 'Error al eliminar empleado';
+        this.showMessage(msg, 'error');
+      } finally {
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.selectedEmpleado = null;
+      }
+    },
     // ============================================
     // NUEVOS MÉTODOS PARA REPORTES
     // ============================================
@@ -1775,8 +1928,8 @@ export default {
 }
 
 .type-badge.api {
-  background: rgba(102, 16, 242, 0.2);
-  color: #6610f2;
+  background: rgba(195, 70, 245, 0.2);
+  color: #d321ff;
 }
 
 .type-badge.default {
@@ -1786,6 +1939,19 @@ export default {
 
 .btn-editar {
   background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.btn-eliminar {
+  background: #a00101;
   color: white;
   border: none;
   padding: 8px 16px;

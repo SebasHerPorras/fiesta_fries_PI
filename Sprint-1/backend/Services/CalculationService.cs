@@ -29,26 +29,23 @@ namespace backend.Services
 
         public async Task<decimal> CalculateDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogDebug(
-                "Calculando deducciones para empleado: {Nombre}, Cédula: {Cedula}, Salario: {Salario}",
-                empleado.NombreEmpleado, empleado.CedulaEmpleado, empleado.SalarioBruto);
+            _logger.LogDebug("=== CALCULANDO DEDUCCIONES ===");
+            _logger.LogDebug("Empleado: {Nombre}, Salario: {Salario}",
+                empleado.NombreEmpleado, empleado.SalarioBruto);
 
             try
             {
                 var deducciones = _employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
 
-                _logger.LogDebug(
-                    "Deducciones calculadas: {Deducciones} para empleado {Cedula}",
-                    deducciones, empleado.CedulaEmpleado);
+                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre}",
+                     deducciones, empleado.NombreEmpleado);
 
                 return await Task.FromResult(deducciones);
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex, "Error calculando deducciones para empleado {Cedula}",
-                    empleado.CedulaEmpleado);
-                throw;
+                _logger.LogError(ex, "Error calculando deducciones");
+                return 0;
             }
         }
 
@@ -56,13 +53,13 @@ namespace backend.Services
         {
             try
             {
-                _logger.LogInformation("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
-                _logger.LogInformation("Empleado: {Nombre} ({Cedula})",
+                _logger.LogDebug("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
+                _logger.LogDebug("Empleado: {Nombre} ({Cedula})",
                     empleado.NombreEmpleado, empleado.CedulaEmpleado);
 
                 var totalBenefits = await _benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
 
-                _logger.LogInformation("Total beneficios para {Nombre}: ₡{Total}",
+                _logger.LogDebug("Total beneficios para {Nombre}: ₡{Total}",
                     empleado.NombreEmpleado, totalBenefits);
 
                 return totalBenefits;
@@ -77,8 +74,8 @@ namespace backend.Services
 
         public async Task<decimal> CalculateIncomeTaxAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogInformation("=== CALCULANDO IMPUESTO RENTA ===");
-            _logger.LogInformation("Empleado: {Cedula}, Salario: {Salario}",
+            _logger.LogDebug("=== CALCULANDO IMPUESTO RENTA ===");
+            _logger.LogDebug("Empleado: {Cedula}, Salario: {Salario}",
                 empleado.CedulaEmpleado, empleado.SalarioBruto);
 
             try
@@ -86,18 +83,18 @@ namespace backend.Services
                 var incomeTax = await Task.Run(() =>
                     _incomeTaxService.CalculateIncomeTax(empleado.SalarioBruto));
 
-                _logger.LogInformation("=== IMPUESTO RENTA CALCULADO: {IncomeTax} ===", incomeTax);
+                _logger.LogDebug("IMPUESTO RENTA CALCULADO: {IncomeTax} para {Nombre}",
+                    incomeTax, empleado.NombreEmpleado);
 
                 return incomeTax;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculando impuesto renta para empleado {Cedula}",
-                    empleado.CedulaEmpleado);
+                _logger.LogError(ex, " Error calculando impuesto renta");
                 throw;
             }
         }
-        
+
 
         public async Task<decimal> CalculateEmployerDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {

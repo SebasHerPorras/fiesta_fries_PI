@@ -65,6 +65,10 @@ builder.Services.AddScoped<IPeriodCalculator, MonthlyPeriodCalculator>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<ICalculationService, CalculationService>();
 
+// Deletion Service
+builder.Services.AddScoped<IEmployeeDeletionRepository, EmployeeDeletionRepository>();
+builder.Services.AddScoped<IEmployeeDeletionService, EmployeeDeletionService>();
+
 // ===== CONFIGURACIÓN DE HTTP CLIENTS PARA APIS EXTERNAS =====
 builder.Services.AddHttpClient<ISolidarityAssociationService, SolidarityAssociationService>("AsociacionSolidarista", client =>
 {
@@ -99,6 +103,12 @@ builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<PayrollReportRepository>();
 builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
+
+// Beneficios
+builder.Services.AddScoped<BeneficioRepository>();
+builder.Services.AddScoped<IBeneficioService, BeneficioService>();
+builder.Services.AddScoped<PersonService>();
+builder.Services.AddScoped<EmpresaService>();
 
 var app = builder.Build();
 

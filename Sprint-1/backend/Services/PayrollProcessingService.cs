@@ -199,7 +199,7 @@ namespace backend.Services
             var calculationResult = await ProcessEmployeesAsync(request, payroll.PayrollId);
             await SavePayrollResultsAsync(payroll, calculationResult);
 
-           var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
+           var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployerDeductions + calculationResult.TotalBenefits;
 
             var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalEmployeeDeductions = calculationResult.TotalEmployeeDeductions;
@@ -255,7 +255,7 @@ namespace backend.Services
 
             foreach (var _dto in employeeDtos)
             {
-                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                var reportedHours = _dto.horas;
                 _logger.LogDebug("Empleado DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
                     _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
 
@@ -350,21 +350,21 @@ namespace backend.Services
             var totalGrossSalary = calculationResult.EmployeeCalculations.Sum(x => x.Employee.salary);
             var totalBenefits = calculationResult.EmployeeCalculations.Sum(x => x.Benefits);
             var totalNetSalary = calculationResult.EmployeeCalculations.Sum(x => x.NetSalary);
-            var totalEmployerDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
+            var totalEmployeeDeductions = calculationResult.EmployeeCalculations.Sum(x => x.Deductions);
 
             _logger.LogInformation("Calculated - Gross: {Gross}, Benefits: {Benefits}, Net: {Net}, EmpDeductions: {EmpDed}",
-                totalGrossSalary, totalBenefits, totalNetSalary, totalEmployerDeductions);
+                totalGrossSalary, totalBenefits, totalNetSalary, totalEmployeeDeductions);
 
             var payments = calculationResult.ToPayments(payroll.PayrollId);
             await _payrollRepository.CreatePayrollPaymentsAsync(payments);
 
-            var totalEmployeeDeductions = 0m;
+            var totalEmployerDeductions = 0m;
             foreach (var employeeCalc in calculationResult.EmployeeCalculations)
             {
                 var empleadoDto = MapToEmployeeDto(employeeCalc.Employee);
                 var employerDeductions = await _calculationService.CalculateEmployerDeductionsAsync(
                     empleadoDto, payroll.CompanyId, payroll.PayrollId);
-                totalEmployeeDeductions += employerDeductions;
+                totalEmployerDeductions += employerDeductions;
             }
 
             payroll.IsCalculated = true;
@@ -373,7 +373,7 @@ namespace backend.Services
             payroll.TotalEmployerDeductions = totalEmployerDeductions;
             payroll.TotalBenefits = totalBenefits;
             payroll.TotalNetSalary = totalNetSalary;
-            payroll.TotalEmployerCost = totalGrossSalary + totalEmployeeDeductions + totalBenefits;
+            payroll.TotalEmployerCost = totalGrossSalary + totalEmployerDeductions + totalBenefits;
             payroll.LastModified = DateTime.Now;
 
             _logger.LogInformation("=== SAVING PAYROLL ===");
@@ -394,17 +394,15 @@ namespace backend.Services
             };
         }
 
-        // No se pudo implementar validación de horas trabajadas al 100%
         private bool ValidateEmployeeHours(EmployeeCalculationDto dto, backend.Models.Payroll.PayrollPeriodType periodType, out string reason)
         {   
             reason = string.Empty;
-            return true;
             if (dto == null) {
                 reason = "DTO nulo";
                 return false;
             }
 
-            var hours = dto.HorasTrabajadas > 0 ? dto.HorasTrabajadas : dto.horas;
+            var hours = dto.horas;
 
             var tipo = (dto.TipoEmpleado ?? string.Empty).ToLowerInvariant();
 
@@ -498,8 +496,9 @@ namespace backend.Services
 
                 var calculationResult = await CalculatePayrollWithoutSaving(request);
 
-
-                var totalEmployerCost = calculationResult.TotalGrossSalary + calculationResult.TotalEmployeeDeductions + calculationResult.TotalBenefits;
+                var totalEmployerCost = calculationResult.TotalGrossSalary
+                                        + calculationResult.TotalEmployerDeductions
+                                        + calculationResult.TotalBenefits;
 
                 return _resultBuilder.CreatePreviewResult(
                     totalEmployerCost,  
@@ -543,9 +542,9 @@ namespace backend.Services
 
             foreach (var _dto in employeeDtos)
             {
-                var reportedHours = _dto.HorasTrabajadas > 0 ? _dto.HorasTrabajadas : _dto.horas;
+                var reportedHours = _dto.horas;
                 _logger.LogDebug("Preview DTO -> Cedula: {Cedula}, Nombre: {Nombre}, SalarioBruto: {Salario}, Horas: {Horas}, Tipo: {Tipo}",
-                    _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
+                _dto.CedulaEmpleado, _dto.NombreEmpleado, _dto.SalarioBruto, reportedHours, _dto.TipoEmpleado);
 
                 if (_dto.SalarioBruto <= 0)
                 {

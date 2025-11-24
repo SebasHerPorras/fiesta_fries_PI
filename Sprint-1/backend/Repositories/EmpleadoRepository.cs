@@ -40,6 +40,8 @@ namespace backend.Repositories
                 INNER JOIN Persona p ON e.id = p.id
                 INNER JOIN [User] u ON p.uniqueUser = u.PK_User
                 WHERE e.idCompny = @CedulaJuridica
+                  AND (e.IsDeleted = 0 OR e.IsDeleted IS NULL)
+                  AND (p.IsDeleted = 0 OR p.IsDeleted IS NULL)
                 ORDER BY e.department, p.firstName";
 
                 return connection.Query<EmpleadoListDto>(query, new { CedulaJuridica = cedulaJuridica }).ToList();
@@ -167,7 +169,8 @@ namespace backend.Repositories
                 id, position, employmentType, salary, hireDate, department, idCompny,
                 '' AS email, '' AS name
             FROM Empleado
-            WHERE idCompny = @CedulaEmpresa";
+            WHERE idCompny = @CedulaEmpresa
+              AND (IsDeleted = 0 OR IsDeleted IS NULL)";
 
             return connection.Query<EmpleadoModel>(query, new { CedulaEmpresa = cedulaEmpresa }).ToList();
         }
@@ -176,7 +179,11 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"SELECT* FROM Empleado WHERE id = @id";
+            const string query = @"
+                SELECT * FROM Empleado 
+                WHERE id = @id 
+                  AND (IsDeleted = 0 OR IsDeleted IS NULL)";
+            
             Console.WriteLine("Querry realizado con éxito\n");
 
             return connection.QuerySingleOrDefault<EmpleadoModel>(query, new { id = id_ });
@@ -190,7 +197,8 @@ namespace backend.Repositories
                     position = @Position,
                     department = @Department,
                     salary = @Salary
-                WHERE id = @Id";
+                WHERE id = @Id
+                  AND (IsDeleted = 0 OR IsDeleted IS NULL)";
 
             await connection.ExecuteAsync(query, new
             {
@@ -217,7 +225,9 @@ namespace backend.Repositories
                     e.salary
                 FROM Empleado e
                 INNER JOIN Persona p ON e.id = p.id
-                WHERE e.id = @id";
+                WHERE e.id = @id
+                  AND (e.IsDeleted = 0 OR e.IsDeleted IS NULL)
+                  AND (p.IsDeleted = 0 OR p.IsDeleted IS NULL)";
 
             return await connection.QuerySingleOrDefaultAsync<EmpleadoUpdateDto>(query, new { id });
         }

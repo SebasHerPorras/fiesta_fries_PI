@@ -7,6 +7,7 @@ namespace backend.Models
         public int EmployeeId { get; set; }
         public long CedulaJuridicaEmpresa { get; set; }
         public string BenefitName { get; set; } = string.Empty;
+        public int BenefitId { get; set; }
         public decimal DeductionAmount { get; set; }
         public string BenefitType { get; set; } = string.Empty; // "Fixed", "Percentage", "API"
         public decimal? Percentage { get; set; }
