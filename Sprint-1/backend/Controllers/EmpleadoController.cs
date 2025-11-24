@@ -1,6 +1,7 @@
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Text.Json;
 
 namespace backend.Controllers
@@ -121,6 +122,57 @@ namespace backend.Controllers
             return NoContent();
         }
 
+        [HttpGet("LastPayrollData")]
+        public ActionResult getLastPayroll([FromQuery] int id)
+        {
+            DateTime? lastPayRoll = this.empleadoService.GetLastPayRoll(id);
 
+            return Ok(lastPayRoll);
+        }
+
+        [HttpGet("GetpayrollData")]
+
+        public ActionResult<List<EmployeeDeductionsByPayrollModel>> getLastPayrollData([FromQuery] int id, DateTime date)
+        {
+        
+            List<EmployeeDeductionsByPayrollModel> data = this.empleadoService.GetEmployeePayrollData(id, date);
+
+            if(data == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(data);
+
+        }
+
+        [HttpGet("GetDashboardData")]
+        public ActionResult GetDashboardData([FromQuery] int id, DateTime date)
+        {
+            EmployeeDashboardDataModelcs? data = this.empleadoService.GetDashboardData(id, date);
+
+            if(data == null) {
+                return NotFound();
+            }
+            return Ok(data);
+        }
+
+        [HttpGet("SalaryAmount")]
+        public ActionResult GetSalaryAmount(int id)
+        {
+            int salary = this.empleadoService.GetSalaryAmount(id);
+
+            return Ok(salary);
+        }
+
+        [HttpGet("SalaryChart")]
+        public ActionResult GetDeductionsChart(int id, DateTime date)
+        {
+            byte[] img = this.empleadoService.GenerateDashBoardChart(id, date);
+
+            if(img==null) { return NotFound(); } 
+
+            return File(img, "image/png");
+        }
     }
 }
