@@ -164,9 +164,11 @@ namespace backend.Controllers
         {
             byte[] img = this.empleadoService.GenerateDashBoardChart(id, date);
 
-            if(img==null) { return NotFound(); } 
+            if (img == null) { return NotFound(); }
 
             return File(img, "image/png");
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmpleado(int id, [FromQuery] long companyId)
         {
