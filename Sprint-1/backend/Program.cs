@@ -64,6 +64,8 @@ builder.Services.AddScoped<IPeriodCalculator, BiweeklyPeriodCalculator>();
 builder.Services.AddScoped<IPeriodCalculator, MonthlyPeriodCalculator>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<ICalculationService, CalculationService>();
+builder.Services.AddScoped<IEmployerHistoricalReportRepository, EmployerHistoricalReportRepository>();
+builder.Services.AddScoped<IEmployerHistoricalReportService, EmployerHistoricalReportService>();
 
 // Deletion Service
 builder.Services.AddScoped<IEmployeeDeletionRepository, EmployeeDeletionRepository>();
@@ -99,10 +101,11 @@ builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 
-// Payroll Reports employee
+// Payroll Reports employer
 builder.Services.AddScoped<PayrollReportRepository>();
 builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
+builder.Services.AddScoped<EmployerHistoricalReportCsvService>();
 
 // Beneficios
 builder.Services.AddScoped<BeneficioRepository>();
