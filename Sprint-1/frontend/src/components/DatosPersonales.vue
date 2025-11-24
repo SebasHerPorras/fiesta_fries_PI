@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <header class="header">
       <nav class="nav">
-          <div class="brand">
+          <div class="display">
               <div class="logo-box">
                   <span class="f">F</span>
               </div>
@@ -27,12 +27,13 @@
                   <router-link to="/RegisterHoras">Registrar Horas</router-link>
               </li>
 
+
               <!-- Dropdown de empresas SOLO para Empleador -->
               <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
                   <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
                       <option disabled value="">Seleccionar Empresa</option>
                       <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
-                      {{ company.nombre }}
+                          {{ company.nombre }}
                       </option>
                   </select>
               </li>
@@ -42,6 +43,10 @@
                   <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
               </li>
 
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
+              </li>
+
               <!-- Solo Empleado: Seleccionar Beneficios -->
               <li v-if="userRole === 'Empleado'">
                   <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
@@ -49,8 +54,9 @@
 
               <!-- Nombre de Empresa: Solo Empleados -->
               <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
-                <a href="#" @click.prevent> Empresa: {{ selectedCompany.nombre }}
-                </a>
+                  <a href="#" @click.prevent>
+                      Empresa: {{ selectedCompany.nombre }}
+                  </a>
               </li>
 
               <!-- Siempre visible -->
@@ -356,10 +362,11 @@ async loadCompanies() {
         align-items: center;
     }
 
-    .brand {
+    .display {
         display: flex;
         align-items: center;
         gap: 18px;
+        margin-bottom :20px;
     }
 
     .logo-box {
@@ -401,6 +408,8 @@ async loadCompanies() {
         gap: 2rem;
         margin: 0;
         padding: 0;
+        flex-wrap: wrap; 
+        align-items: center; 
     }
 
         .nav-list a {

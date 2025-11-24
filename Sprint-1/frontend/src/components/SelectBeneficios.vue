@@ -3,7 +3,7 @@
     <!-- HEADER (igual al de DatosPersonales.vue) -->
     <header class="header">
       <nav class="nav">
-        <div class="brand">
+        <div class="display">
           <div class="logo-box">
             <span class="f">F</span>
           </div>
@@ -717,7 +717,7 @@ export default {
   align-items: center;
 }
 
-.brand {
+.display {
   display: flex;
   align-items: center;
   gap: 18px;
