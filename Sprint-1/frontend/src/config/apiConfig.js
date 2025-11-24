@@ -38,33 +38,19 @@ export const API_ENDPOINTS = {
   EMPLEADOS: (cedulaEmpresa) =>
     buildApiUrl(`Empleado/empresa/${cedulaEmpresa}`),
   CREATE_EMPRESA: buildApiUrl("empresa"),
-  CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
-  HIRE_DATE: (id) =>
-    `${buildApiUrl("Empleado/GetEmployeeHireDate")}?id=${encodeURIComponent(
-      id
-    )}`,
-  WORK_DAY_HOURS: (dateW, dateD, id) =>
-    `${buildApiUrl(
-      "Empleado/GetEmployeeWorkDayHours"
-    )}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(
-      dateD
-    )}&id=${encodeURIComponent(id)}`,
-  WORK_WEEK_HOURS: (date, id) =>
-    `${buildApiUrl("Empleado/GetWorkHoursWeek")}?date=${encodeURIComponent(
-      date
-    )}&id=${encodeURIComponent(id)}`,
-  ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) =>
-    `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(
-      dateW
-    )}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(
-      hours
-    )}&id=${encodeURIComponent(id)}`,
+    CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
+    HIRE_DATE: (id) => `${buildApiUrl("Empleado/GetEmployeeHireDate")}?id=${encodeURIComponent(id)}`,
+    LAST_PAYROLL: (id) => `${buildApiUrl("Empleado/LastPayrollData")}?id=${encodeURIComponent(id)}`,
+    GET_PAYROLL: (id, date) => `${buildApiUrl("Empleado/GetpayrollData")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
+    GET_SALARY_DATA: (id, date) => `${buildApiUrl("Empleado/GetDashboardData")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
+    GET_IMAGE: (id, date) => `${buildApiUrl("Empleado/SalaryChart")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
+    WORK_DAY_HOURS: (dateW, dateD, id) => `${buildApiUrl("Empleado/GetEmployeeWorkDayHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&id=${encodeURIComponent(id)}`,
+    WORK_WEEK_HOURS: (date, id) => `${buildApiUrl("Empleado/GetWorkHoursWeek")}?date=${encodeURIComponent(date)}&id=${encodeURIComponent(id)}`,
+    ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) => `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(hours)}&id=${encodeURIComponent(id)}`,
 
-  EMPRESA_BY_EMPLOYEE: (userId) =>
-    buildApiUrl(`empresa/employee-company/${userId}`),
+  EMPRESA_BY_EMPLOYEE: (userId) => buildApiUrl(`empresa/employee-company/${userId}`),
 
-  BENEFICIOS_SELECCIONADOS: (empleadoId) =>
-    buildApiUrl(`EmployeeBenefit/${empleadoId}`),
+  BENEFICIOS_SELECCIONADOS: (empleadoId) => buildApiUrl(`EmployeeBenefit/${empleadoId}`),
   ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
   CAN_SELECT_BENEFIT: (employeeId, benefitId) =>
     buildApiUrl(
