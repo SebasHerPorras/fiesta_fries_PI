@@ -1,4 +1,5 @@
 using backend.Models.Payroll;
+using backend.Models.Payroll.Results;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using System.Data;
@@ -244,7 +245,38 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error obteniendo último periodo para beneficio {BenefitId}", benefitId);
+                _logger.LogError(ex, $"Error obteniendo último periodo para beneficio {benefitId}", benefitId);
+                throw;
+            }
+        }
+
+        public async Task<List<EmployeeLastPaymentsResult>> GetLast12PaymentsByEmployeeAsync(int employeeId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            try
+            {
+                var query = @"
+            SELECT TOP 12
+                pp.PayrollId AS ReportId,
+                FORMAT(py.PeriodDate, 'yyyy-MM-dd') AS Periodo,
+                pp.GrossSalary AS SalarioBruto,
+                pp.NetSalary AS SalarioNeto
+            FROM PayrollPayment pp
+            INNER JOIN Payroll py ON pp.PayrollId = py.PayrollId
+            WHERE pp.EmployeeId = @employeeId
+            ORDER BY py.PeriodDate DESC
+        ";
+
+                var result = (await connection.QueryAsync<EmployeeLastPaymentsResult>(query, new { employeeId })).ToList();
+
+                _logger.LogInformation("Últimos 12 pagos obtenidos para empleado {EmployeeId}: {Count}", employeeId, result.Count);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo últimos 12 pagos para empleado {EmployeeId}", employeeId);
                 throw;
             }
         }

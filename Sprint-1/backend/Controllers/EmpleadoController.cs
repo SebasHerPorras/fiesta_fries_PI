@@ -167,6 +167,8 @@ namespace backend.Controllers
             if(img==null) { return NotFound(); } 
 
             return File(img, "image/png");
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmpleado(int id, [FromQuery] long companyId)
         {

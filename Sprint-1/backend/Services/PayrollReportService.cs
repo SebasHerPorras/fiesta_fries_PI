@@ -1,7 +1,6 @@
-
 using backend.Repositories;
 using Microsoft.Extensions.Logging;
-using backend.Repositories;
+using backend.Models.Payroll.Results;
 
 namespace backend.Services
 {
@@ -20,6 +19,11 @@ namespace backend.Services
         {
             _logger.LogDebug("Solicitando Top12 empleados para empresa {CompanyId}", companyId);
             return _repository.GetTop12EmployeesByCompanyAsync(companyId);
+        }
+
+        public async Task<List<EmployeeLastPaymentsResult>> GetLast12PaymentsByEmployeeAsync(int employeeId)
+        {
+            return await _repository.GetLast12PaymentsByEmployeeAsync(employeeId);
         }
     }
 }

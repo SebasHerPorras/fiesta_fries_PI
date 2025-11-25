@@ -1,4 +1,5 @@
 using backend.Models.Payroll;
+using backend.Models.Payroll.Results;
 using backend.Repositories;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +14,20 @@ namespace backend.Controllers
         private readonly PayrollPdfService _pdfService;
         private readonly PayrollCsvService _csvService;
         private readonly ILogger<PayrollReportController> _logger;
+        private readonly PayrollReportService _payrollReportService;
 
         public PayrollReportController(
             PayrollReportRepository repository,
             PayrollPdfService pdfService,
             PayrollCsvService csvService,
-            ILogger<PayrollReportController> logger)
+            ILogger<PayrollReportController> logger,
+            PayrollReportService payrollReportService)
         {
             _repository = repository;
             _pdfService = pdfService;
             _csvService = csvService;
             _logger = logger;
+            _payrollReportService = payrollReportService;
         }
 
 
@@ -162,6 +166,13 @@ namespace backend.Controllers
                 _logger.LogError(ex, "Error generando CSV reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet("employee/{employeeId}/last-payments")]
+        public async Task<ActionResult<List<EmployeeLastPaymentsResult>>> GetLast12PaymentsByEmployee(int employeeId)
+        {
+            var result = await _payrollReportService.GetLast12PaymentsByEmployeeAsync(employeeId);
+            return Ok(result);
         }
     }
 }
