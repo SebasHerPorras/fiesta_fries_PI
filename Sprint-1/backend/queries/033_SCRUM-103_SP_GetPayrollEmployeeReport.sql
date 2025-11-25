@@ -29,7 +29,7 @@ BEGIN
         p.id AS EmployeeId,
         p.firstName + ' ' + p.secondName AS NombreEmpleado,
         ISNULL(emp.employmentType, '') AS TipoEmpleado,
-        pp.PaymentDate AS FechaPago,
+        py.PeriodDate AS FechaPago,         
         pp.GrossSalary AS SalarioBruto
     FROM PayrollPayment pp
     INNER JOIN Persona p ON pp.EmployeeId = p.id

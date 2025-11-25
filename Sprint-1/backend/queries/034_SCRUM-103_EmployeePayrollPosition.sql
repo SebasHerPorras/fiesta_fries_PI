@@ -24,7 +24,7 @@ GO
 -- SCRUM-54: Stored Procedure para obtener empleados para planilla
 -- ACTUALIZADO: guarda el puesto en EmployeePayrollPosition si se pasa @ReportId
 -- =============================================
-
+/*
 CREATE OR ALTER PROCEDURE SP_GetEmployeesForPayroll
     @CedulaJuridica BIGINT,
     @FechaInicio DATE,
@@ -59,7 +59,7 @@ BEGIN
             p.birthdate AS Cumpleanos,
             dbo.Fn_ObtenerHoras(e.id, @FechaInicio, @FechaFin) AS horas,
             ISNULL(e.position, '') AS Position,
-            e.department AS Department -- para ordenamiento si se desea
+            e.department AS Department
         INTO #TempEmployeesForPayroll
         FROM Empleado e
         INNER JOIN Persona p ON e.id = p.id
@@ -123,3 +123,4 @@ END;
 GO
 
 select * from EmployeePayrollPosition
+*/
