@@ -114,6 +114,8 @@ builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>(
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddScoped<ICompanyDeletionService, CompanyDeletionService>();
+builder.Services.AddScoped<IBeneficioRepository, BeneficioRepository>();
 
 // CalculationService con todas las dependencias necesarias para crear instancias dinámicas
 builder.Services.AddScoped<ICalculationService>(sp =>
@@ -135,6 +137,7 @@ builder.Services.AddScoped<ICalculationService>(sp =>
 builder.Services.AddScoped<PayrollReportRepository>();
 builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
+builder.Services.AddScoped<PayrollReportService>();
 
 // Beneficios
 builder.Services.AddScoped<BeneficioRepository>();

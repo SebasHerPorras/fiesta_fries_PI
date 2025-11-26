@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
-using Moq;
-using FluentAssertions;
-using backend.Services;
+﻿using backend.Interfaces;
 using backend.Models;
-using backend.Interfaces;
+using backend.Services;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
 
 namespace backend_test
 {
@@ -17,6 +17,7 @@ namespace backend_test
         private Mock<IEmployeeBenefitService> _mockEmployeeBenefitService;
         private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
         private CalculatorBenefitsService _service;
+        private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
 
         [SetUp]
         public void Setup()

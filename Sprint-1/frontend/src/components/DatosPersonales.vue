@@ -29,9 +29,9 @@
 
 
               <!-- Dropdown de empresas SOLO para Empleador -->
-              <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
+              <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
                   <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
-                      <option disabled value="">Seleccionar Empresa</option>
+                      <option :value="null">Seleccionar Empresa</option>
                       <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
                           {{ company.nombre }}
                       </option>
@@ -45,6 +45,10 @@
 
               <li v-if="userRole === 'Empleado'">
                   <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/DashboardEmpleador">Dashboard de pago</router-link>
               </li>
 
               <!-- Solo Empleado: Seleccionar Beneficios -->
@@ -97,6 +101,115 @@
     </div>
   </main>
 
+  <!-- Sección de Reportes para Empleados -->
+  <div v-if="userRole === 'Empleado'" class="content">
+    <div class="reportes-management">
+      <div class="reportes-header">
+        <h3>📊 Mis Reportes de Planilla</h3>
+        <button @click="toggleReportes" class="btn-secondary">
+          {{ mostrandoReportes ? 'Ocultar Reportes' : 'Ver Reportes' }}
+        </button>
+      </div>
+
+      <div v-if="mostrandoReportes" class="reportes-content">
+        <!-- Lista de reportes -->
+        <div class="reportes-list-section">
+          <h4>Últimos 12 Reportes</h4>
+          
+          <div v-if="reportLoading" class="loading">
+            Cargando reportes...
+          </div>
+
+          <div v-else-if="last12Payrolls.length === 0" class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No hay reportes disponibles</h3>
+            <p>Aún no se han generado reportes de planilla</p>
+          </div>
+
+          <div v-else class="table-container">
+            <table class="payroll-table">
+              <thead>
+                <tr>
+                  <th>Periodo</th>
+                  <th>Salario Bruto</th>
+                  <th>Salario Neto</th>
+                  <th>Formato</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr 
+                  v-for="report in last12Payrolls" 
+                  :key="report.reportId"
+                  :class="{ 'selected-row': selectedReportPayrollId === report.reportId }"
+                  class="payroll-row"
+                >
+                  <td>{{ report.periodo }}</td>
+                  <td>₡{{ formatCurrency(report.salarioBruto) }}</td>
+                  <td>₡{{ formatCurrency(report.salarioNeto) }}</td>
+                  <td>
+                    <select 
+                      v-model="reportFormats[report.reportId]" 
+                      class="format-selector"
+                    >
+                      <option value="pdf">PDF</option>
+                      <option value="csv">CSV</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button 
+                      @click="generateReport(report.reportId)"
+                      class="btn-generate"
+                      :disabled="generatingReport && selectedReportPayrollId === report.reportId"
+                    >
+                      {{ generatingReport && selectedReportPayrollId === report.reportId ? 'Generando...' : 'Ver' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Visor de reporte -->
+        <div v-if="currentReportUrl" class="report-viewer">
+          <div class="viewer-header">
+            <h4>Vista Previa del Reporte</h4>
+            <div class="viewer-actions">
+              <button @click="downloadReport" class="btn-download">
+                📥 Descargar
+              </button>
+              <button @click="clearReport" class="btn-close-viewer">
+                ✖ Cerrar
+              </button>
+            </div>
+          </div>
+
+          <!-- Visor PDF -->
+          <div v-if="currentReportFormat === 'pdf'" class="pdf-viewer">
+            <iframe 
+              :src="currentReportUrl" 
+              width="100%" 
+              height="600px"
+              style="border: none;"
+            ></iframe>
+          </div>
+
+          <!-- Mensaje para CSV -->
+          <div v-else-if="currentReportFormat === 'csv'" class="csv-message">
+            <div class="csv-icon">📊</div>
+            <h3>Archivo CSV Listo</h3>
+            <p>El archivo CSV se ha generado correctamente</p>
+            <button @click="downloadReport" class="btn-download-big">
+              📥 Descargar CSV
+            </button>
+            <p class="csv-hint">El archivo se abrirá en Excel o tu programa de hojas de cálculo predeterminado</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
     <!-- FOOTER -->
     <footer>
       <div>©2025 Fiesta Fries</div>
@@ -121,7 +234,17 @@ export default {
       companies: [],
       selectedCompany: null,
       userData: {},
-      isAdmin: false
+      isAdmin: false,
+      // Reportes
+      mostrandoReportes: false,
+      reportLoading: false,
+      last12Payrolls: [],
+      reportFormats: {},
+      generatingReport: false,
+      selectedReportPayrollId: null,
+      currentReportUrl: null,
+      currentReportFormat: null,
+      currentReportBlob: null
     };
   },
   mounted() {
@@ -287,25 +410,13 @@ async loadCompanies() {
       return;
     }
 
+    // Siempre iniciar con null para mostrar "Seleccionar Empresa"
+    this.selectedCompany = null;
+    
     if (this.companies.length > 0) {
-      const savedCompany = localStorage.getItem("selectedCompany");
-      if (savedCompany) {
-        try {
-          this.selectedCompany = JSON.parse(savedCompany);
-          console.log("Empresa recuperada de localStorage:", this.selectedCompany.nombre);
-        } catch (e) {
-          console.error("Error parsing saved company:", e);
-          this.selectedCompany = this.companies[0];
-          this.saveSelectedCompany();
-        }
-      } else {
-        this.selectedCompany = this.companies[0];
-        this.saveSelectedCompany();
-        console.log("Empresa guardada en localStorage:", this.selectedCompany.nombre);
-      }
+      console.log(`${this.companies.length} empresa(s) cargada(s)`);
     } else {
       console.log("No se encontraron empresas asociadas");
-      localStorage.removeItem("selectedCompany");
     }
   } catch (err) {
     console.error("Error cargando empresas:", err);
@@ -314,7 +425,7 @@ async loadCompanies() {
 },
 
     saveSelectedCompany() {
-      if (this.selectedCompany) {
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
         // Guardar toda la información de la empresa en localStorage
         localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
         console.log("Empresa seleccionada guardada:", this.selectedCompany.nombre);
@@ -324,7 +435,7 @@ async loadCompanies() {
     },
 
     onCompanyChange() {
-      if (this.selectedCompany) {
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
         this.saveSelectedCompany();
         // Redirigir a la página de administración de empresas
         this.$router.push('/PageEmpresaAdmin');
@@ -335,6 +446,160 @@ async loadCompanies() {
       localStorage.removeItem("userData");
       localStorage.removeItem("selectedCompany");
       this.$router.push("/");
+    },
+
+    // ============================================
+    // MÉTODOS PARA REPORTES
+    // ============================================
+    async toggleReportes() {
+      this.mostrandoReportes = !this.mostrandoReportes;
+      
+      if (this.mostrandoReportes && this.last12Payrolls.length === 0) {
+        await this.loadLast12Payrolls();
+      }
+    },
+
+    async loadLast12Payrolls() {
+      // Obtener cédula del empleado (ID numérico)
+      const stored = JSON.parse(localStorage.getItem("userData"));
+      
+      console.log('📋 Datos en localStorage:', stored);
+      console.log('🆔 PersonaId del empleado:', stored?.personaId);
+      
+      // Usar el personaId del empleado (ID numérico)
+      const employeeId = stored?.personaId;
+      
+      if (!employeeId) {
+        console.error('❌ No hay personaId en localStorage');
+        alert('No se pudo obtener el ID del empleado');
+        return;
+      }
+
+      this.reportLoading = true;
+      try {
+        const url = API_ENDPOINTS.PAYROLL_EMPLOYEE_LAST_12_PAYMENTS(employeeId);
+        console.log('📡 Cargando reportes desde:', url);
+        console.log('   PersonaId empleado:', employeeId);
+        
+        const response = await axios.get(url);
+        console.log('📦 Respuesta completa:', response.data);
+
+        let reports = [];
+        
+        // El backend retorna un array directo con reportId, periodo, salarioBruto, salarioNeto
+        if (Array.isArray(response.data)) {
+          reports = response.data;
+        } else if (response.data && response.data.success) {
+          reports = response.data.reports || response.data.payrolls || [];
+        }
+
+        this.last12Payrolls = reports;
+        console.log('✅ Reportes cargados:', this.last12Payrolls.length);
+        console.log('📋 Datos del primer reporte:', this.last12Payrolls[0]);
+
+        // Inicializar formatos usando reportId
+        const formats = {};
+        reports.forEach(report => {
+          formats[report.reportId] = 'pdf';
+        });
+        this.reportFormats = formats;
+
+      } catch (error) {
+        console.error('❌ Error cargando reportes:', error);
+        console.error('Response:', error.response?.data);
+        console.error('Status:', error.response?.status);
+        alert('Error al cargar reportes: ' + (error.response?.data?.message || error.message));
+        this.last12Payrolls = [];
+      } finally {
+        this.reportLoading = false;
+      }
+    },
+
+    async generateReport(payrollId) {
+      const format = this.reportFormats[payrollId] || 'pdf';
+      this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+
+      try {
+        // Obtener personaId del empleado
+        const stored = JSON.parse(localStorage.getItem("userData"));
+        const employeeId = stored?.personaId;
+        
+        console.log('🆔 Generando reporte - PersonaId empleado:', employeeId);
+        
+        if (!employeeId) {
+          alert('No se pudo obtener el ID del empleado');
+          return;
+        }
+
+        let url;
+        if (format === 'pdf') {
+          url = API_ENDPOINTS.PAYROLL_EMPLOYEE_REPORT_PDF(payrollId, employeeId);
+        } else if (format === 'csv') {
+          url = API_ENDPOINTS.PAYROLL_EMPLOYEE_REPORT_CSV(payrollId, employeeId);
+        }
+
+        console.log('🔗 Generando reporte:', url);
+
+        // Hacer petición para obtener el archivo
+        const response = await axios.get(url, {
+          responseType: 'blob'
+        });
+
+        console.log('✅ Reporte generado');
+
+        // Crear URL del blob
+        const blob = new Blob([response.data], {
+          type: format === 'pdf' ? 'application/pdf' : 'text/csv'
+        });
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        this.currentReportUrl = blobUrl;
+        this.currentReportFormat = format;
+        this.currentReportBlob = blob;
+
+      } catch (error) {
+        console.error('❌ Error generando reporte:', error);
+        alert('Error al generar el reporte');
+      } finally {
+        this.generatingReport = false;
+      }
+    },
+
+    async downloadReport() {
+      if (!this.currentReportBlob || !this.selectedReportPayrollId) return;
+
+      const format = this.currentReportFormat;
+      const extension = format === 'pdf' ? 'pdf' : 'csv';
+      const fileName = `Reporte_Planilla_${this.selectedReportPayrollId}.${extension}`;
+
+      const link = document.createElement('a');
+      link.href = this.currentReportUrl;
+      link.download = fileName;
+      link.click();
+
+      console.log('📥 Descargando:', fileName);
+    },
+
+    clearReport() {
+      if (this.currentReportUrl) {
+        window.URL.revokeObjectURL(this.currentReportUrl);
+      }
+      this.currentReportUrl = null;
+      this.currentReportFormat = null;
+      this.selectedReportPayrollId = null;
+      this.currentReportBlob = null;
+    },
+
+    formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES');
+    },
+
+    formatCurrency(amount) {
+      if (!amount) return '0';
+      return parseFloat(amount).toLocaleString('es-CR');
     }
   }
 };
@@ -664,5 +929,305 @@ async loadCompanies() {
         .texts h1 {
             font-size: 20px;
         }
+    }
+
+    /* ============================================ */
+    /* ESTILOS PARA REPORTES */
+    /* ============================================ */
+
+    .content {
+      background: rgb(71,69,69);
+      border-radius: 10px;
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,0.12);
+      margin: 20px 64px;
+    }
+
+    .reportes-management {
+      width: 100%;
+    }
+
+    .reportes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .reportes-header h3 {
+      margin: 0;
+      color: #eee;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .reportes-content {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .reportes-list-section h4 {
+      color: #1fb9b4;
+      margin-bottom: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #1fb9b4;
+      font-size: 18px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      margin-bottom: 10px;
+      color: #eee;
+    }
+
+    .empty-state p {
+      color: #bdbdbd;
+      margin-bottom: 20px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .payroll-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .payroll-table th,
+    .payroll-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .payroll-table th {
+      background: rgba(31, 185, 180, 0.2);
+      font-weight: 600;
+      color: #1fb9b4;
+    }
+
+    .payroll-row:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .selected-row {
+      background: rgba(31, 185, 180, 0.1);
+      border-left: 3px solid #1fb9b4;
+    }
+
+    .format-selector {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: whitesmoke;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .format-selector:focus {
+      outline: none;
+      border-color: #1fb9b4;
+    }
+
+    .btn-generate {
+      background: #1fb9b4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 12px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      background: #1aa8a4;
+      transform: translateY(-1px);
+    }
+
+    .btn-generate:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+
+    /* VISOR DE REPORTES */
+    .report-viewer {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid rgba(31, 185, 180, 0.3);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .viewer-header h4 {
+      color: #1fb9b4;
+      margin: 0;
+    }
+
+    .viewer-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-download {
+      background: #1fb9b4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-download:hover {
+      background: #1aa8a4;
+      transform: translateY(-1px);
+    }
+
+    .btn-close-viewer {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .pdf-viewer {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .pdf-viewer iframe {
+      border-radius: 8px;
+    }
+
+    /* MENSAJE CSV */
+    .csv-message {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .csv-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .csv-message h3 {
+      color: #1fb9b4;
+      margin-bottom: 10px;
+    }
+
+    .csv-message p {
+      color: #bdbdbd;
+      margin-bottom: 20px;
+    }
+
+    .btn-download-big {
+      background: #1fb9b4;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-download-big:hover {
+      background: #1aa8a4;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(31, 185, 180, 0.3);
+    }
+
+    .csv-hint {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* RESPONSIVE REPORTES */
+    @media (max-width: 900px) {
+      .content {
+        margin: 20px;
+        padding: 15px;
+      }
+
+      .reportes-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .viewer-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .viewer-actions {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .btn-download,
+      .btn-close-viewer {
+        flex: 1;
+      }
     }
 </style>
