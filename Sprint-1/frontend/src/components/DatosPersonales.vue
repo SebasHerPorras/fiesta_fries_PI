@@ -29,9 +29,9 @@
 
 
               <!-- Dropdown de empresas SOLO para Empleador -->
-              <li v-if="userRole === 'Empleador' && companies.length > 0" class="company-dropdown-item">
+              <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
                   <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
-                      <option disabled value="">Seleccionar Empresa</option>
+                      <option :value="null">Seleccionar Empresa</option>
                       <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
                           {{ company.nombre }}
                       </option>
@@ -287,25 +287,13 @@ async loadCompanies() {
       return;
     }
 
+    // Siempre iniciar con null para mostrar "Seleccionar Empresa"
+    this.selectedCompany = null;
+    
     if (this.companies.length > 0) {
-      const savedCompany = localStorage.getItem("selectedCompany");
-      if (savedCompany) {
-        try {
-          this.selectedCompany = JSON.parse(savedCompany);
-          console.log("Empresa recuperada de localStorage:", this.selectedCompany.nombre);
-        } catch (e) {
-          console.error("Error parsing saved company:", e);
-          this.selectedCompany = this.companies[0];
-          this.saveSelectedCompany();
-        }
-      } else {
-        this.selectedCompany = this.companies[0];
-        this.saveSelectedCompany();
-        console.log("Empresa guardada en localStorage:", this.selectedCompany.nombre);
-      }
+      console.log(`${this.companies.length} empresa(s) cargada(s)`);
     } else {
       console.log("No se encontraron empresas asociadas");
-      localStorage.removeItem("selectedCompany");
     }
   } catch (err) {
     console.error("Error cargando empresas:", err);
@@ -314,7 +302,7 @@ async loadCompanies() {
 },
 
     saveSelectedCompany() {
-      if (this.selectedCompany) {
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
         // Guardar toda la información de la empresa en localStorage
         localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
         console.log("Empresa seleccionada guardada:", this.selectedCompany.nombre);
@@ -324,7 +312,8 @@ async loadCompanies() {
     },
 
     onCompanyChange() {
-      if (this.selectedCompany) {
+      // Solo redirigir si realmente seleccionó una empresa válida
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
         this.saveSelectedCompany();
         // Redirigir a la página de administración de empresas
         this.$router.push('/PageEmpresaAdmin');
