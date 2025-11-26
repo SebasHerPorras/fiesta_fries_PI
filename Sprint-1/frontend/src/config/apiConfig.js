@@ -129,6 +129,7 @@ export const API_ENDPOINTS = {
       `Empleado/${encodeURIComponent(id)}`
     )}?companyId=${encodeURIComponent(companyId)}`,
   DELETE_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
+  COMPANY_DELETION: (cedulaJuridica) => buildApiUrl(`CompanyDeletion/${cedulaJuridica}`),
 };
 
 // Log de configuración (solo en desarrollo)
