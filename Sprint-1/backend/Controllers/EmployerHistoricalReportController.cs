@@ -24,7 +24,7 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReport([FromQuery] int employerId, [FromQuery] int? companyId,
+        public async Task<IActionResult> GetReport([FromQuery] long employerId, [FromQuery] long? companyId,
             [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
@@ -42,7 +42,7 @@ namespace backend.Controllers
 
         [HttpGet("csv")]
         [Produces("text/csv")]
-        public async Task<IActionResult> GenerateCsv([FromQuery] int employerId, [FromQuery] int? companyId,
+        public async Task<IActionResult> GenerateCsv([FromQuery] long employerId, [FromQuery] long? companyId,
             [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try

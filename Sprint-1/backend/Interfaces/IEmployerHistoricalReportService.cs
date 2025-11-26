@@ -4,7 +4,7 @@ namespace backend.Interfaces
 {
     public interface IEmployerHistoricalReportService
     {
-        Task<IEnumerable<EmployerHistoricalReportDto>> GenerateReportAsync(int employerId, int? companyId, DateTime? startDate, DateTime? endDate);
+        Task<IEnumerable<EmployerHistoricalReportDto>> GenerateReportAsync(long employerId, long? companyId, DateTime? startDate, DateTime? endDate);
     }
 
 }

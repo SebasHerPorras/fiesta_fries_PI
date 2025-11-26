@@ -19,8 +19,8 @@ namespace backend.Repositories
             _logger = logger;
         }
 
-        public async Task<IEnumerable<EmployerHistoricalReportDto>> GetReportAsync(int employerId,
-            int? companyId, DateTime? startDate, DateTime? endDate)
+        public async Task<IEnumerable<EmployerHistoricalReportDto>> GetReportAsync(long employerId,
+            long? companyId, DateTime? startDate, DateTime? endDate)
         {
             using var connection = _connectionFactory.CreateConnection();
 

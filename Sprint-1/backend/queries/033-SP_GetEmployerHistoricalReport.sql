@@ -8,7 +8,7 @@ go
 
 CREATE OR ALTER PROCEDURE GetEmployerHistoricalReport
     @EmployerId INT,
-    @CompanyId INT = NULL,
+    @CompanyId BIGINT = NULL,
     @StartDate DATE = NULL,
     @EndDate DATE = NULL
 AS

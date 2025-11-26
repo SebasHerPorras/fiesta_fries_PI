@@ -122,6 +122,9 @@ export const API_ENDPOINTS = {
   PAYROLL_REPORT_CSV: (payrollId) =>
     buildApiUrl(`PayrollReport/${payrollId}/csv`),
   PAYROLL_REPORT_JSON: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}`),
+  
+  EMPLOYER_HISTORICAL_REPORT: buildApiUrl("EmployerHistoricalReport"),
+  EMPLOYER_HISTORICAL_REPORT_CSV: buildApiUrl("EmployerHistoricalReport/csv"),
 
   // Borrados
   DELETE_EMPLEADO: (id, companyId) =>

@@ -16,8 +16,8 @@ namespace backend.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<EmployerHistoricalReportDto>> GenerateReportAsync(int employerId, 
-            int? companyId, DateTime? startDate, DateTime? endDate)
+        public async Task<IEnumerable<EmployerHistoricalReportDto>> GenerateReportAsync(long employerId,
+            long? companyId, DateTime? startDate, DateTime? endDate)
         {
             var report = (await _repository.GetReportAsync(employerId, companyId, startDate, endDate)).ToList();
 
