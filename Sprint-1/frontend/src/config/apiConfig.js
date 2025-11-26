@@ -49,7 +49,11 @@ export const API_ENDPOINTS = {
     ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) => `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(hours)}&id=${encodeURIComponent(id)}`,
 
   EMPRESA_BY_EMPLOYEE: (userId) => buildApiUrl(`empresa/employee-company/${userId}`),
-
+    EMPRESA_COUNT_ROLES: (id) => buildApiUrl(`Empresa/EmployeesTypeCount?id=${id}`),
+    EMPRESA_COUNT_ROLES_LIST: (id) => buildApiUrl(`Empresa/EmployeesTypeCountList?id=${id}`),
+    EMPRESA_PAY_DATES: (cedulaJuridica, fechaLimite) => buildApiUrl(`Empresa/PayrollDates?cedulaJuridica=${encodeURIComponent(cedulaJuridica)}&fechaLimite=${encodeURIComponent(fechaLimite)}`),
+    SPREADSHEET_COST: (id, Fecha) => buildApiUrl(`Empresa/SpreadsheetCost?id=${encodeURIComponent(id)}&Fecha=${encodeURIComponent(Fecha)}`),
+    CAKE_GRAPH: (id, Fecha) => buildApiUrl(`Empresa/GetEmployerDataImage?id=${encodeURIComponent(id)}&Fecha=${encodeURIComponent(Fecha)}`),
   BENEFICIOS_SELECCIONADOS: (empleadoId) => buildApiUrl(`EmployeeBenefit/${empleadoId}`),
   ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
   CAN_SELECT_BENEFIT: (employeeId, benefitId) =>
@@ -78,8 +82,8 @@ export const API_ENDPOINTS = {
   USER_NOTIFY_EMPLOYER: buildApiUrl("Empleado/EmailNotificationMessage"),
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),
-  EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
-  GET_EMPRESA_POR_CEDULA: (cedula) =>
+    EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
+    GET_EMPRESA_POR_CEDULA: (cedula) =>
     buildApiUrl(`/empresa/por-cedula/${cedula}`),
   MODIFICAR_EMPRESA_PROPIA: (cedula) =>
     buildApiUrl(`/empresa/modificar-empresa/${cedula}`),
