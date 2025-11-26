@@ -8,14 +8,17 @@ namespace backend.Services
         private readonly List<EmployerSocialSecurityContributions> _cargasSociales;
         private readonly IEmployerSocialSecurityContributionsService _cargasSocialesService;
         private readonly IEmployerSocialSecurityByPayrollService _payrollService;
+        private readonly bool _saveInDB;
 
         public CalculatorDeductionsEmployerService(
             IEmployerSocialSecurityContributionsService cargasSocialesService,
-            IEmployerSocialSecurityByPayrollService payrollService)
+            IEmployerSocialSecurityByPayrollService payrollService,
+            bool saveInDB = true)
         {
             _cargasSocialesService = cargasSocialesService;
             _cargasSociales = _cargasSocialesService.GetActiveContributions();
             _payrollService = payrollService;
+            _saveInDB = saveInDB;
         }
 
         public decimal CalculateEmployerDeductions(EmployeeCalculationDto empleado, int idReporte, long cedulaJuridicaEmpresa)
@@ -43,7 +46,10 @@ namespace backend.Services
                     }
                 };
 
-                _payrollService.SaveEmployerDeductions(deduccionesSinCargo);
+                if (_saveInDB)
+                {
+                    _payrollService.SaveEmployerDeductions(deduccionesSinCargo);
+                }
                 return 0;
             }
 
@@ -72,7 +78,10 @@ namespace backend.Services
                 totalDeducciones += monto;
             }
 
-            _payrollService.SaveEmployerDeductions(deducciones);
+            if (_saveInDB)
+            {
+                _payrollService.SaveEmployerDeductions(deducciones);
+            }
 
             return Math.Round(totalDeducciones, 2);
         }

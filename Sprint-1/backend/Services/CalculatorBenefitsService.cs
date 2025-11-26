@@ -11,36 +11,43 @@ namespace backend.Services
         private readonly IExternalApiFactory _apiFactory;
         private readonly IEmployeeBenefitService _employeeBenefitService;
         private readonly ILogger<CalculatorBenefitsService> _logger;
-
+        private readonly bool _saveInDB;
 
         public CalculatorBenefitsService(
             IEmployeeDeductionsByPayrollService employeeDeductionService,
             IEmployerBenefitDeductionService employerBenefitDeductionService,
             IExternalApiFactory apiFactory,
             IEmployeeBenefitService employeeBenefitService,
-            ILogger<CalculatorBenefitsService> logger)
+            ILogger<CalculatorBenefitsService> logger,
+            bool saveInDB = true
+        )
         {
             _employeeDeductionService = employeeDeductionService;
             _employerBenefitDeductionService = employerBenefitDeductionService;
             _apiFactory = apiFactory;
             _employeeBenefitService = employeeBenefitService;
             _logger = logger;
+            _saveInDB = saveInDB;
         }
 
         public async Task<decimal> CalculateBenefitsAsync(EmployeeCalculationDto employee, int reportId, long cedulaJuridicaEmpresa)
         {
+            if (employee == null)
+            {
+                throw new ArgumentException("Los datos del empleado son requeridos");
+            }
+
+            if (employee.SalarioBruto <= 0)
+            {
+                throw new ArgumentException("El salario bruto debe ser mayor a cero");
+            }
+
             try
             {
                 _logger.LogInformation("=== VALIDACIÓN DETALLADA DE BENEFICIOS ===");
                 _logger.LogInformation("Empleado: {NombreEmpleado}", employee.NombreEmpleado);
                 _logger.LogInformation("Salario bruto: {SalarioBruto}", employee.SalarioBruto);
                 _logger.LogInformation("Cédula: {CedulaEmpleado}", employee.CedulaEmpleado);
-
-                if (employee == null)
-                    throw new ArgumentException("Los datos del empleado son requeridos");
-
-                if (employee.SalarioBruto <= 0)
-                    throw new ArgumentException("El salario bruto debe ser mayor a cero");
 
                 var employeeBenefits = await _employeeBenefitService.GetSelectedByEmployeeIdAsync((int)employee.CedulaEmpleado);
 
@@ -106,12 +113,12 @@ namespace backend.Services
                     _logger.LogWarning("ADVERTENCIA: Beneficios superan el 100% del salario");
                 }
 
-                if (employeeDeductions.Any())
+                if (_saveInDB && employeeDeductions.Any())
                 {
                     _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
                 }
 
-                if (employerDeductions.Any())
+                if (_saveInDB && employerDeductions.Any())
                 {
                     _employerBenefitDeductionService.SaveEmployerBenefitDeductions(employerDeductions);
                 }
