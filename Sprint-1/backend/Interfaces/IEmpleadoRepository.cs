@@ -6,5 +6,6 @@ namespace backend.Interfaces
     public interface IEmpleadoRepository
     {
         List<EmpleadoModel> GetEmpleadosPorEmpresa(long cedulaEmpresa);
+        List<EmpleadoListDto> GetByEmpresa(long cedulaJuridica);
     }
 }
