@@ -1,4 +1,5 @@
 using backend.Models.Payroll;
+using backend.Models.Payroll.Results;
 using backend.Repositories;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +14,20 @@ namespace backend.Controllers
         private readonly PayrollPdfService _pdfService;
         private readonly PayrollCsvService _csvService;
         private readonly ILogger<PayrollReportController> _logger;
+        private readonly PayrollReportService _payrollReportService;
 
         public PayrollReportController(
             PayrollReportRepository repository,
             PayrollPdfService pdfService,
             PayrollCsvService csvService,
-            ILogger<PayrollReportController> logger)
+            ILogger<PayrollReportController> logger,
+            PayrollReportService payrollReportService)
         {
             _repository = repository;
             _pdfService = pdfService;
             _csvService = csvService;
             _logger = logger;
+            _payrollReportService = payrollReportService;
         }
 
 
@@ -102,6 +106,73 @@ namespace backend.Controllers
                 _logger.LogError(ex, "Error generando CSV para planilla {PayrollId}", payrollId);
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet("{payrollId}/employee/{employeeId}")]
+        public async Task<IActionResult> GetEmployeeReport(int payrollId, int employeeId)
+        {
+            try
+            {
+                var report = await _repository.GetPayrollEmployeeReportAsync(payrollId, employeeId);
+                return Ok(new { success = true, report });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("{payrollId}/employee/{employeeId}/pdf")]
+        [Produces("application/pdf")]
+        public async Task<IActionResult> GenerateEmployeePdf(int payrollId, int employeeId)
+        {
+            try
+            {
+                var report = await _repository.GetPayrollEmployeeReportAsync(payrollId, employeeId);
+                var pdfBytes = await _pdfService.GeneratePayrollEmployeePdfAsync(report);
+
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    return NotFound(new { success = false, message = "No se pudo generar el PDF" });
+                }
+
+                var fileName = $"Planilla_{report.Header.NombreEmpresa}_{report.Header.NombreEmpleado}_{report.Header.FechaPago:yyyy-MM-dd}.pdf";
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generando PDF reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("{payrollId}/employee/{employeeId}/csv")]
+        [Produces("text/csv")]
+        public async Task<IActionResult> GenerateEmployeeCsv(int payrollId, int employeeId)
+        {
+            try
+            {
+                var report = await _repository.GetPayrollEmployeeReportAsync(payrollId, employeeId);
+                var csvBytes = await _csvService.GeneratePayrollEmployeeCsvAsync(report);
+
+                var fileName = $"Planilla_{report.Header.NombreEmpresa}_{report.Header.NombreEmpleado}_{report.Header.FechaPago:yyyy-MM-dd}.csv";
+
+                return File(csvBytes, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generando CSV reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}", payrollId, employeeId);
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("employee/{employeeId}/last-payments")]
+        public async Task<ActionResult<List<EmployeeLastPaymentsResult>>> GetLast12PaymentsByEmployee(int employeeId)
+        {
+            var result = await _payrollReportService.GetLast12PaymentsByEmployeeAsync(employeeId);
+            return Ok(result);
         }
     }
 }

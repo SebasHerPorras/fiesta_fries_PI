@@ -103,6 +103,7 @@ builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<PayrollReportRepository>();
 builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
+builder.Services.AddScoped<PayrollReportService>();
 
 // Beneficios
 builder.Services.AddScoped<BeneficioRepository>();
