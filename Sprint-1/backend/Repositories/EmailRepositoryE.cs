@@ -1,5 +1,5 @@
-﻿using backend.Models;
-using System.Data.SqlClient;
+using backend.Models;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace backend.Repositories
@@ -11,14 +11,14 @@ namespace backend.Repositories
         public EmailRepositoryE()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurri� un error con el appsettings.json");
         }
 
         public void insertMailNoty(EmailModelE model)
         {
             //vamos a realizar el query
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"INSERT INTO dbo.EmailVerificationE(token,expirationDate) VALUES
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].EmailVerificationE(token,expirationDate) VALUES
                                     (@token,@expirationDate)";
             connection.Execute(query, model);
         }
@@ -27,7 +27,7 @@ namespace backend.Repositories
         {
             Console.WriteLine($"Token recibido: {token_}");
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"SELECT* FROM dbo.EmailVerificationE WHERE token = @token";
+            const string query = @"SELECT* FROM [Fiesta_Fries_DB].[EmailVerificationE] WHERE token = @token";
             return connection.QuerySingleOrDefault<EmailModelE>(query, new { token = token_ });
 
         }

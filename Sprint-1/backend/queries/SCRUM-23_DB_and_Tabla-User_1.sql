@@ -1,10 +1,13 @@
-﻿
+
 -- Create database from proyect Fiesta Fries
-CREATE DATABASE Fiesta_Fries_DB;
+-- CREATE DATABASE ya existe: G02-2025-II-DB
+-- Schema: Fiesta_Fries_DB
 GO
 
 -- Use the created database
-USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearán bajo el schema Fiesta_Fries_DB
 GO
 
 CREATE TABLE [User] (
@@ -15,8 +18,8 @@ CREATE TABLE [User] (
 	
 )
 
-ALTER TABLE [User] 
-ALTER COLUMN email nvarchar(60) NOT NULL; -- Modificar el tamaño del campo email a 60 caracteres para el hash
+ALTER TABLE [Fiesta_Fries_DB].[Persona] 
+ALTER COLUMN email nvarchar(60) NOT NULL; -- Modificar el tama�o del campo email a 60 caracteres para el hash
 
 
-select * from [User];
+select * FROM [Fiesta_Fries_DB].[Persona];

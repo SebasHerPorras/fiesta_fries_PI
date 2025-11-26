@@ -1,17 +1,17 @@
-﻿using backend.Models;
+using backend.Models;
 using backend.Handlers.backend.Repositories;
 using backend.Interfaces;
 using backend.Repositories;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Services
 {
     public class BeneficioService : IBeneficioService
     {
         private readonly BeneficioRepository _beneficioRepository;
-        private readonly PayrollReportRepository _payrollReportRepository; // Para borrados lógicos
+        private readonly PayrollReportRepository _payrollReportRepository; // Para borrados l�gicos
         private readonly ILogger<BeneficioService> _logger;
 
         public BeneficioService(BeneficioRepository beneficioRepository,
@@ -38,15 +38,15 @@ namespace backend.Services
             // Validaciones:
             var tiposPermitidos = new[] { "Monto Fijo", "Porcentual", "API" };
             if (!tiposPermitidos.Contains(beneficio.Tipo))
-                return "Tipo de beneficio no válido";
+                return "Tipo de beneficio no v�lido";
 
             var quienAsumePermitido = new[] { "Empresa", "Empleado", "Ambos" };
             if (!quienAsumePermitido.Contains(beneficio.QuienAsume))
-                return "Valor no válido para 'Quien Asume'";
+                return "Valor no v�lido para 'Quien Asume'";
 
-            var etiquetasPermitidas = new[] { "Beneficio", "Deducción" };
+            var etiquetasPermitidas = new[] { "Beneficio", "Deducci�n" };
             if (!etiquetasPermitidas.Contains(beneficio.Etiqueta))
-                return "Etiqueta no válida";
+                return "Etiqueta no v�lida";
 
             return _beneficioRepository.CreateBeneficio(beneficio);
         }

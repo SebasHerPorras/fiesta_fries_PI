@@ -1,5 +1,5 @@
 using backend.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace backend.Repositories

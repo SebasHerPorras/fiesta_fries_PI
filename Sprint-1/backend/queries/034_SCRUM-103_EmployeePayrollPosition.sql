@@ -1,23 +1,26 @@
-USE Fiesta_Fries_DB;
+ï»¿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃƒÂ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- Tabla para almacenar el puesto asignado por empleado en una planilla
 IF OBJECT_ID('dbo.EmployeePayrollPosition', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.EmployeePayrollPosition (
+    CREATE TABLE [Fiesta_Fries_DB].EmployeePayrollPosition (
         Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        ReportId INT NOT NULL,            -- FK a Payroll.PayrollId (opcional, añadir FK si se desea)
+        ReportId INT NOT NULL,            -- FK a Payroll.PayrollId (opcional, aï¿½adir FK si se desea)
         EmployeeId INT NOT NULL,          -- id de Empleado / Persona
-        Position NVARCHAR(200) NOT NULL,  -- puesto con el que se contrató / asignó para esa planilla
+        Position NVARCHAR(200) NOT NULL,  -- puesto con el que se contratï¿½ / asignï¿½ para esa planilla
         CreatedDate DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
     );
 
-    CREATE UNIQUE INDEX UX_EmployeePayrollPosition_Report_Employee
-        ON dbo.EmployeePayrollPosition(ReportId, EmployeeId);
+    CREATE UNIQUE INDEX UX_EmployeePayrollPosition_Report_Employee ON [Fiesta_Fries_DB].[EmployeePayrollPosition](ReportId, EmployeeId);
 END;
 GO
 
-USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃƒÂ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -29,7 +32,7 @@ CREATE OR ALTER PROCEDURE SP_GetEmployeesForPayroll
     @CedulaJuridica BIGINT,
     @FechaInicio DATE,
     @FechaFin DATE,
-    @ReportId INT = NULL      -- opcional: si se suministra, se guardará/actualizará el puesto en EmployeePayrollPosition
+    @ReportId INT = NULL      -- opcional: si se suministra, se guardarï¿½/actualizarï¿½ el puesto en EmployeePayrollPosition
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -43,7 +46,7 @@ BEGIN
         SELECT 
             p.id AS CedulaEmpleado,
             p.firstName + ' ' + p.secondName AS NombreEmpleado,
-            -- Calcular salario según tipo de empleado y frecuencia de pago
+            -- Calcular salario segï¿½n tipo de empleado y frecuencia de pago
             CASE 
                 WHEN LOWER(LTRIM(RTRIM(e.employmentType))) LIKE '%hora%' THEN 
                     e.salary * dbo.Fn_ObtenerHoras(e.id, @FechaInicio, @FechaFin)
@@ -71,7 +74,7 @@ BEGIN
           AND u.active = 1;
 
         ------------------------------------------------
-        -- 2) Si se proporcionó @ReportId: upsert (merge) en EmployeePayrollPosition
+        -- 2) Si se proporcionï¿½ @ReportId: upsert (merge) en EmployeePayrollPosition
         ------------------------------------------------
         IF @ReportId IS NOT NULL
         BEGIN

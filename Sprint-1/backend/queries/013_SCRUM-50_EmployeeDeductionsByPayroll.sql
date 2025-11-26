@@ -1,9 +1,11 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- Tabla general para almacenar TODAS las deducciones del empleado por planilla
--- Aqu� va tanto impuesto sobre la renta como deducciones CCSS
-CREATE TABLE EmployeeDeductionsByPayroll (
+-- Aqu� va tanto impuesto sobre la renta como deducciones CCSS
+CREATE TABLE [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll](
     Id INT IDENTITY(1,1) PRIMARY KEY,
     ReportId INT NOT NULL,
     EmployeeId INT NOT NULL,

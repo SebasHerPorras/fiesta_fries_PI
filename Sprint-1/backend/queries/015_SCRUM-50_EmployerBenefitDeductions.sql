@@ -1,8 +1,10 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- Tabla para almacenar las deducciones de beneficios del empleador por planilla
-CREATE TABLE EmployerBenefitDeductions (
+CREATE TABLE [Fiesta_Fries_DB].[EmployerBenefitDeductions](
     Id INT IDENTITY(1,1) PRIMARY KEY,
     ReportId INT NOT NULL,
     EmployeeId INT NOT NULL,
@@ -19,14 +21,14 @@ CREATE TABLE EmployerBenefitDeductions (
 GO
 
 -- Alterar la tabla para cambiar el tipo de dato de Percentage
-ALTER TABLE EmployerBenefitDeductions
+ALTER TABLE [Fiesta_Fries_DB].[EmployerBenefitDeductions]
 ALTER COLUMN Percentage DECIMAL(6,4) NULL;
 GO
 
--- Crear �ndices para mejorar el rendimiento de consultas
-CREATE INDEX IX_EmployerBenefitDeductions_ReportId ON EmployerBenefitDeductions(ReportId);
-CREATE INDEX IX_EmployerBenefitDeductions_EmployeeId ON EmployerBenefitDeductions(EmployeeId);
-CREATE INDEX IX_EmployerBenefitDeductions_Company ON EmployerBenefitDeductions(CedulaJuridicaEmpresa);
+-- Crear �ndices para mejorar el rendimiento de consultas
+CREATE INDEX IX_EmployerBenefitDeductions_ReportId ON [Fiesta_Fries_DB].[EmployerBenefitDeductions](ReportId);
+CREATE INDEX IX_EmployerBenefitDeductions_EmployeeId ON [Fiesta_Fries_DB].[EmployerBenefitDeductions](EmployeeId);
+CREATE INDEX IX_EmployerBenefitDeductions_Company ON [Fiesta_Fries_DB].[EmployerBenefitDeductions](CedulaJuridicaEmpresa);
 GO
 
 -- Stored Procedure para insertar deducciones de beneficios
@@ -43,7 +45,7 @@ BEGIN
     SET NOCOUNT ON;
     
     BEGIN TRY
-        INSERT INTO EmployerBenefitDeductions (
+        INSERT INTO [Fiesta_Fries_DB].[EmployerBenefitDeductions] (
             ReportId,
             EmployeeId,
             CedulaJuridicaEmpresa,

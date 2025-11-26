@@ -1,4 +1,4 @@
-﻿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Models;
 using backend.Repositories;
 using Dapper;
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 
 namespace backend.Handlers.backend.Repositories
@@ -31,7 +31,7 @@ namespace backend.Handlers.backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
                 connection.Open();
 
-                var query = @"INSERT INTO [dbo].[Beneficio] 
+                var query = @"INSERT INTO [Fiesta_Fries_DB].[Beneficio] 
                               ([CedulaJuridica], [Nombre], [Tipo], [QuienAsume], 
                                [Valor], [Etiqueta])  
                               VALUES (@CedulaJuridica, @Nombre, @Tipo, @QuienAsume, 
@@ -72,7 +72,7 @@ namespace backend.Handlers.backend.Repositories
             try
             {
                 using var connection = new SqlConnection(_connectionString);
-                string query = "SELECT * FROM dbo.Beneficio";
+                string query = "SELECT * FROM [Fiesta_Fries_DB].[Beneficio]";
                 return connection.Query<BeneficioModel>(query).ToList(); ;
             }
             catch (Exception ex)
@@ -90,8 +90,7 @@ namespace backend.Handlers.backend.Repositories
 
                 const string query = @"
                     SELECT * 
-                    FROM Beneficio 
-                    WHERE CedulaJuridica = @CedulaJuridica
+                    FROM [Fiesta_Fries_DB].[Beneficio] WHERE CedulaJuridica = @CedulaJuridica
                     AND IsDeleted = 0
                     ORDER BY Nombre";
 
@@ -116,8 +115,7 @@ namespace backend.Handlers.backend.Repositories
 
                 const string query = @"
                     SELECT * 
-                    FROM Beneficio 
-                    WHERE IdBeneficio = @Id";
+                    FROM [Fiesta_Fries_DB].[Beneficio] WHERE IdBeneficio = @Id";
 
                 _logger.LogInformation("Buscando beneficio con ID {Id}", id);
                 var beneficio = connection.QueryFirstOrDefault<BeneficioModel>(query, new { Id = id });
@@ -143,8 +141,7 @@ namespace backend.Handlers.backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
 
                 const string query = @"
-                    UPDATE Beneficio
-                    SET 
+                    UPDATE [Fiesta_Fries_DB].[Beneficio] SET 
                         Nombre = @Nombre,
                         Tipo = @Tipo,
                         QuienAsume = @QuienAsume,
@@ -178,8 +175,7 @@ namespace backend.Handlers.backend.Repositories
         {
             using var connection = new SqlConnection(_connectionString);
             const string query = @"SELECT COUNT(1)
-                                   FROM EmployerBenefitDeductions 
-                                   WHERE BenefitId = @BenefitId";
+                                   FROM [Fiesta_Fries_DB].[EmployerBenefitDeductions] WHERE BenefitId = @BenefitId";
 
             var count = connection.ExecuteScalar<int>(query, new { BenefitId = benefitId });
             _logger.LogInformation("Checking EmployerBenefitDeductions for benefit {BenefitId}: {Count}", benefitId, count);

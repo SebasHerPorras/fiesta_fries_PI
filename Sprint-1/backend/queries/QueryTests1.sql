@@ -1,11 +1,15 @@
-ï»¿USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 
-USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-INSERT INTO [User](email, [password])
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('pi.empleador@gmail.com', '123456'); 
 GO
 
@@ -16,7 +20,7 @@ FROM [User]
 WHERE email = 'pi.empleador@gmail.com';
 
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -31,17 +35,17 @@ VALUES(
     'Pablo',
     'Ibarra',
     '1990-05-12',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88887777,
     @userGuid,
     'Empleador'
 );
 GO
 
-INSERT INTO Empresa(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     [CedulaJuridica],
     [Nombre],
-    [DueÃ±oEmpresa],
+    [DueñoEmpresa],
     [Telefono],
     [DireccionEspecifica],
     [NoMaxBeneficios],
@@ -54,7 +58,7 @@ VALUES(
     'Empresa PI',
     550010001,                 
     88887777,                 
-    'San JosÃ©, Pavas, 400m sur de la iglesia',
+    'San José, Pavas, 400m sur de la iglesia',
     3,                         
     30,                        
     'Mensual',                
@@ -62,14 +66,13 @@ VALUES(
 );
 GO
 
-update Empresa
-SET [FechaCreacion] = '2025-01-01'
+UPDATE [Fiesta_Fries_DB].[Persona] SET [FechaCreacion] = '2025-01-01'
 WHERE [CedulaJuridica] = 550020002;
 
 
---Caso NÃºmero 2
+--Caso Número 2
 
-INSERT INTO [User](email, [password])
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('pedro.vargas@gmail.com', '123456');
 GO
 
@@ -79,7 +82,7 @@ FROM [User]
 WHERE email = 'pedro.vargas@gmail.com';
 
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -94,14 +97,14 @@ VALUES(
     'Pedro',
     'Vargas',
     '2000-01-16',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88889999,
     @userGuid_Empleado,
     'Empleado'
 );
 GO
 
-INSERT INTO Empleado(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     position,
     employmentType,
@@ -121,8 +124,8 @@ VALUES(
 );
 GO
 
--- Caso nÃºmero 3
-INSERT INTO [User](email, [password])
+-- Caso número 3
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('ana.salas@gmail.com', '123456');
 GO
 
@@ -131,7 +134,7 @@ SELECT TOP 1 @userGuid_Empleado = PK_User
 FROM [User]
 WHERE email = 'ana.salas@gmail.com';
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -146,14 +149,14 @@ VALUES(
     'Ana',
     'Salas',
     '1992-12-23',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88889998,
     @userGuid_Empleado,
     'Empleado'
 );
 GO
 
-INSERT INTO Empleado(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     position,
     employmentType,
@@ -174,8 +177,8 @@ VALUES(
 GO
 
 
---Caso nÃºmero 4
-INSERT INTO [User](email, [password])
+--Caso número 4
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('juan.solano@gmail.com', '123456');
 GO
 
@@ -184,7 +187,7 @@ SELECT TOP 1 @userGuid_Empleado = PK_User
 FROM [User]
 WHERE email = 'juan.solano@gmail.com';
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -199,14 +202,14 @@ VALUES(
     'Juan',
     'Solano',
     '1985-11-17',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88889997,
     @userGuid_Empleado,
     'Empleado'
 );
 GO
 
-INSERT INTO Empleado(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     position,
     employmentType,
@@ -225,8 +228,8 @@ VALUES(
     550020002
 );
 GO
---Caso nÃºmero 5
-INSERT INTO Beneficio(
+--Caso número 5
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -244,9 +247,9 @@ VALUES(
 );
 GO
 
---Caso nÃºmero 6
+--Caso número 6
 
-INSERT INTO Beneficio(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -256,7 +259,7 @@ INSERT INTO Beneficio(
 )
 VALUES(
     550020002,        
-    'EducaciÃ³n',
+    'Educación',
     'Porcentual',
     'Empresa',
     3.00,
@@ -264,8 +267,8 @@ VALUES(
 );
 GO
 
---Caso nÃºmero 7
-INSERT INTO Beneficio(
+--Caso número 7
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -283,8 +286,8 @@ VALUES(
 );
 GO
 
---Caso nÃºmero 8
-INSERT INTO Beneficio(
+--Caso número 8
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -294,7 +297,7 @@ INSERT INTO Beneficio(
 )
 VALUES(
     550020002,        -- Empresa PI
-    'PensiÃ³n voluntaria de vida',
+    'Pensión voluntaria de vida',
     'API',
     'Empleado',
     NULL,
@@ -302,8 +305,8 @@ VALUES(
 );
 GO
 
---Caso nÃºmero 9
-INSERT INTO Beneficio(
+--Caso número 9
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -313,7 +316,7 @@ INSERT INTO Beneficio(
 )
 VALUES(
     550020002,        -- Empresa PI
-    'AsociaciÃ³n Solidarista',
+    'Asociación Solidarista',
     'API',
     'Empleado',
     NULL,
@@ -321,7 +324,7 @@ VALUES(
 );
 GO
 
---Caso nÃºermo 10
+--Caso núermo 10
 
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
@@ -330,7 +333,7 @@ WHERE Nombre = 'Gimnasio' AND CedulaJuridica = 550020002;
 
 IF dbo.CanEmployeeSelectBenefit(152700726, @BenefitId) = 1
 BEGIN
-    INSERT INTO EmployeeBenefit(
+    INSERT INTO [Fiesta_Fries_DB].[Persona](
         employeeId,
         benefitId
     )
@@ -341,16 +344,16 @@ BEGIN
 END
 GO
 
---Caso nÃºmero 11
+--Caso número 11
 
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
-WHERE Nombre = 'EducaciÃ³n' AND CedulaJuridica = 550020002;
+WHERE Nombre = 'Educación' AND CedulaJuridica = 550020002;
 
 IF dbo.CanEmployeeSelectBenefit(208760987, @BenefitId) = 1
 BEGIN
-    INSERT INTO EmployeeBenefit(
+    INSERT INTO [Fiesta_Fries_DB].[Persona](
         employeeId,
         benefitId
     )
@@ -361,10 +364,12 @@ BEGIN
 END
 GO
 
-USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
---Caso nÃºmero 12
+--Caso número 12
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
@@ -372,7 +377,7 @@ WHERE Nombre = 'Seguro privado' AND CedulaJuridica = 550020002;
 
 IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
 BEGIN
-    INSERT INTO EmployeeBenefit(
+    INSERT INTO [Fiesta_Fries_DB].[Persona](
         employeeId,
         benefitId,
         dependentsCount
@@ -385,15 +390,15 @@ BEGIN
 END
 GO
 
---Caso NÃºmero 13
+--Caso Número 13
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
-WHERE Nombre = 'PensiÃ³n voluntaria de vida' AND CedulaJuridica = 550020002;
+WHERE Nombre = 'Pensión voluntaria de vida' AND CedulaJuridica = 550020002;
 
 IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
 BEGIN
-    INSERT INTO EmployeeBenefit(
+    INSERT INTO [Fiesta_Fries_DB].[Persona](
         employeeId,
         benefitId,
         pensionType
@@ -412,11 +417,11 @@ GO
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
-WHERE Nombre = 'AsociaciÃ³n Solidarista' AND CedulaJuridica = 550020002;
+WHERE Nombre = 'Asociación Solidarista' AND CedulaJuridica = 550020002;
 
 IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
 BEGIN
-    INSERT INTO EmployeeBenefit(
+    INSERT INTO [Fiesta_Fries_DB].[Persona](
         employeeId,
         benefitId
     )
@@ -435,7 +440,7 @@ DECLARE @EmployeeId INT;
 DECLARE @CurrentDay DATE;
 
 DECLARE EmployeeCursor CURSOR FOR
-SELECT id FROM Empleado;
+SELECT id FROM [Fiesta_Fries_DB].[Persona];
 
 OPEN EmployeeCursor;
 FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;

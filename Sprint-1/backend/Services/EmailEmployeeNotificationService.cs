@@ -1,4 +1,4 @@
-锘縰sing backend.Interfaces;
+using backend.Interfaces;
 using backend.Models;
 using backend.Repositories;
 using System.Net;
@@ -34,7 +34,7 @@ namespace backend.Services
         {
             mailRepository.insertMailNoty(mailTokenVerification);
 
-            Console.WriteLine("Query realizado con 茅xito\n");
+            Console.WriteLine("Query realizado con 閤ito\n");
 
             var verificationLink = $"http://localhost:5081/api/user/verify?token={mailTokenVerification.token}";
 
@@ -44,9 +44,9 @@ namespace backend.Services
 
             const string password = "rxhd qmzc uvxi sxmg";
 
-            const string subject = "Verificaci贸n de invitac贸n de empleado Fiesta Fries";
+            const string subject = "Verificaci髇 de invitac髇 de empleado Fiesta Fries";
 
-            string body = $"隆Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficaci贸n de Empleado para finalizar el proceso de creaci贸n de tu cuenta: {verificationLink} tus credenciales de inicio de sesi贸n son las siguientes: email: {request.Email.Trim()} constrase帽a:{request.PasswordHash.Trim()}";
+            string body = $"aludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficaci髇 de Empleado para finalizar el proceso de creaci髇 de tu cuenta: {verificationLink} tus credenciales de inicio de sesi髇 son las siguientes: email: {request.Email.Trim()} constrase馻:{request.PasswordHash.Trim()}";
 
             var smtp = new SmtpClient
             {

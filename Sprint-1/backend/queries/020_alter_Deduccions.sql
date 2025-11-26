@@ -1,23 +1,25 @@
----- Insertar las tasas patronales actuales de Costa Rica
---INSERT INTO EmployerSocialSecurityContributions ([Name],  [Percentage], [Active])
+ï»¿---- Insertar las tasas patronales actuales de Costa Rica
+--INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name],  [Percentage], [Active])
 --VALUES 
 --    ('CCSS Salud', 0.0925, 1),                           -- 9.25%
 --    ('CCSS Pensiones (IVM)', 0.0525, 1),                 -- 5.25%
 --    ('INA', 0.005, 1),                                   -- 0.50%
 --    ('ASFA', 0.0025, 1),                                 -- 0.25%
 --    ('Banco Popular', 0.0025, 1),                        -- 0.25%
---    ('Fondo de Capitalización Laboral (FCL)', 0.03, 1); -- 3.00%
+--    ('Fondo de Capitalizaciï¿½n Laboral (FCL)', 0.03, 1); -- 3.00%
 --    -- total patronal aproximado: 20.75%
 --GO
 
 -- Insertar las deducciones de empleado de CCSS
---INSERT INTO EmployeeSocialSecurityContributions ([Name], [Percentage], [Active])
+--INSERT INTO [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions] ([Name], [Percentage], [Active])
 --VALUES 
 --    ('CCSS Salud Empleado', 0.055, 1),           -- 5.5%
 --    ('CCSS Pensiones Empleado (IVM)', 0.04, 1);  -- 4.0%
 --GO
 
-USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃƒÂ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- ========================================
@@ -25,34 +27,28 @@ GO
 -- ========================================
 
 -- CCSS Salud (SEM) - Actualizar a 9.25%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.0925
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.0925
 WHERE [Name] = 'CCSS Salud';
 
 -- CCSS Pensiones (IVM) - Actualizar de 5.25% a 5.42%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.0542
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.0542
 WHERE [Name] = 'CCSS Pensiones (IVM)';
 
 -- INA - Actualizar de 0.50% a 1.50%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.010
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.010
 WHERE [Name] = 'INA';
 
 -- ASFA - Mantener en 0.25%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.0025
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.0025
 WHERE [Name] = 'ASFA';
 
 -- Banco Popular - Mantener en 0.25%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.0025
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.0025
 WHERE [Name] = 'Banco Popular';
 
 -- FCL - Actualizar de 3.00% a 1.50%
-UPDATE EmployerSocialSecurityContributions
-SET [Percentage] = 0.0150
-WHERE [Name] = 'Fondo de Capitalización Laboral (FCL)';
+UPDATE [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] SET [Percentage] = 0.0150
+WHERE [Name] = 'Fondo de Capitalizaciï¿½n Laboral (FCL)';
 
 PRINT 'Valores existentes actualizados correctamente';
 GO
@@ -62,23 +58,23 @@ GO
 -- ========================================
 
 -- INS - Riesgos del Trabajo (1.00%)
-INSERT INTO EmployerSocialSecurityContributions ([Name], [Percentage], [Active])
+INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name], [Percentage], [Active])
 VALUES ('INS - Riesgos del Trabajo', 0.0100, 1);
 
--- ROP - Régimen Obligatorio de Pensiones (2.00%)
-INSERT INTO EmployerSocialSecurityContributions ([Name], [Percentage], [Active])
-VALUES ('ROP - Régimen Obligatorio de Pensiones', 0.0200, 1);
+-- ROP - Rï¿½gimen Obligatorio de Pensiones (2.00%)
+INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name], [Percentage], [Active])
+VALUES ('ROP - Rï¿½gimen Obligatorio de Pensiones', 0.0200, 1);
 
 -- FODESAF - Fondo de Desarrollo Social (5.00%)
-INSERT INTO EmployerSocialSecurityContributions ([Name], [Percentage], [Active])
+INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name], [Percentage], [Active])
 VALUES ('FODESAF - Fondo de Desarrollo Social', 0.0500, 1);
 
 -- IMAS - Instituto Mixto de Ayuda Social (0.50%)
-INSERT INTO EmployerSocialSecurityContributions ([Name], [Percentage], [Active])
+INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name], [Percentage], [Active])
 VALUES ('IMAS - Instituto Mixto de Ayuda Social', 0.0050, 1);
 
 -- Banco Popular - Aporte Institucional (0.50%)
-INSERT INTO EmployerSocialSecurityContributions ([Name], [Percentage], [Active])
+INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityContributions] ([Name], [Percentage], [Active])
 VALUES ('Banco Popular - Aporte Institucional', 0.0050, 1);
 
 PRINT 'Nuevas cargas sociales insertadas correctamente';
@@ -89,12 +85,12 @@ GO
 -- ========================================
 
 -- CCSS Salud Empleado - Mantener en 5.5%
-UPDATE EmployeeSocialSecurityContributions
+UPDATE [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions]
 SET [Percentage] = 0.0550
 WHERE [Name] = 'CCSS Salud Empleado';
 
 -- CCSS Pensiones Empleado (IVM) - Actualizar de 4.0% a 4.17%
-UPDATE EmployeeSocialSecurityContributions
+UPDATE [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions]
 SET [Percentage] = 0.0417
 WHERE [Name] = 'CCSS Pensiones Empleado (IVM)';
 
@@ -102,18 +98,18 @@ PRINT 'Deducciones de empleado actualizadas correctamente';
 GO
 
 -- ========================================
--- INSERTAR NUEVA DEDUCCIÓN DE EMPLEADO
+-- INSERTAR NUEVA DEDUCCIï¿½N DE EMPLEADO
 -- ========================================
 
 -- Banco Popular Empleado - 1.00%
-INSERT INTO EmployeeSocialSecurityContributions ([Name], [Percentage], [Active])
+INSERT INTO [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions] ([Name], [Percentage], [Active])
 VALUES ('Banco Popular Empleado', 0.0100, 1);
 
 PRINT 'Banco Popular Empleado insertado correctamente';
 GO
 
 -- ========================================
--- VERIFICACIÓN FINAL
+-- VERIFICACIï¿½N FINAL
 -- ========================================
 
 PRINT '';

@@ -25,7 +25,7 @@ namespace backend.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
-                INSERT INTO PayrollPosition (
+                INSERT INTO [Fiesta_Fries_DB].[PayrollPosition] (
                     PayrollId,
                     EmployeeId,
                     CompanyId,

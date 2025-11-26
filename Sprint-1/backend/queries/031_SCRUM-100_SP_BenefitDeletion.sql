@@ -1,4 +1,4 @@
-use Fiesta_Fries_DB
+﻿use Fiesta_Fries_DB
 GO
 
 CREATE OR ALTER PROCEDURE SP_Benefit_PhysicalDeletion
@@ -11,11 +11,11 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Eliminar relaciones primero
-        DELETE FROM EmployeeBenefit
+        DELETE FROM [Fiesta_Fries_DB].[EmployeeBenefit]
         WHERE benefitId = @IdBeneficio;
 
         -- Eliminar el beneficio
-        DELETE FROM Beneficio
+        DELETE FROM [Fiesta_Fries_DB].[Beneficio]
         WHERE IdBeneficio = @IdBeneficio;
 
         COMMIT TRANSACTION;
@@ -44,13 +44,13 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Marcar beneficio como eliminado
-        UPDATE Beneficio
+        UPDATE [Fiesta_Fries_DB].[Beneficio]
         SET IsDeleted = 1,
             LastPeriod = @LastPeriod
         WHERE IdBeneficio = @IdBeneficio;
 
         -- Marcar relaciones EmployeeBenefit como eliminadas
-        UPDATE EmployeeBenefit
+        UPDATE [Fiesta_Fries_DB].[EmployeeBenefit]
         SET IsDeleted = 1
         WHERE benefitId = @IdBeneficio;
 

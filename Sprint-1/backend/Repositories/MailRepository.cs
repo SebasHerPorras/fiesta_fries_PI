@@ -1,6 +1,6 @@
-ï»¿using backend.Models;
+using backend.Models;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Repositories
 {
@@ -11,7 +11,7 @@ namespace backend.Repositories
         public MailRepository()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("OcurriÃ³ un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
         }
 
         public void insertMailNoty(MailModel model)
@@ -29,9 +29,9 @@ namespace backend.Repositories
 
             var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"SELECT* FROM dbo.EmailVerification WHERE token = @token";
+            const string query = @"SELECT* FROM [Fiesta_Fries_DB].[EmailVerification] WHERE token = @token";
 
-            Console.WriteLine("Query realizado con Ã©xito\n");
+            Console.WriteLine("Query realizado con éxito\n");
             return connection.QuerySingleOrDefault<MailModel>(query,new{ token = token_});
 
         }

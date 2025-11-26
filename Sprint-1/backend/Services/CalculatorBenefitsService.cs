@@ -1,4 +1,4 @@
-ï»¿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Models;
 using Microsoft.Extensions.Logging;
 
@@ -31,10 +31,10 @@ namespace backend.Services
         {
             try
             {
-                _logger.LogInformation("=== VALIDACIÃ“N DETALLADA DE BENEFICIOS ===");
+                _logger.LogInformation("=== VALIDACIÓN DETALLADA DE BENEFICIOS ===");
                 _logger.LogInformation("Empleado: {NombreEmpleado}", employee.NombreEmpleado);
                 _logger.LogInformation("Salario bruto: {SalarioBruto}", employee.SalarioBruto);
-                _logger.LogInformation("CÃ©dula: {CedulaEmpleado}", employee.CedulaEmpleado);
+                _logger.LogInformation("Cédula: {CedulaEmpleado}", employee.CedulaEmpleado);
 
                 if (employee == null)
                     throw new ArgumentException("Los datos del empleado son requeridos");
@@ -68,7 +68,7 @@ namespace backend.Services
                     if (employeeBenefit.BenefitType == "PORCENTUAL" && employeeBenefit.BenefitValue.HasValue)
                     {
                         var calculoEsperado = employee.SalarioBruto * (employeeBenefit.BenefitValue.Value / 100);
-                        _logger.LogInformation("VALIDACIÃ“N PORCENTUAL: {Percentage}% de {SalarioBruto} = {CalculoEsperado}", employeeBenefit.BenefitValue, employee.SalarioBruto, calculoEsperado);
+                        _logger.LogInformation("VALIDACIÓN PORCENTUAL: {Percentage}% de {SalarioBruto} = {CalculoEsperado}", employeeBenefit.BenefitValue, employee.SalarioBruto, calculoEsperado);
                         _logger.LogInformation("COINCIDENCIA: {Coincide}", result.employerAmount == calculoEsperado);
                     }
 
@@ -96,7 +96,7 @@ namespace backend.Services
                     }
                 }
 
-                _logger.LogInformation("=== VALIDACIÃ“N FINAL ===");
+                _logger.LogInformation("=== VALIDACIÓN FINAL ===");
                 _logger.LogInformation("Total beneficios: {TotalBeneficios}", totalEmployerCost);
                 var porcentaje = (totalEmployerCost / employee.SalarioBruto) * 100;
                 _logger.LogInformation("Porcentaje sobre salario: {Porcentaje}%", porcentaje);
@@ -120,7 +120,7 @@ namespace backend.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ERROR en validaciÃ³n de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
+                _logger.LogError(ex, "ERROR en validación de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
                 return 0;
             }
         }
@@ -201,7 +201,7 @@ namespace backend.Services
                 switch (normalizedApiName)
                 {
                     case "asociacionsolidarista":
-                        _logger.LogInformation("API Reconocida: AsociaciÃ³n Solidarista");
+                        _logger.LogInformation("API Reconocida: Asociación Solidarista");
                         var solidarityService = _apiFactory.CreateSolidarityAssociationService();
                         return await solidarityService.CalculateContributionAsync(new SolidarityAssociationRequest
                         {
@@ -249,12 +249,12 @@ namespace backend.Services
 
             var normalized = apiName.ToLowerInvariant().Replace(" ", "");
             normalized = normalized
-                .Replace("Ã¡", "a")
-                .Replace("Ã©", "e")
-                .Replace("Ã­", "i")
-                .Replace("Ã³", "o")
-                .Replace("Ãº", "u")
-                .Replace("Ã±", "n");
+                .Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u")
+                .Replace("ñ", "n");
 
             return normalized;
         }

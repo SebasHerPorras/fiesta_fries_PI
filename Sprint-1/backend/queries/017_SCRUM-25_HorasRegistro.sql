@@ -1,6 +1,8 @@
-﻿use Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 
-create Table Semana(
+CREATE TABLE [Fiesta_Fries_DB].[Semana](
 [start_date] DATE NOT NULL,
 id_employee int NOT NULL,
 hours_count int DEFAULT 0,
@@ -8,7 +10,7 @@ CONSTRAINT pk_semana PRIMARY KEY (start_date, id_employee),
 CONSTRAINT fk_week_employee FOREIGN KEY (id_employee) REFERENCES Empleado(id)
 );
 
-create Table Dia(
+CREATE TABLE [Fiesta_Fries_DB].[Dia](
  [date] DATE NOT NULL,
  hours_count int DEFAULT 0,
  week_start_date DATE,
@@ -35,7 +37,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        INSERT INTO Semana(start_date, id_employee, hours_count)
+        INSERT INTO [Fiesta_Fries_DB].[Semana](start_date, id_employee, hours_count)
         VALUES(@start_date, @id_employee, 0);
 
         SELECT * 
@@ -63,7 +65,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        INSERT INTO Dia([date], week_start_date, id_employee, hours_count)
+        INSERT INTO [Fiesta_Fries_DB].[Dia]([date], week_start_date, id_employee, hours_count)
         VALUES (@date, @week_start_date, @id_employee, 0);
 
         SELECT *
@@ -80,7 +82,7 @@ CREATE PROCEDURE sp_AddHoursToDay
     @id_employee INT
 AS
 BEGIN
-    UPDATE Dia
+    UPDATE [Fiesta_Fries_DB].[Dia]
     SET hours_count = hours_count + @hours_count
     WHERE [date] = @date AND week_start_date = @week_start_date AND id_employee = @id_employee;
 END;
@@ -94,7 +96,7 @@ CREATE PROCEDURE sp_AddHoursToDayAndGetTable
     @id_employee INT
 AS
 BEGIN
-    UPDATE Dia
+    UPDATE [Fiesta_Fries_DB].[Dia]
     SET hours_count = hours_count + @hours_count
     WHERE [date] = @date AND week_start_date = @week_start_date AND id_employee = @id_employee;
 

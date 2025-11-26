@@ -1,10 +1,10 @@
-﻿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Models.Payroll;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Repositories
 {
@@ -41,8 +41,7 @@ namespace backend.Repositories
                     TotalBenefits,
                     TotalNetSalary,
                     TotalEmployerCost
-                FROM Payroll 
-                WHERE PeriodDate = @PeriodDate AND CompanyId = @CompanyId";
+                FROM [Fiesta_Fries_DB].[Payroll] WHERE PeriodDate = @PeriodDate AND CompanyId = @CompanyId";
 
             try
             {
@@ -53,7 +52,7 @@ namespace backend.Repositories
                 });
 
                 _logger.LogDebug(
-                    "Consulta de planilla por período: {PeriodDate}, Compañía: {CompanyId} - {Result}",
+                    "Consulta de planilla por per�odo: {PeriodDate}, Compa��a: {CompanyId} - {Result}",
                     periodDate.ToString("yyyy-MM"),
                     companyId,
                     result != null ? "Encontrada" : "No encontrada");
@@ -64,7 +63,7 @@ namespace backend.Repositories
             {
                 _logger.LogError(
                     ex,
-                    "Error obteniendo planilla por período {PeriodDate} y compañía {CompanyId}",
+                    "Error obteniendo planilla por per�odo {PeriodDate} y compa��a {CompanyId}",
                     periodDate.ToString("yyyy-MM"),
                     companyId);
                 throw;
@@ -89,8 +88,7 @@ namespace backend.Repositories
                     TotalBenefits,
                     TotalNetSalary,
                     TotalEmployerCost
-                FROM Payroll 
-                WHERE CompanyId = @CompanyId
+                FROM [Fiesta_Fries_DB].[Payroll] WHERE CompanyId = @CompanyId
                 ORDER BY PeriodDate DESC";
 
             try
@@ -99,7 +97,7 @@ namespace backend.Repositories
                 var payrollList = payrolls.AsList();
 
                 _logger.LogDebug(
-                    "Obtenidas {PayrollCount} planillas para compañía {CompanyId}",
+                    "Obtenidas {PayrollCount} planillas para compa��a {CompanyId}",
                     payrollList.Count,
                     companyId);
 
@@ -107,7 +105,7 @@ namespace backend.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo planillas para compañía {CompanyId}", companyId);
+                _logger.LogError(ex, "Error obteniendo planillas para compa��a {CompanyId}", companyId);
                 throw;
             }
         }
@@ -117,7 +115,7 @@ namespace backend.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
-                INSERT INTO Payroll (
+                INSERT INTO [Fiesta_Fries_DB].[Payroll] (
                     PeriodDate, 
                     CompanyId,
                     IsCalculated,
@@ -163,7 +161,7 @@ namespace backend.Repositories
                 });
 
                 _logger.LogInformation(
-                    "Planilla creada exitosamente. ID: {PayrollId}, Período: {PeriodDate}",
+                    "Planilla creada exitosamente. ID: {PayrollId}, Per�odo: {PeriodDate}",
                     payrollId,
                     payroll.PeriodDate.ToString("yyyy-MM"));
 
@@ -173,7 +171,7 @@ namespace backend.Repositories
             {
                 _logger.LogError(
                     ex,
-                    "Error creando planilla para período {PeriodDate} y compañía {CompanyId}",
+                    "Error creando planilla para per�odo {PeriodDate} y compa��a {CompanyId}",
                     payroll.PeriodDate.ToString("yyyy-MM"),
                     payroll.CompanyId);
                 throw;
@@ -185,8 +183,7 @@ namespace backend.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
-                UPDATE Payroll 
-                SET IsCalculated = @IsCalculated,
+                UPDATE [Fiesta_Fries_DB].[Payroll] SET IsCalculated = @IsCalculated,
                     LastModified = @LastModified,
                     TotalGrossSalary = @TotalGrossSalary, 
                     TotalEmployerDeductions = @TotalEmployerDeductions,
@@ -203,7 +200,7 @@ namespace backend.Repositories
                 if (affectedRows == 0)
                 {
                     _logger.LogWarning(
-                        "No se encontró planilla con ID {PayrollId} para actualizar",
+                        "No se encontr� planilla con ID {PayrollId} para actualizar",
                         payroll.PayrollId);
                     throw new InvalidOperationException($"Planilla con ID {payroll.PayrollId} no encontrada");
                 }
@@ -224,7 +221,7 @@ namespace backend.Repositories
         {
             if (payments == null || !payments.Any())
             {
-                _logger.LogWarning("Intento de crear pagos con lista vacía o nula");
+                _logger.LogWarning("Intento de crear pagos con lista vac�a o nula");
                 return new List<PayrollPayment>();
             }
 
@@ -240,7 +237,7 @@ namespace backend.Repositories
                 var result = new List<PayrollPayment>();
 
                 _logger.LogInformation(
-                    "Iniciando creación de {PaymentCount} pagos mediante procedure sp_CreatePayrollPayment",
+                    "Iniciando creaci�n de {PaymentCount} pagos mediante procedure sp_CreatePayrollPayment",
                     payments.Count);
 
                 foreach (var payment in payments)
@@ -264,7 +261,7 @@ namespace backend.Repositories
                 await transaction.RollbackAsync();
                 _logger.LogError(
                     ex,
-                    "Error creando {PaymentCount} pagos. Transacción revertida.",
+                    "Error creando {PaymentCount} pagos. Transacci�n revertida.",
                     payments.Count);
                 throw;
             }
@@ -285,8 +282,7 @@ namespace backend.Repositories
                     NetSalary,
                     PaymentDate, 
                     Status
-                FROM PayrollPayment 
-                WHERE PayrollId = @PayrollId
+                FROM [Fiesta_Fries_DB].[PayrollPayment] WHERE PayrollId = @PayrollId
                 ORDER BY EmployeeId";
 
             try
@@ -323,7 +319,7 @@ namespace backend.Repositories
                 var exists = count > 0;
 
                 _logger.LogDebug(
-                    "Verificación de procedure sp_CreatePayrollPayment: {Exists}",
+                    "Verificaci�n de procedure sp_CreatePayrollPayment: {Exists}",
                     exists ? "EXISTE" : "NO EXISTE");
 
                 return exists;
@@ -339,8 +335,7 @@ namespace backend.Repositories
             using var connection = _connectionFactory.CreateConnection();
 
             const string query = @"
-        SELECT TOP 1 * FROM Payroll 
-        WHERE CompanyId = @CompanyId 
+        SELECT TOP 1 * FROM [Fiesta_Fries_DB].[Payroll] WHERE CompanyId = @CompanyId 
         ORDER BY PeriodDate DESC";
 
             try

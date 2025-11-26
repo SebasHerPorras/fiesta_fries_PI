@@ -1,7 +1,9 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-CREATE TABLE [dbo].[Payroll] (
+CREATE TABLE [Fiesta_Fries_DB].[Payroll] (
     [PayrollId] INT IDENTITY(1000,1) NOT NULL,         
     [PeriodDate] DATETIME NOT NULL,                     
     [CompanyId] BIGINT NOT NULL,                        

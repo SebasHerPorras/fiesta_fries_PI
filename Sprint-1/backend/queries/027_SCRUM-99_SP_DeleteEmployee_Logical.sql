@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -43,7 +45,7 @@ BEGIN
         WHERE id = @PersonaId;
         
         -- 4. Marcar Empleado como eliminado
-        UPDATE Empleado
+        UPDATE [Fiesta_Fries_DB].[Empleado]
         SET IsDeleted = 1,
             DeletedDate = GETDATE()
         WHERE id = @PersonaId;
@@ -58,7 +60,7 @@ BEGIN
         END
         
         -- 5. Marcar Persona como eliminada
-        UPDATE Persona
+        UPDATE [Fiesta_Fries_DB].[Persona]
         SET IsDeleted = 1,
             DeletedDate = GETDATE()
         WHERE id = @PersonaId;
@@ -67,7 +69,7 @@ BEGIN
         IF @UserId IS NOT NULL 
            AND NOT EXISTS (SELECT 1 FROM Empresa WHERE DueñoEmpresa = @PersonaId)
         BEGIN
-            UPDATE [User]
+            UPDATE [Fiesta_Fries_DB].[User]
             SET active = 0
             WHERE PK_User = @UserId;
         END

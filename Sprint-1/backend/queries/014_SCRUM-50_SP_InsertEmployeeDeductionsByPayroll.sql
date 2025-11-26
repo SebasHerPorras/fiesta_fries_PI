@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 CREATE OR ALTER PROCEDURE SP_InsertEmployeeDeductionsByPayroll
@@ -13,7 +15,7 @@ BEGIN
     SET NOCOUNT ON;
     
     BEGIN TRY
-        INSERT INTO EmployeeDeductionsByPayroll (
+        INSERT INTO [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll] (
             ReportId, 
             EmployeeId, 
             CedulaJuridicaEmpresa,
@@ -42,4 +44,4 @@ END;
 GO
 
 -- Query para verificar los datos
-SELECT * FROM EmployeeDeductionsByPayroll;
+SELECT * FROM [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll];

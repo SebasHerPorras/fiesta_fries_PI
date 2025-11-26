@@ -1,4 +1,6 @@
-﻿USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-AlTER TABLE EMPRESA ADD [FechaCreacion] DATETIME NOT NULL;
+ALTER TABLE [Fiesta_Fries_DB].[Empresa] ADD [FechaCreacion] DATETIME NOT NULL;

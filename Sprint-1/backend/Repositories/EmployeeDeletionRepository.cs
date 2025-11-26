@@ -3,7 +3,7 @@ using backend.Models;
 using Dapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Repositories
 {
@@ -26,7 +26,7 @@ namespace backend.Repositories
 
             const string query = @"
                 SELECT COUNT(1)
-                FROM Empleado e
+                FROM [Fiesta_Fries_DB].[Empleado] e
                 WHERE e.id = @PersonaId 
                   AND e.idCompny = @CompanyId
                   AND (e.IsDeleted = 0 OR e.IsDeleted IS NULL)";
@@ -47,8 +47,7 @@ namespace backend.Repositories
 
             const string query = @"
                 SELECT COUNT(1)
-                FROM Empresa
-                WHERE DueÃ±oEmpresa = @PersonaId";
+                FROM [Fiesta_Fries_DB].[Empresa] WHERE DueñoEmpresa = @PersonaId";
 
             var count = await connection.ExecuteScalarAsync<int>(query, new
             {
@@ -67,8 +66,7 @@ namespace backend.Repositories
                     COUNT(*) AS PaymentCount,
                     MIN(PaymentDate) AS FirstPaymentDate,
                     MAX(PaymentDate) AS LastPaymentDate
-                FROM PayrollPayment
-                WHERE EmployeeId = @PersonaId";
+                FROM [Fiesta_Fries_DB].[PayrollPayment] WHERE EmployeeId = @PersonaId";
 
             try
             {
@@ -103,13 +101,13 @@ namespace backend.Repositories
                 if (result?.Success == 1)
                 {
                     _logger.LogInformation(
-                        "Borrado lÃ³gico exitoso para empleado {PersonaId}", personaId);
+                        "Borrado lógico exitoso para empleado {PersonaId}", personaId);
                     return true;
                 }
 
                 var message = result?.Message ?? "Sin mensaje";
                 _logger.LogWarning(
-                    "SP_DeleteEmployee_Logical retornÃ³ Success=0 para empleado {PersonaId}. Mensaje: {Message}",
+                    "SP_DeleteEmployee_Logical retornó Success=0 para empleado {PersonaId}. Mensaje: {Message}",
                     personaId, message);
                 return false;
             }
@@ -135,13 +133,13 @@ namespace backend.Repositories
                 if (result?.Success == 1)
                 {
                     _logger.LogInformation(
-                        "Borrado fÃ­sico exitoso para empleado {PersonaId}", personaId);
+                        "Borrado físico exitoso para empleado {PersonaId}", personaId);
                     return true;
                 }
 
                 var message = result?.Message ?? "Sin mensaje";
                 _logger.LogWarning(
-                    "SP_DeleteEmployee_Physical retornÃ³ Success=0 para empleado {PersonaId}. Mensaje: {Message}",
+                    "SP_DeleteEmployee_Physical retornó Success=0 para empleado {PersonaId}. Mensaje: {Message}",
                     personaId, message);
                 return false;
             }

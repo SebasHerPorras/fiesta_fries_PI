@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -32,7 +34,7 @@ BEGIN
         p.LastModified
     FROM Payroll p
     INNER JOIN Empresa e ON p.CompanyId = e.CedulaJuridica
-    INNER JOIN Persona per ON e.Due�oEmpresa = per.id
+    INNER JOIN Persona per ON e.Due�oEmpresa = per.id
     WHERE p.PayrollId = @PayrollId;
 
     -- 2. DETALLE POR EMPLEADO

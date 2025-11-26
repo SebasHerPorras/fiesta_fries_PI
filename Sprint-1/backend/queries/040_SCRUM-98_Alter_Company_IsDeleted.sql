@@ -1,1 +1,1 @@
-ALTER TABLE empresa ADD IsDeleted BIT NOT NULL DEFAULT 0;
+﻿ALTER TABLE [Fiesta_Fries_DB].[Empresa] ADD IsDeleted BIT NOT NULL DEFAULT 0;

@@ -1,9 +1,9 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using backend.Models;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +17,7 @@ namespace backend.Repositories
         public PersonRepository()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("OcurriÃ³ un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
         }
 
         public void Insert(PersonModel person)
@@ -25,10 +25,10 @@ namespace backend.Repositories
             Console.WriteLine("Entra en el Insert\n");
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"INSERT INTO dbo.Persona(id,firstName,secondName,birthdate,direction,personalPhone,homePhone,uniqueUser,personType) VALUES
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].Persona(id,firstName,secondName,birthdate,direction,personalPhone,homePhone,uniqueUser,personType) VALUES
                                  (@id, @firstName, @secondName,@birthdate,@direction,@personalPhone,@homePhone,@uniqueUser,@personType)";
 
-            Console.WriteLine("Query realizado con Ã©xito");
+            Console.WriteLine("Query realizado con éxito");
             connection.Execute(query, person);
                                   
         }
@@ -36,7 +36,7 @@ namespace backend.Repositories
         public List<PersonModel> GetAll()
         {
             using var connection = new SqlConnection(this._connectionString);
-            const string query = "SELECT * from dbo.Persona";
+            const string query = "SELECT * from [Fiesta_Fries_DB].[Persona]";
             var data = connection.Query<PersonModel>(query).ToList();
             return data;
         }
@@ -44,8 +44,8 @@ namespace backend.Repositories
         public PersonModel? GetById([FromQuery]Guid id)
         {
             using var connection = new SqlConnection(this._connectionString);
-            const string query = "SELECT * FROM dbo.Persona WHERE uniqueUser = @uniqueUser";
-            Console.WriteLine("Query funciona con Ã©xito\n");
+            const string query = "SELECT * FROM [Fiesta_Fries_DB].[Persona] WHERE uniqueUser = @uniqueUser";
+            Console.WriteLine("Query funciona con éxito\n");
             return connection.QuerySingleOrDefault<PersonModel>(query, new { uniqueUser = id });
 
         }
@@ -54,8 +54,8 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"SELECT* FROM PERSONA WHERE id = @id";
-            Console.WriteLine("Querry realizado con Ã©xito\n");
+            const string query = @"SELECT* FROM [Fiesta_Fries_DB].[PERSONA] WHERE id = @id";
+            Console.WriteLine("Querry realizado con éxito\n");
 
             return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }
@@ -68,8 +68,8 @@ namespace backend.Repositories
 
                 var query = @"
                 SELECT p.* 
-                FROM Persona p
-                INNER JOIN [User] u ON p.uniqueUser = u.PK_User
+                FROM [Fiesta_Fries_DB].[Persona] p
+                INNER JOIN [Fiesta_Fries_DB].[User] u ON p.uniqueUser = u.PK_User
                 WHERE p.uniqueUser = @UsuarioId
                   AND u.active = 1";
 
@@ -103,7 +103,7 @@ namespace backend.Repositories
                     p.homePhone AS HomePhone,
                     u.email AS Email
                     
-                FROM Persona p INNER JOIN [User] u
+                FROM [Fiesta_Fries_DB].[Persona] p INNER JOIN [Fiesta_Fries_DB].[User] u
                     ON p.uniqueUser = u.PK_User
                 WHERE p.uniqueUser = @UsuarioId";
 
@@ -121,7 +121,7 @@ namespace backend.Repositories
             using var connection = new SqlConnection(_connectionString);
 
             const string query = @"
-                UPDATE Persona SET
+                UPDATE [Fiesta_Fries_DB].[Persona] SET
                     firstName = @firstName,
                     secondName = @secondName,
                     direction = @direction,

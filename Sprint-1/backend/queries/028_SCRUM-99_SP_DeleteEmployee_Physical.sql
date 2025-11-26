@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -51,31 +53,31 @@ BEGIN
         -- 4. Eliminar dependencias en orden (integridad referencial)
         
         -- 4.1. Beneficios del empleado
-        DELETE FROM EmployeeBenefit 
+        DELETE FROM [Fiesta_Fries_DB].[EmployeeBenefit] 
         WHERE EmployeeId = @PersonaId;
         
         -- 4.2. Horas trabajadas (días)
-        DELETE FROM Dia 
+        DELETE FROM [Fiesta_Fries_DB].[Dia] 
         WHERE id_employee = @PersonaId;
         
         -- 4.3. Horas trabajadas (semanas)
-        DELETE FROM Semana 
+        DELETE FROM [Fiesta_Fries_DB].[Semana] 
         WHERE id_employee = @PersonaId;
         
         -- 4.4. Deducciones por planilla (si existen, aunque no debería)
-        DELETE FROM EmployeeDeductionsByPayroll 
+        DELETE FROM [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll] 
         WHERE EmployeeId = @PersonaId;
         
         -- 4.5. Beneficios patronales por planilla
-        DELETE FROM EmployerBenefitDeductions 
+        DELETE FROM [Fiesta_Fries_DB].[EmployerBenefitDeductions] 
         WHERE EmployeeId = @PersonaId;
         
         -- 4.6. Cargas sociales patronales por planilla
-        DELETE FROM EmployerSocialSecurityByPayroll 
+        DELETE FROM [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll] 
         WHERE EmployeeId = @PersonaId;
         
         -- 5. Eliminar registro de Empleado
-        DELETE FROM Empleado 
+        DELETE FROM [Fiesta_Fries_DB].[Empleado] 
         WHERE id = @PersonaId;
         
         IF @@ROWCOUNT = 0
@@ -86,7 +88,7 @@ BEGIN
         END
         
         -- 6. Eliminar registro de Persona
-        DELETE FROM Persona 
+        DELETE FROM [Fiesta_Fries_DB].[Persona] 
         WHERE id = @PersonaId;
         
         IF @@ROWCOUNT = 0
@@ -101,14 +103,15 @@ BEGIN
            AND NOT EXISTS (SELECT 1 FROM Empresa WHERE DueñoEmpresa = @PersonaId)
         BEGIN
             -- Eliminar verificaciones de email
-            DELETE FROM EmailVerification 
+            DELETE FROM [Fiesta_Fries_DB].[EmailVerification] 
             WHERE userId = @UserId;
             
-            DELETE FROM EmailVerificationE 
+            
+            DELETE FROM [Fiesta_Fries_DB].[EmailVerificationE] 
             WHERE token = CAST(@PersonaId AS NVARCHAR(50));
             
             -- Eliminar usuario
-            DELETE FROM [User] 
+            DELETE FROM [Fiesta_Fries_DB].[User] 
             WHERE PK_User = @UserId;
         END
         

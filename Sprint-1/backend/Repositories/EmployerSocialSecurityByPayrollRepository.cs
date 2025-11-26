@@ -1,6 +1,6 @@
 using backend.Models;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace backend.Repositories

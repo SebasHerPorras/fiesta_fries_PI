@@ -1,9 +1,9 @@
-Ôªøusing backend.Models;
+using backend.Models;
 using backend.Repositories;
 using backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Controllers
 {
@@ -21,7 +21,7 @@ namespace backend.Controllers
         {
             if (person == null)
             {
-                return BadRequest("Datos inv√°lidos");
+                return BadRequest("Datos inv·lidos");
             }
 
             var created = service.Insert(person);
@@ -33,7 +33,7 @@ namespace backend.Controllers
         {
             if (userId == Guid.Empty)
             {
-                return BadRequest("ID de usuario inv√°lido");
+                return BadRequest("ID de usuario inv·lido");
             }
 
             var profile = service.GetPersonalProfile(userId);

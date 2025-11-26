@@ -1,6 +1,6 @@
 using backend.Models;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace backend.Handlers
@@ -20,7 +20,7 @@ namespace backend.Handlers
             public List<CountryModel> GetCountries()
             {
                 using var connection = new SqlConnection(_connectionString);
-                string query = "SELECT * FROM dbo.Country";
+                string query = "SELECT * FROM [Fiesta_Fries_DB].[Country]";
                 return connection.Query<CountryModel>(query).ToList();
             }
 
@@ -28,7 +28,7 @@ namespace backend.Handlers
             {
                 using var connection = new SqlConnection(_connectionString);
 
-                var query = @"INSERT INTO [dbo].[Country] 
+                var query = @"INSERT INTO [Fiesta_Fries_DB].[Country] 
 				  ([Name],[Language],[Continent])  
 				  VALUES(@Name, @Language, @Continent)";
 

@@ -1,9 +1,9 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using backend.Models;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 
 namespace backend.Repositories
@@ -16,13 +16,13 @@ namespace backend.Repositories
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext")
-                ?? throw new InvalidOperationException("Connection string 'UserContext' not found. A√±ade ConnectionStrings:UserContext en appsettings.json.");
+                ?? throw new InvalidOperationException("Connection string 'UserContext' not found. AÒade ConnectionStrings:UserContext en appsettings.json.");
         }
 
         public List<UserModel> GetUsers()
         {
             if (string.IsNullOrWhiteSpace(_connectionString))
-                throw new InvalidOperationException("Connection string 'UserContext' est√° vac√≠a.");
+                throw new InvalidOperationException("Connection string 'UserContext' est· vacÌa.");
 
             using var connection = new SqlConnection(_connectionString);
             const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User]";
@@ -48,7 +48,7 @@ namespace backend.Repositories
         public void Insert(UserModel user)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = @"INSERT INTO dbo.[User] (PK_User, email, [password], active, admin) VALUES (@Id, @Email, @PasswordHash, @active, @admin)";
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].[User] (PK_User, email, [password], active, admin) VALUES (@Id, @Email, @PasswordHash, @active, @admin)";
             connection.Execute(query, user);
         }
 

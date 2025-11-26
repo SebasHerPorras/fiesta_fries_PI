@@ -1,4 +1,4 @@
-﻿using backend.Handlers.backend.Repositories;
+using backend.Handlers.backend.Repositories;
 using backend.Infrastructure;
 using backend.Interfaces;
 using backend.Interfaces.Services;
@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
                       });
 });
 
-// Añadir controladores
+// A�adir controladores
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -33,7 +33,7 @@ builder.Services.AddSwaggerGen(c =>
     { 
         Title = "Fiesta Fries API", 
         Version = "v1",
-        Description = "API para el cálculo de deducciones patronales y gestión de empleados"
+        Description = "API para el c�lculo de deducciones patronales y gesti�n de empleados"
     });
 
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -69,7 +69,7 @@ builder.Services.AddScoped<ICalculationService, CalculationService>();
 builder.Services.AddScoped<IEmployeeDeletionRepository, EmployeeDeletionRepository>();
 builder.Services.AddScoped<IEmployeeDeletionService, EmployeeDeletionService>();
 
-// ===== CONFIGURACIÓN DE HTTP CLIENTS PARA APIS EXTERNAS =====
+// ===== CONFIGURACI�N DE HTTP CLIENTS PARA APIS EXTERNAS =====
 builder.Services.AddHttpClient<ISolidarityAssociationService, SolidarityAssociationService>("AsociacionSolidarista", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -113,6 +113,17 @@ builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<EmpresaService>();
 
+// ===== HEALTH CHECKS PARA AZURE SQL DATABASE =====
+builder.Services.AddHealthChecks()
+    .AddSqlServer(
+        connectionString: builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Connection string 'UserContext' not found."),
+        healthQuery: "SELECT 1;",
+        name: "Azure SQL Database",
+        failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql", "azure" },
+        timeout: TimeSpan.FromSeconds(10)
+    );
+
 var app = builder.Build();
 
 // Solo habilitar Swagger en desarrollo
@@ -128,6 +139,29 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthorization();
+
+// Health checks endpoint
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        });
+        await context.Response.WriteAsync(response);
+    }
+});
+
 app.MapControllers();
 
 app.Urls.Clear();

@@ -1,5 +1,5 @@
 using backend.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace backend.Repositories
@@ -24,8 +24,7 @@ namespace backend.Repositories
 
                 const string query = @"
                     SELECT Id, [Name], MinAmount, MaxAmount, [Percentage], BaseAmount, [Active], CreationDate, ModificationDate 
-                    FROM PersonalIncomeTax 
-                    WHERE [Active] = 1
+                    FROM [Fiesta_Fries_DB].[PersonalIncomeTax] WHERE [Active] = 1
                     ORDER BY MinAmount";
 
                 return connection.Query<PersonalIncomeTax>(query).ToList();
@@ -45,8 +44,7 @@ namespace backend.Repositories
 
                 const string query = @"
                     SELECT Id, [Name], MinAmount, MaxAmount, [Percentage], BaseAmount, [Active], CreationDate, ModificationDate 
-                    FROM PersonalIncomeTax 
-                    ORDER BY MinAmount";
+                    FROM [Fiesta_Fries_DB].[PersonalIncomeTax] ORDER BY MinAmount";
 
                 return connection.Query<PersonalIncomeTax>(query).ToList();
             }

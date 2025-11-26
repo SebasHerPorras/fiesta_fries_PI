@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -12,7 +14,7 @@ IF NOT EXISTS (
     AND name = 'IsDeleted'
 )
 BEGIN
-    ALTER TABLE Empleado
+    ALTER TABLE [Fiesta_Fries_DB].[Empleado]
     ADD IsDeleted BIT NOT NULL DEFAULT 0,
         DeletedDate DATETIME NULL;
     
@@ -31,7 +33,7 @@ IF NOT EXISTS (
     AND name = 'IsDeleted'
 )
 BEGIN
-    ALTER TABLE Persona
+    ALTER TABLE [Fiesta_Fries_DB].[Persona]
     ADD IsDeleted BIT NOT NULL DEFAULT 0,
         DeletedDate DATETIME NULL;
     
@@ -82,5 +84,5 @@ END
 GO
 
 -- 5. Actualizar vista/consultas existentes para excluir eliminados
-PRINT 'ALTER TABLE completado. Campos IsDeleted disponibles.';
+PRINT 'Campos IsDeleted agregados correctamente a Empleado y Persona.';
 GO

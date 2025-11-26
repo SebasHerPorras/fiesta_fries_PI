@@ -1,9 +1,9 @@
-﻿using backend.Models;
+using backend.Models;
 using backend.Repositories;
 using backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Controllers
 {
@@ -20,7 +20,7 @@ namespace backend.Controllers
 
             //ocupamos realizar el query
             PersonModel user = key.GetByIdentity(id);
-            Console.WriteLine("LLega aquí\n");
+            Console.WriteLine("LLega aqu�\n");
             if (user == null)
             {
                return Ok(new {result = false });

@@ -1,4 +1,4 @@
-Ôªøusing backend.Handlers.backend.Repositories;
+using backend.Handlers.backend.Repositories;
 using backend.Models;
 using backend.Services;
 using System.Drawing;
@@ -19,8 +19,8 @@ namespace backend.Services
             try
             {
                 Console.WriteLine("=== EMPRESA SERVICE ===");
-                Console.WriteLine($"C√©dula: {empresa.CedulaJuridica}");
-                Console.WriteLine($"Due√±oEmpresa: {empresa.Due√±oEmpresa}");
+                Console.WriteLine($"CÈdula: {empresa.CedulaJuridica}");
+                Console.WriteLine($"DueÒoEmpresa: {empresa.DueÒoEmpresa}");
 
                 var result = _empresaRepository.CreateEmpresa(empresa);
 
@@ -139,7 +139,7 @@ namespace backend.Services
             Font valueFont = new Font("Arial", 12, FontStyle.Bold);
             Font labelFont = new Font("Arial", 10);
 
-            g.DrawString("Distribuci√≥n de Empleados por Tipo", titleFont, Brushes.Black, 50, 20);
+            g.DrawString("DistribuciÛn de Empleados por Tipo", titleFont, Brushes.Black, 50, 20);
 
             Brush[] colors = { Brushes.SteelBlue, Brushes.MediumSeaGreen, Brushes.Goldenrod };
 
@@ -204,7 +204,7 @@ namespace backend.Services
             g.DrawLine(new Pen(Color.Gray, 2), width / 2 + 20, 160, width / 2 + 40, 120);
 
             string title = "No hay datos disponibles";
-            string message = "No se encontraron registros de empleados para generar el gr√°fico.";
+            string message = "No se encontraron registros de empleados para generar el gr·fico.";
 
             SizeF titleSize = g.MeasureString(title, titleFont);
             SizeF messageSize = g.MeasureString(message, messageFont);
@@ -331,7 +331,7 @@ namespace backend.Services
                 decimal[] values = { deducciones, beneficios, salarios };
 
                 
-                g.DrawString("Distribuci√≥n de Costos de Planilla", titleFont, Brushes.Black, 50, 20);
+                g.DrawString("DistribuciÛn de Costos de Planilla", titleFont, Brushes.Black, 50, 20);
 
                 
                 int pieDiameter = 300;
@@ -374,12 +374,12 @@ namespace backend.Services
                     g.DrawString(legendText, labelFont, Brushes.Black, legendX + 30, itemY);
 
                     
-                    string valueText = $"‚Ç°{values[i]:N2}";
+                    string valueText = $"¢{values[i]:N2}";
                     g.DrawString(valueText, labelFont, Brushes.DarkGray, legendX + 30, itemY + 18);
                 }
 
                 
-                string totalText = $"Total: ‚Ç°{total:N2}";
+                string totalText = $"Total: ¢{total:N2}";
                 SizeF totalSize = g.MeasureString(totalText, titleFont);
                 g.DrawString(totalText, titleFont, Brushes.DarkBlue,
                             pieX + (pieDiameter - totalSize.Width) / 2,
@@ -388,12 +388,12 @@ namespace backend.Services
                 using MemoryStream ms = new MemoryStream();
                 bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 
-                Console.WriteLine("Gr√°fico de pastel generado exitosamente");
+                Console.WriteLine("Gr·fico de pastel generado exitosamente");
                 return ms.ToArray();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error generando gr√°fico de pastel: {ex.Message}");
+                Console.WriteLine($"Error generando gr·fico de pastel: {ex.Message}");
                 return GenerateErrorPieChart(ex.Message);
             }
         }
@@ -412,7 +412,7 @@ namespace backend.Services
             Font messageFont = new Font("Segoe UI", 12);
 
             g.DrawString("No hay datos de costos", titleFont, Brushes.Gray, 50, 50);
-            g.DrawString("No se encontraron datos para generar el gr√°fico", messageFont, Brushes.DarkGray, 50, 90);
+            g.DrawString("No se encontraron datos para generar el gr·fico", messageFont, Brushes.DarkGray, 50, 90);
 
             g.DrawEllipse(new Pen(Color.LightGray, 2), 200, 150, 200, 200);
 
@@ -434,7 +434,7 @@ namespace backend.Services
             Font titleFont = new Font("Segoe UI", 16, FontStyle.Bold);
             Font messageFont = new Font("Segoe UI", 11);
 
-            g.DrawString("Error en Gr√°fico de Pastel", titleFont, Brushes.DarkRed, 50, 50);
+            g.DrawString("Error en Gr·fico de Pastel", titleFont, Brushes.DarkRed, 50, 50);
             g.DrawString(errorMessage, messageFont, Brushes.DarkRed, 50, 90);
 
             using MemoryStream ms = new MemoryStream();

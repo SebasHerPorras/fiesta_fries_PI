@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 CREATE OR ALTER PROCEDURE SP_InsertEmployerSocialSecurityByPayroll
@@ -13,7 +15,7 @@ BEGIN
     SET NOCOUNT ON;
     
     BEGIN TRY
-        INSERT INTO EmployerSocialSecurityByPayroll (
+        INSERT INTO [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll] (
             ReportId, 
             EmployeeId, 
             ChargeName, 

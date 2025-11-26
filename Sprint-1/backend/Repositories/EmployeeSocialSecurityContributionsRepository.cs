@@ -1,5 +1,5 @@
 using backend.Models;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace backend.Repositories
@@ -24,8 +24,7 @@ namespace backend.Repositories
 
                 const string query = @"
                     SELECT Id, [Name], [Percentage], [Active], CreationDate, ModificationDate 
-                    FROM EmployeeSocialSecurityContributions 
-                    WHERE [Active] = 1
+                    FROM [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions] WHERE [Active] = 1
                     ORDER BY [Name]";
 
                 return connection.Query<EmployeeSocialSecurityContributions>(query).ToList();
@@ -45,8 +44,7 @@ namespace backend.Repositories
 
                 const string query = @"
                     SELECT Id, [Name], [Percentage], [Active], CreationDate, ModificationDate 
-                    FROM EmployeeSocialSecurityContributions 
-                    ORDER BY [Name]";
+                    FROM [Fiesta_Fries_DB].[EmployeeSocialSecurityContributions] ORDER BY [Name]";
 
                 return connection.Query<EmployeeSocialSecurityContributions>(query).ToList();
             }

@@ -1,4 +1,4 @@
-﻿using backend.Interfaces.Strategies;
+using backend.Interfaces.Strategies;
 using backend.Models;
 using backend.Models.Payroll;
 

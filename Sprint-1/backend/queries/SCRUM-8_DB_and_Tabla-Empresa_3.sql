@@ -1,12 +1,14 @@
-﻿
-USE Fiesta_Fries_DB;
+
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearán bajo el schema Fiesta_Fries_DB
 GO
 -- Tabla Empresa
 
-CREATE TABLE [dbo].[Empresa](
+CREATE TABLE [Fiesta_Fries_DB].[Empresa](
     [CedulaJuridica] BIGINT NOT NULL, 
     [Nombre] VARCHAR(100) NOT NULL,
-    [DueñoEmpresa] INT NOT NULL,
+    [Due�oEmpresa] INT NOT NULL,
     [Telefono] INT NULL, 
     [DireccionEspecifica] VARCHAR(200) NULL, 
     [NoMaxBeneficios] INT NOT NULL,
@@ -21,16 +23,16 @@ CREATE TABLE [dbo].[Empresa](
 GO
 
 -- AGREGAR FOREIGN KEY
-ALTER TABLE [dbo].[Empresa]  
+ALTER TABLE [Fiesta_Fries_DB].[Empresa]  
     WITH CHECK ADD CONSTRAINT [FK_Empresa_Persona] 
-    FOREIGN KEY([DueñoEmpresa])
+    FOREIGN KEY([Due�oEmpresa])
     REFERENCES [dbo].[Persona] ([id]);
 GO
 
 
 
-ALTER TABLE [dbo].[Empresa] 
+ALTER TABLE [Fiesta_Fries_DB].[Empresa] 
     CHECK CONSTRAINT [FK_Empresa_Persona];
 GO
 
-SELECT * FROM Empresa;
+select * FROM [Fiesta_Fries_DB].[Persona];

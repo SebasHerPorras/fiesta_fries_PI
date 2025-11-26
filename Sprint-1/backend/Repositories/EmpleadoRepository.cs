@@ -4,7 +4,7 @@ using System.Linq;
 using backend.Models;
 using backend.Interfaces;
 using Dapper;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using System.CodeDom;
 
@@ -36,9 +36,9 @@ namespace backend.Repositories
                     u.email AS Correo,
                     e.department AS Departamento,
                     e.employmentType AS TipoContrato
-                FROM Empleado e
-                INNER JOIN Persona p ON e.id = p.id
-                INNER JOIN [User] u ON p.uniqueUser = u.PK_User
+                FROM [Fiesta_Fries_DB].[Empleado] e
+                INNER JOIN [Fiesta_Fries_DB].[Persona] p ON e.id = p.id
+                INNER JOIN [Fiesta_Fries_DB].[User] u ON p.uniqueUser = u.PK_User
                 WHERE e.idCompny = @CedulaJuridica
                   AND (e.IsDeleted = 0 OR e.IsDeleted IS NULL)
                   AND (p.IsDeleted = 0 OR p.IsDeleted IS NULL)
@@ -56,7 +56,7 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = "SELECT hiredate from Empleado where id = @id";
+            const string query = "SELECT hiredate FROM [Fiesta_Fries_DB].[Empleado] where id = @id";
 
             return connection.QuerySingleOrDefault<DateTime>(query, new {id = id_});
         }
@@ -100,7 +100,7 @@ namespace backend.Repositories
         public int GetSalaryAmount(int id_)
         {
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"SELECT salary FROM Empleado where id = @id";
+            const string query = @"SELECT salary FROM [Fiesta_Fries_DB].[Empleado] where id = @id";
             return connection.QuerySingleOrDefault<int>(query, new { id = id_ });
         }
 
@@ -141,7 +141,7 @@ namespace backend.Repositories
 
                 for(int i = 0; i<4; i++)
                 {
-                    string query = "SELECT TOP 1 * FROM EmployeeDeductionsByPayroll WHERE employeeID = @id AND CONVERT(date, CreatedDate) = @date AND DeductionName = @variable ORDER BY CreatedDate ASC;";
+                    string query = "SELECT TOP 1 * FROM [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll] WHERE employeeID = @id AND CONVERT(date, CreatedDate) = @date AND DeductionName = @variable ORDER BY CreatedDate ASC;";
 
                     var data = connection.QuerySingleOrDefault<EmployeeDeductionsByPayrollModel?>(query, new { id = id_, date = date_, variable = deductions[i] });
 
@@ -154,7 +154,7 @@ namespace backend.Repositories
                 return payrolls;
                 
             }catch(Exception ex){
-                Console.WriteLine("OcurriÃ³ un error trayendo los datos del Payroll de este empleado en esta fecha");
+                Console.WriteLine("Ocurrió un error trayendo los datos del Payroll de este empleado en esta fecha");
                 return new List<EmployeeDeductionsByPayrollModel>();
             }
         }
@@ -168,8 +168,7 @@ namespace backend.Repositories
             SELECT 
                 id, position, employmentType, salary, hireDate, department, idCompny,
                 '' AS email, '' AS name
-            FROM Empleado
-            WHERE idCompny = @CedulaEmpresa
+            FROM [Fiesta_Fries_DB].[Empleado] WHERE idCompny = @CedulaEmpresa
               AND (IsDeleted = 0 OR IsDeleted IS NULL)";
 
             return connection.Query<EmpleadoModel>(query, new { CedulaEmpresa = cedulaEmpresa }).ToList();
@@ -180,11 +179,10 @@ namespace backend.Repositories
             using var connection = new SqlConnection(this._connectionString);
 
             const string query = @"
-                SELECT * FROM Empleado 
-                WHERE id = @id 
+                SELECT * FROM [Fiesta_Fries_DB].[Empleado] WHERE id = @id 
                   AND (IsDeleted = 0 OR IsDeleted IS NULL)";
             
-            Console.WriteLine("Querry realizado con Ã©xito\n");
+            Console.WriteLine("Querry realizado con éxito\n");
 
             return connection.QuerySingleOrDefault<EmpleadoModel>(query, new { id = id_ });
         }
@@ -193,7 +191,7 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(_connectionString);
             const string query = @"
-                UPDATE Empleado SET
+                UPDATE [Fiesta_Fries_DB].[Empleado] SET
                     position = @Position,
                     department = @Department,
                     salary = @Salary
@@ -223,8 +221,8 @@ namespace backend.Repositories
                     e.position,
                     e.department,
                     e.salary
-                FROM Empleado e
-                INNER JOIN Persona p ON e.id = p.id
+                FROM [Fiesta_Fries_DB].[Empleado] e
+                INNER JOIN [Fiesta_Fries_DB].[Persona] p ON e.id = p.id
                 WHERE e.id = @id
                   AND (e.IsDeleted = 0 OR e.IsDeleted IS NULL)
                   AND (p.IsDeleted = 0 OR p.IsDeleted IS NULL)";

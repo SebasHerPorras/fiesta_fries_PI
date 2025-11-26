@@ -1,4 +1,4 @@
-﻿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Interfaces.Services;
 using backend.Interfaces.Strategies;
 using backend.Models;
@@ -210,7 +210,7 @@ namespace backend.Services
                 return chosen;
             }
 
-            // Si no hay un periodo que contenga la fecha busca el próximo periodo no procesado
+            // Si no hay un periodo que contenga la fecha busca el pr�ximo periodo no procesado
             var future = deduped
                 .Where(p => p.StartDate.Date > periodDate.Date)
                 .Where(p => allowProcessed || !p.IsProcessed)
@@ -223,7 +223,7 @@ namespace backend.Services
                 return future;
             }
 
-            // De lo contrario selecciona el periodo anterior no procesado más cercano
+            // De lo contrario selecciona el periodo anterior no procesado m�s cercano
             var previous = deduped
                 .Where(p => p.EndDate.Date < periodDate.Date)
                 .Where(p => allowProcessed || !p.IsProcessed)
@@ -290,7 +290,7 @@ namespace backend.Services
             return await _payrollRepository.GetLatestPayrollAsync(companyId);
         }
 
-        // Decide desde dónde calcular el próximo periodo
+        // Decide desde d�nde calcular el pr�ximo periodo
         private DateTime CalculateBaseDate(Payroll lastPayroll, EmpresaModel company)
         {
             if (lastPayroll != null)

@@ -1,11 +1,11 @@
-﻿using backend.Models;
+using backend.Models;
 using backend.Services;
 using backend.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper; 
 
 namespace backend.Controllers

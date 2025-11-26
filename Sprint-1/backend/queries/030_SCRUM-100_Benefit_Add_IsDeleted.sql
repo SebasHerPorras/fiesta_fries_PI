@@ -1,19 +1,19 @@
-use Fiesta_Fries_DB
+﻿use Fiesta_Fries_DB
 GO
 
-ALTER TABLE Beneficio
+ALTER TABLE [Fiesta_Fries_DB].[Beneficio]
 ADD IsDeleted BIT NOT NULL DEFAULT(0),
     LastPeriod datetime NULL;
 
-ALTER TABLE EmployeeBenefit
+ALTER TABLE [Fiesta_Fries_DB].[EmployeeBenefit]
 ADD IsDeleted BIT NOT NULL DEFAULT(0);
 
 
-ALTER TABLE EmployerBenefitDeductions
+ALTER TABLE [Fiesta_Fries_DB].[EmployerBenefitDeductions]
 ADD BenefitId INT NULL;
 
 -- FK a Beneficio
-ALTER TABLE EmployerBenefitDeductions
+ALTER TABLE [Fiesta_Fries_DB].[EmployerBenefitDeductions]
 ADD CONSTRAINT FK_EmployerBenefitDeductions_Beneficio
     FOREIGN KEY (BenefitId) REFERENCES Beneficio(IdBeneficio);
 GO
@@ -33,7 +33,7 @@ BEGIN
     SET NOCOUNT ON;
     
     BEGIN TRY
-        INSERT INTO EmployerBenefitDeductions (
+        INSERT INTO [Fiesta_Fries_DB].[EmployerBenefitDeductions] (
             ReportId,
             EmployeeId,
             CedulaJuridicaEmpresa,

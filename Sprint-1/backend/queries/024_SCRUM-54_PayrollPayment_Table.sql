@@ -1,7 +1,9 @@
-USE Fiesta_Fries_DB;
+﻿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-CREATE TABLE [dbo].[PayrollPayment](
+CREATE TABLE [Fiesta_Fries_DB].[PayrollPayment](
     [PaymentId] [int] IDENTITY(2000,1) NOT NULL,     
     [PayrollId] [int] NOT NULL,                   
     [EmployeeId] [int] NOT NULL,                  
@@ -18,6 +20,6 @@ CREATE TABLE [dbo].[PayrollPayment](
         REFERENCES [dbo].[Empleado] ([id])
 )
 
---b�squedas por empleado-planilla
+--b�squedas por empleado-planilla
 CREATE UNIQUE INDEX [IX_PayrollPayment_EmployeePayroll] 
 ON [dbo].[PayrollPayment] ([EmployeeId], [PayrollId])

@@ -1,4 +1,6 @@
-USE Fiesta_Fries_DB;
+ï»¿USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃƒÂ¡n bajo el schema Fiesta_Fries_DB
 GO
 
 -- =============================================
@@ -18,13 +20,13 @@ BEGIN
     SELECT 
         p.id AS CedulaEmpleado,
         p.firstName + ' ' + p.secondName AS NombreEmpleado,
-        -- Calcular salario según tipo de empleado y frecuencia de pago
+        -- Calcular salario segï¿½n tipo de empleado y frecuencia de pago
         CASE 
             -- Por horas: salario base (tarifa por hora) * horas trabajadas
             WHEN LOWER(LTRIM(RTRIM(e.employmentType))) LIKE '%hora%' THEN 
                 e.salary * dbo.Fn_ObtenerHoras(e.id, @FechaInicio, @FechaFin)
                 
-            -- Empleados regulares: ajustar según frecuencia de pago de la empresa
+            -- Empleados regulares: ajustar segï¿½n frecuencia de pago de la empresa
             ELSE 
                 CASE 
                     -- Pago quincenal: salario / 2

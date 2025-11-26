@@ -1,9 +1,9 @@
-ï»¿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Models;
 using Dapper;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Drawing;
 
 namespace backend.Handlers.backend.Repositories
@@ -27,18 +27,18 @@ namespace backend.Handlers.backend.Repositories
                 const string query = @"
                     SELECT e.*, 
                            0 as CantidadEmpleados
-                    FROM Empresa e
+                    FROM [Fiesta_Fries_DB].[Empresa] e
                     WHERE e.CedulaJuridica = @CedulaJuridica
                     AND e.isDeleted = 0";
 
 
-                Console.WriteLine($"Buscando empresa con cÃ©dula: {cedulaJuridica}");
+                Console.WriteLine($"Buscando empresa con cédula: {cedulaJuridica}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
 
                 if (empresa != null)
                     Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
                 else
-                    Console.WriteLine($"Empresa con cÃ©dula {cedulaJuridica} no encontrada");
+                    Console.WriteLine($"Empresa con cédula {cedulaJuridica} no encontrada");
 
                 return empresa;
             }
@@ -56,21 +56,21 @@ namespace backend.Handlers.backend.Repositories
                 using var connection = new SqlConnection(_connectionString);
                 connection.Open();
 
-                var query = @"INSERT INTO [dbo].[Empresa] 
-                              ([CedulaJuridica], [Nombre], [DueÃ±oEmpresa], [DireccionEspecifica], 
+                var query = @"INSERT INTO [Fiesta_Fries_DB].[Empresa] 
+                              ([CedulaJuridica], [Nombre], [DueñoEmpresa], [DireccionEspecifica], 
                                [Telefono], [NoMaxBeneficios], [FrecuenciaPago], [DiaPago]) 
-                              VALUES (@CedulaJuridica, @Nombre, @DueÃ±oEmpresa, @DireccionEspecifica, 
+                              VALUES (@CedulaJuridica, @Nombre, @DueñoEmpresa, @DireccionEspecifica, 
                                       @Telefono, @NoMaxBeneficios, @FrecuenciaPago, @DiaPago)";
 
                 Console.WriteLine("=== EJECUTANDO INSERT ===");
-                Console.WriteLine($"CÃ©dula: {empresa.CedulaJuridica}");
-                Console.WriteLine($"DueÃ±oEmpresa: {empresa.DueÃ±oEmpresa}");
+                Console.WriteLine($"Cédula: {empresa.CedulaJuridica}");
+                Console.WriteLine($"DueñoEmpresa: {empresa.DueñoEmpresa}");
 
                 var affectedRows = connection.Execute(query, new
                 {
                     CedulaJuridica = empresa.CedulaJuridica,
                     Nombre = empresa.Nombre,
-                    DueÃ±oEmpresa = empresa.DueÃ±oEmpresa,
+                    DueñoEmpresa = empresa.DueñoEmpresa,
                     DireccionEspecifica = (object)empresa.DireccionEspecifica ?? DBNull.Value,
                     Telefono = empresa.Telefono.HasValue ? (object)empresa.Telefono.Value : DBNull.Value,
                     NoMaxBeneficios = empresa.NoMaxBeneficios,
@@ -93,12 +93,12 @@ namespace backend.Handlers.backend.Repositories
             }
             catch (SqlException ex) when (ex.Number == 2627)
             {
-                Console.WriteLine($"ERROR: CÃ©dula jurÃ­dica duplicada - {empresa.CedulaJuridica}");
-                return "Ya existe una empresa con esa cÃ©dula jurÃ­dica.";
+                Console.WriteLine($"ERROR: Cédula jurídica duplicada - {empresa.CedulaJuridica}");
+                return "Ya existe una empresa con esa cédula jurídica.";
             }
             catch (SqlException ex)
             {
-                Console.WriteLine($"ERROR SQL: {ex.Message} (NÃºmero: {ex.Number})");
+                Console.WriteLine($"ERROR SQL: {ex.Message} (Número: {ex.Number})");
                 return $"Error de base de datos: {ex.Message}";
             }
             catch (Exception ex)
@@ -111,7 +111,7 @@ namespace backend.Handlers.backend.Repositories
         public List<EmpresaModel> GetEmpresas()
         {
             using var connection = new SqlConnection(_connectionString);
-            string query = "SELECT * FROM dbo.Empresa";
+            string query = "SELECT * FROM [Fiesta_Fries_DB].[Empresa]";
             return connection.Query<EmpresaModel>(query).ToList();
         }
 
@@ -124,11 +124,11 @@ namespace backend.Handlers.backend.Repositories
                 const string query = @"
             SELECT e.*, 
                    0 as CantidadEmpleados  -- Por ahora 0, luego puedes contar empleados reales
-            FROM Empresa e
-            WHERE e.DueÃ±oEmpresa = @OwnerId
+            FROM [Fiesta_Fries_DB].[Empresa] e
+            WHERE e.DueñoEmpresa = @OwnerId
             ORDER BY e.Nombre";
 
-                Console.WriteLine($"Buscando empresas para DueÃ±oEmpresa: {ownerId}");
+                Console.WriteLine($"Buscando empresas para DueñoEmpresa: {ownerId}");
                 var empresas = connection.Query<EmpresaModel>(query, new { OwnerId = ownerId }).ToList();
                 Console.WriteLine($"Se encontraron {empresas.Count} empresas");
 
@@ -150,7 +150,7 @@ namespace backend.Handlers.backend.Repositories
                 const string query = @"
                   SELECT e.*, 
                         0 as CantidadEmpleados
-                  FROM Empresa e
+                  FROM [Fiesta_Fries_DB].[Empresa] e
                   WHERE e.id = @Id";
 
                 Console.WriteLine($"Buscando empresa con ID: {id}");
@@ -177,9 +177,9 @@ namespace backend.Handlers.backend.Repositories
 
                 const string query = @"
                   SELECT e.*
-                  FROM Empresa e
-                  INNER JOIN Empleado emp ON e.CedulaJuridica = emp.idCompny
-                  INNER JOIN Persona p ON emp.id = p.id
+                  FROM [Fiesta_Fries_DB].[Empresa] e
+                  INNER JOIN [Fiesta_Fries_DB].[Empleado] emp ON e.CedulaJuridica = emp.idCompny
+                  INNER JOIN [Fiesta_Fries_DB].[Persona] p ON emp.id = p.id
                   WHERE p.uniqueUser = @UserId";
 
                 Console.WriteLine($"Buscando empresa para empleado con UserId (uniqueUser): {userId}");
@@ -188,7 +188,7 @@ namespace backend.Handlers.backend.Repositories
                 if (empresa != null)
                     Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
                 else
-                    Console.WriteLine($"No se encontrÃ³ empresa para el empleado con UserId: {userId}");
+                    Console.WriteLine($"No se encontró empresa para el empleado con UserId: {userId}");
 
                 return empresa;
             }
@@ -209,17 +209,16 @@ namespace backend.Handlers.backend.Repositories
 
                 const string query = @"
                     SELECT * 
-                    FROM Empresa 
-                    WHERE CedulaJuridica = @CedulaJuridica";
+                    FROM [Fiesta_Fries_DB].[Empresa] WHERE CedulaJuridica = @CedulaJuridica";
 
-                Console.WriteLine($"Buscando empresa por cÃ©dula jurÃ­dica: {cedulaJuridica}");
+                Console.WriteLine($"Buscando empresa por cédula jurídica: {cedulaJuridica}");
 
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
 
                 if (empresa != null)
                     Console.WriteLine($"Empresa encontrada: {empresa.Nombre}");
                 else
-                    Console.WriteLine("No se encontrÃ³ empresa con esa cÃ©dula jurÃ­dica");
+                    Console.WriteLine("No se encontró empresa con esa cédula jurídica");
 
                 return empresa;
             }
@@ -235,8 +234,7 @@ namespace backend.Handlers.backend.Repositories
             using var connection = new SqlConnection(_connectionString);
 
             const string query = @"
-                UPDATE Empresa
-                SET Nombre = @Nombre,
+                UPDATE [Fiesta_Fries_DB].[Empresa] SET Nombre = @Nombre,
                     DireccionEspecifica = @DireccionEspecifica,
                     Telefono = @Telefono,
                     NoMaxBeneficios = @NoMaxBeneficios,
@@ -252,7 +250,7 @@ namespace backend.Handlers.backend.Repositories
             using var connection = new SqlConnection(this._connectionString);
 
             const string query = @"SELECT e.employmentType, COUNT(e.employmentType) AS cantidadEmpleados
-                                 FROM Empleado e inner JOIN Empresa em on e.idCompny = em.CedulaJuridica where em.CedulaJuridica = @id
+                                 FROM [Fiesta_Fries_DB].[Empleado] e inner JOIN [Fiesta_Fries_DB].[Empresa] em on e.idCompny = em.CedulaJuridica where em.CedulaJuridica = @id
                                   AND e.isDeleted = 0 group by e.employmentType";
 
             var result = connection.Query<EmploymentTypeCountModel>(query, new { id = id_ })
@@ -275,8 +273,7 @@ namespace backend.Handlers.backend.Repositories
             const string query = @"
              SELECT DISTINCT TOP 3 
              CONVERT(date, CreatedDate) as FechaPago
-             FROM EmployerSocialSecurityByPayroll 
-             WHERE CedulaJuridicaEmpresa = @cedulaJuridica 
+             FROM [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll] WHERE CedulaJuridicaEmpresa = @cedulaJuridica 
              AND CONVERT(date, CreatedDate) <= @fechaLimite
              ORDER BY CONVERT(date, CreatedDate) DESC";
 
@@ -297,8 +294,8 @@ namespace backend.Handlers.backend.Repositories
             const string query = @"
           SELECT 
           ISNULL(SUM(es.Amount), 0) AS CostoTotal
-          FROM EmployerSocialSecurityByPayroll es
-          INNER JOIN Empleado e ON es.EmployeeId = e.id 
+          FROM [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll] es
+          INNER JOIN [Fiesta_Fries_DB].[Empleado] e ON es.EmployeeId = e.id 
           WHERE es.CedulaJuridicaEmpresa = @Cedula
           AND e.IsDeleted = 0
           AND CONVERT(date, es.CreatedDate) = @Fecha;";
@@ -314,8 +311,8 @@ namespace backend.Handlers.backend.Repositories
             const string query = @"
             SELECT 
             ISNULL(SUM(b.Valor), 0) AS MontoTotal
-            FROM Beneficio b
-            INNER JOIN Empresa e ON b.CedulaJuridica = e.CedulaJuridica
+            FROM [Fiesta_Fries_DB].[Beneficio] b
+            INNER JOIN [Fiesta_Fries_DB].[Empresa] e ON b.CedulaJuridica = e.CedulaJuridica
             WHERE e.CedulaJuridica = @Cedula
             AND b.QuienAsume = 'Empresa'
             AND b.IsDeleted = 0;";
@@ -330,7 +327,7 @@ namespace backend.Handlers.backend.Repositories
             const string query = @"
               SELECT 
               ISNULL(SUM(e.salary), 0) AS SalarioTotal
-             FROM Empleado e
+             FROM [Fiesta_Fries_DB].[Empleado] e
              WHERE e.idCompny = @Cedula
              AND e.isDeleted = 0;";
 
@@ -348,8 +345,7 @@ namespace backend.Handlers.backend.Repositories
                 SELECT CASE 
                     WHEN EXISTS (
                         SELECT 1 
-                        FROM payroll 
-                        WHERE companyid = @CedulaJuridica
+                        FROM [Fiesta_Fries_DB].[payroll] WHERE companyid = @CedulaJuridica
                     ) THEN 1 
                     ELSE 0 
                 END";
@@ -361,8 +357,8 @@ namespace backend.Handlers.backend.Repositories
             using var connection = new SqlConnection(_connectionString);
 
             string query = physicalDelete
-                ? @"UPDATE Empresa SET isDeleted = 1 WHERE CedulaJuridica = @CedulaJuridica"
-                : @"DELETE FROM Empresa WHERE CedulaJuridica = @CedulaJuridica";
+                ? @"UPDATE [Fiesta_Fries_DB].[Empresa] SET isDeleted = 1 WHERE CedulaJuridica = @CedulaJuridica"
+                : @"DELETE FROM [Fiesta_Fries_DB].[Empresa] WHERE CedulaJuridica = @CedulaJuridica";
 
 
             return connection.Execute(query, new { CedulaJuridica = cedulaJuridica });

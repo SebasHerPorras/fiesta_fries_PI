@@ -1,4 +1,4 @@
-ï»¿using backend.Interfaces;
+using backend.Interfaces;
 using backend.Models;
 using backend.Repositories;
 using Microsoft.Extensions.Logging;
@@ -40,7 +40,7 @@ namespace backend.Services
                     return new CompanyDeletionResult
                     {
                         Success = false,
-                        Message = "No se encontrÃ³ la empresa",
+                        Message = "No se encontró la empresa",
                         EmployeesProcessed = 0,
                         SuccessfulDeletions = 0,
                         BenefitsProcessed = 0,
@@ -194,14 +194,14 @@ namespace backend.Services
                 }
                 else
                 {
-                    _logger.LogWarning("Empresa con cÃ©dula jurÃ­dica {CedulaJuridica} no encontrada", cedulaJuridica);
+                    _logger.LogWarning("Empresa con cédula jurídica {CedulaJuridica} no encontrada", cedulaJuridica);
                 }
 
                 return empresa;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo empresa con cÃ©dula jurÃ­dica {CedulaJuridica}", cedulaJuridica);
+                _logger.LogError(ex, "Error obteniendo empresa con cédula jurídica {CedulaJuridica}", cedulaJuridica);
                 throw;
             }
         }
@@ -212,7 +212,7 @@ namespace backend.Services
             {
                 var payrollResult = _empresaRepository.CheckCompanyPayroll(empresa);
 
-                _logger.LogDebug("Resultado de verificaciÃ³n de payroll para {CedulaJuridica}: {Result}",
+                _logger.LogDebug("Resultado de verificación de payroll para {CedulaJuridica}: {Result}",
                     empresa.CedulaJuridica, payrollResult);
 
                 return payrollResult == 1;
@@ -266,25 +266,25 @@ namespace backend.Services
             {
                 try
                 {
-                    _logger.LogDebug("Iniciando borrado lÃ³gico para empleado {Cedula} de empresa {CedulaJuridica}",
+                    _logger.LogDebug("Iniciando borrado lógico para empleado {Cedula} de empresa {CedulaJuridica}",
                         empleado.Cedula, cedulaJuridica);
 
                     var result = await _employeeDeletionRepository.ExecuteLogicalDeleteAsync(empleado.Cedula);
 
                     if (result)
                     {
-                        _logger.LogInformation("Borrado lÃ³gico exitoso para empleado {Cedula}", empleado.Cedula);
+                        _logger.LogInformation("Borrado lógico exitoso para empleado {Cedula}", empleado.Cedula);
                     }
                     else
                     {
-                        _logger.LogWarning("Borrado lÃ³gico fallÃ³ para empleado {Cedula}", empleado.Cedula);
+                        _logger.LogWarning("Borrado lógico falló para empleado {Cedula}", empleado.Cedula);
                     }
 
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error durante borrado lÃ³gico para empleado {Cedula}", empleado.Cedula);
+                    _logger.LogError(ex, "Error durante borrado lógico para empleado {Cedula}", empleado.Cedula);
                     return false;
                 }
             }).ToList();
@@ -292,15 +292,15 @@ namespace backend.Services
             var results = await Task.WhenAll(deletionTasks);
             var successfulDeletions = results.Count(result => result);
 
-            _logger.LogInformation("Proceso de borrado lÃ³gico completado para empresa {CedulaJuridica}: {Successful}/{Total} empleados procesados exitosamente",
+            _logger.LogInformation("Proceso de borrado lógico completado para empresa {CedulaJuridica}: {Successful}/{Total} empleados procesados exitosamente",
                 cedulaJuridica, successfulDeletions, empleados.Count);
 
             return new CompanyDeletionResult
             {
                 Success = successfulDeletions == empleados.Count,
                 Message = successfulDeletions == empleados.Count
-                    ? $"Todos los {empleados.Count} empleados fueron borrados lÃ³gicamente exitosamente"
-                    : $"{successfulDeletions} de {empleados.Count} empleados fueron borrados lÃ³gicamente exitosamente",
+                    ? $"Todos los {empleados.Count} empleados fueron borrados lógicamente exitosamente"
+                    : $"{successfulDeletions} de {empleados.Count} empleados fueron borrados lógicamente exitosamente",
                 EmployeesProcessed = empleados.Count,
                 SuccessfulDeletions = successfulDeletions,
                 BenefitsProcessed = 0,
@@ -314,25 +314,25 @@ namespace backend.Services
             {
                 try
                 {
-                    _logger.LogDebug("Iniciando borrado fÃ­sico para empleado {Cedula} de empresa {CedulaJuridica}",
+                    _logger.LogDebug("Iniciando borrado físico para empleado {Cedula} de empresa {CedulaJuridica}",
                         empleado.Cedula, cedulaJuridica);
 
                     var result = await _employeeDeletionRepository.ExecutePhysicalDeleteAsync(empleado.Cedula);
 
                     if (result)
                     {
-                        _logger.LogInformation("Borrado fÃ­sico exitoso para empleado {Cedula}", empleado.Cedula);
+                        _logger.LogInformation("Borrado físico exitoso para empleado {Cedula}", empleado.Cedula);
                     }
                     else
                     {
-                        _logger.LogWarning("Borrado fÃ­sico fallÃ³ para empleado {Cedula}", empleado.Cedula);
+                        _logger.LogWarning("Borrado físico falló para empleado {Cedula}", empleado.Cedula);
                     }
 
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error durante borrado fÃ­sico para empleado {Cedula}", empleado.Cedula);
+                    _logger.LogError(ex, "Error durante borrado físico para empleado {Cedula}", empleado.Cedula);
                     return false;
                 }
             }).ToList();
@@ -340,15 +340,15 @@ namespace backend.Services
             var results = await Task.WhenAll(deletionTasks);
             var successfulDeletions = results.Count(result => result);
 
-            _logger.LogInformation("Proceso de borrado fÃ­sico completado para empresa {CedulaJuridica}: {Successful}/{Total} empleados procesados exitosamente",
+            _logger.LogInformation("Proceso de borrado físico completado para empresa {CedulaJuridica}: {Successful}/{Total} empleados procesados exitosamente",
                 cedulaJuridica, successfulDeletions, empleados.Count);
 
             return new CompanyDeletionResult
             {
                 Success = successfulDeletions == empleados.Count,
                 Message = successfulDeletions == empleados.Count
-                    ? $"Todos los {empleados.Count} empleados fueron borrados fÃ­sicamente exitosamente"
-                    : $"{successfulDeletions} de {empleados.Count} empleados fueron borrados fÃ­sicamente exitosamente",
+                    ? $"Todos los {empleados.Count} empleados fueron borrados físicamente exitosamente"
+                    : $"{successfulDeletions} de {empleados.Count} empleados fueron borrados físicamente exitosamente",
                 EmployeesProcessed = empleados.Count,
                 SuccessfulDeletions = successfulDeletions,
                 BenefitsProcessed = 0,
@@ -362,7 +362,7 @@ namespace backend.Services
             {
                 try
                 {
-                    _logger.LogDebug("Iniciando borrado lÃ³gico para beneficio {IdBeneficio} - {Nombre} de empresa {CedulaJuridica}",
+                    _logger.LogDebug("Iniciando borrado lógico para beneficio {IdBeneficio} - {Nombre} de empresa {CedulaJuridica}",
                         beneficio.IdBeneficio, beneficio.Nombre, cedulaJuridica);
 
                     var isUsedInDeductions = _beneficioRepository.ExistsInEmployerBenefitDeductions(beneficio.IdBeneficio);
@@ -371,14 +371,14 @@ namespace backend.Services
 
                     _beneficioRepository.LogicalDeletion(beneficio.IdBeneficio, lastPeriod);
 
-                    _logger.LogInformation("Borrado lÃ³gico exitoso para beneficio {IdBeneficio} - {Nombre}",
+                    _logger.LogInformation("Borrado lógico exitoso para beneficio {IdBeneficio} - {Nombre}",
                         beneficio.IdBeneficio, beneficio.Nombre);
 
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error durante borrado lÃ³gico para beneficio {IdBeneficio} - {Nombre}",
+                    _logger.LogError(ex, "Error durante borrado lógico para beneficio {IdBeneficio} - {Nombre}",
                         beneficio.IdBeneficio, beneficio.Nombre);
                     return false;
                 }
@@ -387,15 +387,15 @@ namespace backend.Services
             var results = await Task.WhenAll(deletionTasks);
             var successfulDeletions = results.Count(result => result);
 
-            _logger.LogInformation("Proceso de borrado lÃ³gico completado para empresa {CedulaJuridica}: {Successful}/{Total} beneficios procesados exitosamente",
+            _logger.LogInformation("Proceso de borrado lógico completado para empresa {CedulaJuridica}: {Successful}/{Total} beneficios procesados exitosamente",
                 cedulaJuridica, successfulDeletions, beneficios.Count);
 
             return new CompanyDeletionResult
             {
                 Success = successfulDeletions == beneficios.Count,
                 Message = successfulDeletions == beneficios.Count
-                    ? $"Todos los {beneficios.Count} beneficios fueron borrados lÃ³gicamente exitosamente"
-                    : $"{successfulDeletions} de {beneficios.Count} beneficios fueron borrados lÃ³gicamente exitosamente",
+                    ? $"Todos los {beneficios.Count} beneficios fueron borrados lógicamente exitosamente"
+                    : $"{successfulDeletions} de {beneficios.Count} beneficios fueron borrados lógicamente exitosamente",
                 EmployeesProcessed = 0,
                 SuccessfulDeletions = 0,
                 BenefitsProcessed = beneficios.Count,
@@ -409,19 +409,19 @@ namespace backend.Services
             {
                 try
                 {
-                    _logger.LogDebug("Iniciando borrado fÃ­sico para beneficio {IdBeneficio} - {Nombre} de empresa {CedulaJuridica}",
+                    _logger.LogDebug("Iniciando borrado físico para beneficio {IdBeneficio} - {Nombre} de empresa {CedulaJuridica}",
                         beneficio.IdBeneficio, beneficio.Nombre, cedulaJuridica);
 
                     _beneficioRepository.PhysicalDeletion(beneficio.IdBeneficio);
 
-                    _logger.LogInformation("Borrado fÃ­sico exitoso para beneficio {IdBeneficio} - {Nombre}",
+                    _logger.LogInformation("Borrado físico exitoso para beneficio {IdBeneficio} - {Nombre}",
                         beneficio.IdBeneficio, beneficio.Nombre);
 
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error durante borrado fÃ­sico para beneficio {IdBeneficio} - {Nombre}",
+                    _logger.LogError(ex, "Error durante borrado físico para beneficio {IdBeneficio} - {Nombre}",
                         beneficio.IdBeneficio, beneficio.Nombre);
                     return false;
                 }
@@ -431,15 +431,15 @@ namespace backend.Services
             var successfulDeletions = results.Count(result => result);
 
 
-            _logger.LogInformation("Proceso de borrado fÃ­sico completado para empresa {CedulaJuridica}: {Successful}/{Total} beneficios procesados exitosamente",
+            _logger.LogInformation("Proceso de borrado físico completado para empresa {CedulaJuridica}: {Successful}/{Total} beneficios procesados exitosamente",
                 cedulaJuridica, successfulDeletions, beneficios.Count);
 
             return new CompanyDeletionResult
             {
                 Success = successfulDeletions == beneficios.Count,
                 Message = successfulDeletions == beneficios.Count
-                    ? $"Todos los {beneficios.Count} beneficios fueron borrados fÃ­sicamente exitosamente"
-                    : $"{successfulDeletions} de {beneficios.Count} beneficios fueron borrados fÃ­sicamente exitosamente",
+                    ? $"Todos los {beneficios.Count} beneficios fueron borrados físicamente exitosamente"
+                    : $"{successfulDeletions} de {beneficios.Count} beneficios fueron borrados físicamente exitosamente",
                 EmployeesProcessed = 0,
                 SuccessfulDeletions = 0,
                 BenefitsProcessed = beneficios.Count,

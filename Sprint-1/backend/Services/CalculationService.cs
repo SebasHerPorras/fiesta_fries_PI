@@ -1,4 +1,4 @@
-Ôªøusing backend.Interfaces;
+using backend.Interfaces;
 using backend.Interfaces.Services;
 using backend.Models;
 using backend.Repositories;
@@ -53,13 +53,13 @@ namespace backend.Services
         {
             try
             {
-                _logger.LogDebug("=== INICIANDO C√ÅLCULO DE BENEFICIOS ===");
+                _logger.LogDebug("=== INICIANDO C¡LCULO DE BENEFICIOS ===");
                 _logger.LogDebug("Empleado: {Nombre} ({Cedula})",
                     empleado.NombreEmpleado, empleado.CedulaEmpleado);
 
                 var totalBenefits = await _benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
 
-                _logger.LogDebug("Total beneficios para {Nombre}: ‚Ç°{Total}",
+                _logger.LogDebug("Total beneficios para {Nombre}: ¢{Total}",
                     empleado.NombreEmpleado, totalBenefits);
 
                 return totalBenefits;

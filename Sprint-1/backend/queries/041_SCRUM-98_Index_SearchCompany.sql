@@ -1,3 +1,3 @@
--- Índice para búsquedas de empresas activas
-CREATE INDEX IX_empresa_IsDeleted ON empresa(IsDeleted) 
+ï»¿-- ï¿½ndice para bï¿½squedas de empresas activas
+CREATE INDEX IX_empresa_IsDeleted ON [Fiesta_Fries_DB].[Empresa](IsDeleted) 
 WHERE IsDeleted = 0;

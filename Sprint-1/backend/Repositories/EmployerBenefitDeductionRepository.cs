@@ -1,4 +1,4 @@
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using backend.Models;
 using Dapper;
 
@@ -67,8 +67,7 @@ namespace backend.Repositories
                         BenefitType,
                         Percentage,
                         CreatedDate
-                    FROM EmployerBenefitDeductions
-                    WHERE ReportId = @ReportId
+                    FROM [Fiesta_Fries_DB].[EmployerBenefitDeductions] WHERE ReportId = @ReportId
                     ORDER BY EmployeeId, BenefitName";
 
                 return connection.Query<EmployerBenefitDeductionDto>(query, new { ReportId = reportId }).ToList();
@@ -99,8 +98,7 @@ namespace backend.Repositories
                         BenefitType,
                         Percentage,
                         CreatedDate
-                    FROM EmployerBenefitDeductions
-                    WHERE EmployeeId = @EmployeeId 
+                    FROM [Fiesta_Fries_DB].[EmployerBenefitDeductions] WHERE EmployeeId = @EmployeeId 
                       AND CedulaJuridicaEmpresa = @CedulaJuridicaEmpresa
                     ORDER BY CreatedDate DESC";
 

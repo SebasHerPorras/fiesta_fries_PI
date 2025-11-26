@@ -1,11 +1,11 @@
-ï»¿using backend.Models;
+using backend.Models;
 using backend.Repositories;
 using backend.Services;
 using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Quic;
@@ -42,13 +42,13 @@ namespace backend.Controllers
             if (user == null)
             {
                 Console.WriteLine("[DEBUG] Authentication failed for email: " + request.Email);
-                return Unauthorized("Credenciales invÃ¡lidas.");
+                return Unauthorized("Credenciales inválidas.");
             }
 
             Console.WriteLine("[DEBUG] Authentication succeeded for user id: " + user.Id);
             Console.WriteLine($"[DEBUG] User is admin: {user.admin}");
 
-            // Si es admin, retornar solo datos bÃ¡sicos
+            // Si es admin, retornar solo datos básicos
             if (user.admin == true)
             {
                 Console.WriteLine("[DEBUG] User is admin - returning basic data");
@@ -91,7 +91,7 @@ namespace backend.Controllers
         [HttpPost("create")]
         public ActionResult Create([FromBody] UserModel request)
         {
-            Console.WriteLine("Entro en el mÃ©todo de creaciÃ³n de usuario\n");
+            Console.WriteLine("Entro en el método de creación de usuario\n");
             if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.PasswordHash)) {
                 return BadRequest("Email y password son requeridos");
             }
@@ -111,18 +111,18 @@ namespace backend.Controllers
             const string query = @"INSERT INTO dbo.[User] (PK_User , email, password) VALUES (@Id, @Email, @PasswordHash)";
             connection.Execute(query, newUser);
 
-            Console.WriteLine("Query realizado con Ã©xito\n");
+            Console.WriteLine("Query realizado con éxito\n");
 
 
 
 
-            //Ojito pq aquÃ­ vamos a aÃ±adir la vara del correo electrÃ³nico 
+            //Ojito pq aquí vamos a añadir la vara del correo electrónico 
 
             // vamos a generar el token 
 
             var token = Guid.NewGuid().ToString();
 
-            // La expiraciÃ³n va a ser cada 3 dÃ­as
+            // La expiración va a ser cada 3 días
 
             DateTime expiration = DateTime.Now.AddDays(3);
 
@@ -134,14 +134,14 @@ namespace backend.Controllers
             };
 
 
-            //Justo aquÃ­ tengo que conectarme para modificar la tabla, realzar un insert
+            //Justo aquí tengo que conectarme para modificar la tabla, realzar un insert
             var mailRepository = new MailRepository();
 
 
 
             mailRepository.insertMailNoty(mailTokenVerification);
 
-            Console.WriteLine("Query realizado con Ã©xito\n");
+            Console.WriteLine("Query realizado con éxito\n");
 
             //preparamos el link al api donde vamos a manejar la vaina
             var verificationLink = $"http://localhost:5081/api/user/verify?token={token}";
@@ -153,9 +153,9 @@ namespace backend.Controllers
 
             const string password = "rxhd qmzc uvxi sxmg";
 
-            const string subject = "VerificaciÃ³n de CreaciÃ³n de usuario Fiesta Fries";
+            const string subject = "Verificación de Creación de usuario Fiesta Fries";
 
-            string body = $"Â¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficaciÃ³n de usuario para finalizar el proceso de creaciÃ³n de tu cuenta: {verificationLink}";
+            string body = $"¡Saludos cordiales!, somos la gente de Fiesta Fries enviandote el enlace de verficación de usuario para finalizar el proceso de creación de tu cuenta: {verificationLink}";
 
             // vamo a crear una instancia al servicio que nos va a facilitar todas las cosas
             var smtp = new SmtpClient
@@ -169,7 +169,7 @@ namespace backend.Controllers
                 Credentials = new NetworkCredential(mailAddr.Address, password)
             };
 
-            //AquÃ­ vamos a enviar la vaina
+            //Aquí vamos a enviar la vaina
             //Le indicamos que vamos a enviar 
             using (var message = new MailMessage(mailAddr, sendTo)
             {
@@ -183,7 +183,7 @@ namespace backend.Controllers
             return Ok(new { id = newUser.Id, email = newUser.Email });
         }
 
-        //Api para la validaciÃ³n de usuari
+        //Api para la validación de usuari
         [HttpGet("verify")]
         public ActionResult verification([FromQuery] string token)
         {
@@ -191,15 +191,15 @@ namespace backend.Controllers
 
             var verificationMail = repo.getByToken(token);
 
-            /// AquÃ­ hacemos las validaciones para el token
+            /// Aquí hacemos las validaciones para el token
             /// 
             if (verificationMail == null || verificationMail.experationDate < DateTime.UtcNow)
             {
-                return BadRequest("El token es nulo o ya caducÃ³");
+                return BadRequest("El token es nulo o ya caducó");
             }
 
             /// Necesito verificarlo
-            /// objeto para realizar la verificaciÃ³n
+            /// objeto para realizar la verificación
             var verificationDate = new
             {
                 active = 1,

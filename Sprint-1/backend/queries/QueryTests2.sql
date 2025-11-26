@@ -1,9 +1,11 @@
-ï»¿USE Fiesta_Fries_DB;
+USE [G02-2025-II-DB];
+GO
+-- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
---Caso NÃºmero 1
+--Caso Número 1
 
-INSERT INTO [User](email, [password])
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('pi.empleador@gmail2.com', '123456'); 
 GO
 
@@ -12,7 +14,7 @@ SELECT TOP 1 @userGuid = PK_User
 FROM [User] 
 WHERE email = 'pi.empleador@gmail2.com';
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -27,17 +29,17 @@ VALUES(
     'Pablo',
     'Ibarra',
     '1990-05-12',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88887777,
     @userGuid,
     'Empleador'
 );
 GO
 
-INSERT INTO Empresa(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
-    DueÃ±oEmpresa,
+    DueñoEmpresa,
     Telefono,
     DireccionEspecifica,
     NoMaxBeneficios,
@@ -50,7 +52,7 @@ VALUES(
     'Empresa PI Quincenal',
     550010002,       
     88880000,
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     2,
     7,               
     'Semanal',
@@ -58,8 +60,8 @@ VALUES(
 );
 GO
 
---Caso nÃºmero 2
-INSERT INTO [User](email, [password])
+--Caso número 2
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('mariana.vasquez@gmail.com', '123456');
 GO
 
@@ -68,7 +70,7 @@ SELECT TOP 1 @userGuid_Empleado = PK_User
 FROM [User] 
 WHERE email = 'mariana.vasquez@gmail.com';
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -81,16 +83,16 @@ INSERT INTO Persona(
 VALUES(
     402830876,
     'Mariana',
-    'VÃ¡squez',
+    'Vásquez',
     '1999-01-28',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88880123,
     @userGuid_Empleado,
     'Empleado'
 );
 GO
 
-INSERT INTO Empleado(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     position,
     employmentType,
@@ -111,9 +113,9 @@ VALUES(
 GO
 
 
---Caso NÃºmero 3
+--Caso Número 3
 
-INSERT INTO [User](email, [password])
+INSERT INTO [Fiesta_Fries_DB].[User](email, [password])
 VALUES('juan.vasquez@gmail.com', '123456');
 GO
 
@@ -122,7 +124,7 @@ SELECT TOP 1 @userGuid_Empleado = PK_User
 FROM [User] 
 WHERE email = 'juan.vasquez@gmail.com';
 
-INSERT INTO Persona(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     firstName,
     secondName,
@@ -135,16 +137,16 @@ INSERT INTO Persona(
 VALUES(
     208760988,
     'Juan',
-    'VÃ¡squez',
+    'Vásquez',
     '1991-12-23',
-    'San JosÃ©, Costa Rica',
+    'San José, Costa Rica',
     88880234,
     @userGuid_Empleado,
     'Empleado'
 );
 GO
 
-INSERT INTO Empleado(
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     id,
     position,
     employmentType,
@@ -164,8 +166,8 @@ VALUES(
 );
 GO
 
---caso nÃºmero 4
-INSERT INTO Beneficio(
+--caso número 4
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -183,8 +185,8 @@ VALUES(
 );
 GO
 
---caso nÃºmero 5
-INSERT INTO Beneficio(
+--caso número 5
+INSERT INTO [Fiesta_Fries_DB].[Persona](
     CedulaJuridica,
     Nombre,
     Tipo,
@@ -194,7 +196,7 @@ INSERT INTO Beneficio(
 )
 VALUES(
     550030003,
-    'EducaciÃ³n',
+    'Educación',
     'Porcentual',
     'Empresa',
     3.00,
@@ -202,31 +204,31 @@ VALUES(
 );
 GO
 
---Caso nÃºermo 6
+--Caso núermo 6
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
 WHERE Nombre = 'Gimnasio' AND CedulaJuridica = 550030003;
 
-    INSERT INTO EmployeeBenefit(employeeId, benefitId)
+    INSERT INTO [Fiesta_Fries_DB].[Persona](employeeId, benefitId)
     VALUES(208760988, @BenefitId);
 GO
 
---caso nÃºmero7
+--caso número7
 DECLARE @BenefitId INT;
 SELECT TOP 1 @BenefitId = IdBeneficio 
 FROM Beneficio 
-WHERE Nombre = 'EducaciÃ³n' AND CedulaJuridica = 550030003;
+WHERE Nombre = 'Educación' AND CedulaJuridica = 550030003;
 
-    INSERT INTO EmployeeBenefit(employeeId, benefitId)
+    INSERT INTO [Fiesta_Fries_DB].[Persona](employeeId, benefitId)
     VALUES(208760988, @BenefitId);
 GO
 
---Csao nÃºmero8
+--Csao número8
 DECLARE @WeekStart DATE;
 DECLARE @EmployeeId INT;
 DECLARE EmployeeCursor CURSOR FOR
-SELECT id FROM Empleado;
+SELECT id FROM [Fiesta_Fries_DB].[Persona];
 
 OPEN EmployeeCursor;
 FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;
@@ -262,12 +264,12 @@ CLOSE EmployeeCursor;
 DEALLOCATE EmployeeCursor;
 GO
 
---caso nÃºmero 10
+--caso número 10
 
 DECLARE @WeekStart DATE;
 DECLARE @EmployeeId INT;
 DECLARE EmployeeCursor CURSOR FOR
-SELECT id FROM Empleado;
+SELECT id FROM [Fiesta_Fries_DB].[Persona];
 
 OPEN EmployeeCursor;
 FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;

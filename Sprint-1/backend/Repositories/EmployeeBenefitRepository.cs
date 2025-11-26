@@ -1,4 +1,4 @@
-﻿using backend.Models;
+using backend.Models;
 using backend.Interfaces;
 using System.Threading.Tasks;
 using System;
@@ -6,7 +6,7 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace backend.Repositories
 {
@@ -22,8 +22,7 @@ namespace backend.Repositories
         public async Task<List<int>> GetSelectedBenefitIdsAsync(int employeeId)
         {
             var sql = @"SELECT benefitId
-                       FROM EmployeeBenefit
-                       WHERE employeeId = @employeeId
+                       FROM [Fiesta_Fries_DB].[EmployeeBenefit] WHERE employeeId = @employeeId
                         AND IsDeleted = 0";
             var result = await _db.QueryAsync<int>(sql, new { employeeId });
             return result.AsList();
@@ -35,11 +34,11 @@ namespace backend.Repositories
             if (entity.EmployeeId <= 0 || entity.BenefitId <= 0) throw new ArgumentException("EmployeeId y BenefitId requeridos");
 
             const string sql = @"
-                INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType)
+                INSERT INTO [Fiesta_Fries_DB].[EmployeeBenefit] (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType)
                 VALUES (@EmployeeId, @BenefitId, @PensionType, @DependentsCount, @ApiName, @BenefitValue, @BenefitType);";
 
             // Abrir la conexión si está cerrada
-            if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
+            if (_db is Microsoft.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
             {
                 await sqlConn.OpenAsync();
             }
@@ -89,11 +88,10 @@ namespace backend.Repositories
                     quienAsume        AS QuienAsume,
                     valor             AS Valor,
                     etiqueta          AS Etiqueta
-                FROM Beneficio
-                WHERE idBeneficio = @BeneficioId;";
+                FROM [Fiesta_Fries_DB].[Beneficio] WHERE idBeneficio = @BeneficioId;";
 
             // Abrir la conexión si está cerrada
-            if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
+            if (_db is Microsoft.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
             {
                 await sqlConn.OpenAsync();
             }
@@ -115,11 +113,10 @@ namespace backend.Repositories
                     apiName           AS ApiName,
                     benefitValue      AS BenefitValue,
                     benefitType       AS BenefitType
-                FROM EmployeeBenefit
-                WHERE employeeId = @EmployeeId
+                FROM [Fiesta_Fries_DB].[EmployeeBenefit] WHERE employeeId = @EmployeeId
                     AND IsDeleted = 0;";
 
-            if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
+            if (_db is Microsoft.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
             {
                 await sqlConn.OpenAsync();
             }
@@ -132,8 +129,7 @@ namespace backend.Repositories
         {
             const string query = @"
             SELECT COUNT(*) 
-            FROM EmployeeBenefit 
-            WHERE EmployeeId = @EmployeeId
+            FROM [Fiesta_Fries_DB].[EmployeeBenefit] WHERE EmployeeId = @EmployeeId
                 AND IsDeleted = 0; ";
 
             return _db.ExecuteScalar<int>(query, new { EmployeeId = employeeId });
