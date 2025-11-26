@@ -64,8 +64,8 @@ namespace backend.Services
 
                 var deducciones = employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
 
-                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre} (SaveInDB: {SaveInDB})",
-                     deducciones, empleado.NombreEmpleado, saveInDB);
+                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre}",
+                     deducciones, empleado.NombreEmpleado);
 
                 return await Task.FromResult(deducciones);
             }
@@ -81,8 +81,8 @@ namespace backend.Services
             try
             {
                 _logger.LogDebug("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
-                _logger.LogDebug("Empleado: {Nombre} ({Cedula}), PayrollId: {PayrollId}",
-                    empleado.NombreEmpleado, empleado.CedulaEmpleado, payrollId);
+                _logger.LogDebug("Empleado: {Nombre} ({Cedula})",
+                    empleado.NombreEmpleado, empleado.CedulaEmpleado);
 
                 bool saveInDB = payrollId > 0;
 
