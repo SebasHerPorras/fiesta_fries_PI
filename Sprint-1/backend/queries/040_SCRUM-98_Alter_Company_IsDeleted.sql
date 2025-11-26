@@ -1,0 +1,1 @@
+ALTER TABLE empresa ADD IsDeleted BIT NOT NULL DEFAULT 0;

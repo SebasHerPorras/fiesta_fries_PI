@@ -2,7 +2,7 @@
     <div class="wrap">
         <header class="header">
         <nav class="nav">
-            <div class="brand">
+            <div class="displayD">
             <div class="logo-box">
                 <span class="f">F</span>
             </div>
@@ -23,26 +23,25 @@
             </div>
 
             <ul class="nav-list">
-            <li><router-link to="/Home">Home</router-link></li>
-            <li><router-link to="/Profile">Datos Personales</router-link></li>
+                <li><router-link to="/Home">Home</router-link></li>
+                <li><router-link to="/Profile">Datos Personales</router-link></li>
+                <!-- Solo Empleador -->
+                <li v-if="userRole === 'Empleador'">
+                    <router-link to="/FormEmpresa">Registrar Empresa</router-link>
+                </li>
+                <li v-if="userRole === 'Empleador'">
+                    <router-link to="/RegEmpleado">Registrar Empleado</router-link>
+                </li>
 
-            <!-- Solo Empleador -->
-            <li v-if="userRole === 'Empleador'">
-                <router-link to="/FormEmpresa">Registrar Empresa</router-link>
-            </li>
-            <li v-if="userRole === 'Empleador'">
-                <router-link to="/RegEmpleado">Registrar Empleado</router-link>
-            </li>
+                <li v-if="userRole === 'Empleado'">
+                    <router-link to="/Profile">Datos Personales</router-link>
+                </li>
 
-            <li v-if="userRole === 'Empleado'">
-                <router-link to="/Profile">Datos Personales</router-link>
-            </li>
+                <li v-if="isAdmin">
+                    <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+                </li>
 
-            <li v-if="isAdmin">
-                <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
-            </li>
-
-            <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
+                <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
             </ul>
         </nav>
         </header>
@@ -158,7 +157,7 @@
         align-items: center;
     }
 
-    .brand {
+    .displayD {
         display: flex;
         align-items: center;
         gap: 18px;

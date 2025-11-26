@@ -10,5 +10,7 @@ namespace backend.Interfaces
         EmpresaModel GetById(int id);
         EmpresaModel GetByEmployeeUserId(string userId);
         EmpresaModel GetByCedulaJuridica(long cedulaJuridica);
+        int CheckCompanyPayroll(EmpresaModel empresa);
+        int DeleteEmpresa(long cedulaJuridica, bool physicalDelete);
     }
 }

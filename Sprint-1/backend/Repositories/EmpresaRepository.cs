@@ -27,7 +27,9 @@ namespace backend.Handlers.backend.Repositories
                     SELECT e.*, 
                            0 as CantidadEmpleados
                     FROM Empresa e
-                    WHERE e.CedulaJuridica = @CedulaJuridica";
+                    WHERE e.CedulaJuridica = @CedulaJuridica
+                    AND e.isDeleted = 0";
+
 
                 Console.WriteLine($"Buscando empresa con cédula: {cedulaJuridica}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
@@ -243,5 +245,33 @@ namespace backend.Handlers.backend.Repositories
 
             connection.Execute(query, empresa);
         }
+        public int CheckCompanyPayroll(EmpresaModel empresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+                SELECT CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM payroll 
+                        WHERE companyid = @CedulaJuridica
+                    ) THEN 1 
+                    ELSE 0 
+                END";
+
+            return connection.ExecuteScalar<int>(query, new { empresa.CedulaJuridica });
+        }
+        public int DeleteEmpresa(long cedulaJuridica, bool physicalDelete)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            string query = physicalDelete
+                ? @"UPDATE Empresa SET isDeleted = 1 WHERE CedulaJuridica = @CedulaJuridica"
+                : @"DELETE FROM Empresa WHERE CedulaJuridica = @CedulaJuridica";
+
+
+            return connection.Execute(query, new { CedulaJuridica = cedulaJuridica });
+        }
+
     }
 }
