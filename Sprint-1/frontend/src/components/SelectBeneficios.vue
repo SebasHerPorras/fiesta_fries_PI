@@ -15,6 +15,7 @@
 
         <ul class="nav-list">
           <li><router-link to="/Profile">Datos Personales</router-link></li>
+          <li><router-link to="/Reportes">Reportes</router-link></li>
           <li v-if="userRole === 'Empleado'">
             <router-link to="/RegisterHoras">Registrar Horas</router-link>
           </li>

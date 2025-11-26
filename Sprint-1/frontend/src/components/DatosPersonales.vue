@@ -16,7 +16,7 @@
           <ul class="nav-list">
               <!-- Siempre visibles -->
               <li><router-link to="/Profile">Datos Personales</router-link></li>
-
+              <li><router-link to="/Reportes">Reportes</router-link></li>
               <!-- Solo Empleador: Registrar Empresa -->
               <li v-if="userRole === 'Empleador'">
                   <router-link to="/FormEmpresa">Registrar Empresa</router-link>
