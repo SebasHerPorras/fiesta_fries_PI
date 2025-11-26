@@ -15,6 +15,7 @@ namespace backend_test
         private Mock<IEmployerBenefitDeductionService> _mockEmployerBenefitDeductionService;
         private Mock<IExternalApiFactory> _mockApiFactory;
         private Mock<IEmployeeBenefitService> _mockEmployeeBenefitService;
+        private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
         private CalculatorBenefitsService _service;
         private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
 
@@ -32,7 +33,8 @@ namespace backend_test
                 _mockEmployerBenefitDeductionService.Object,
                 _mockApiFactory.Object,
                 _mockEmployeeBenefitService.Object,
-                _mockLogger.Object
+                _mockLogger.Object,
+                true
             );
         }
 
