@@ -99,7 +99,6 @@ namespace backend.Repositories
             }
         }
 
-        // ======= TU MÉTODO (HEAD) =======
         public async Task<PayrollEmployeeReport> GetPayrollEmployeeReportAsync(int payrollId, int employeeId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -179,7 +178,6 @@ namespace backend.Repositories
             }
         }
 
-        // ======= TU OTRO MÉTODO (HEAD) =======
         public async Task<List<TopEmployeeDto>> GetTop12EmployeesByCompanyAsync(long companyId)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -224,7 +222,6 @@ namespace backend.Repositories
             }
         }
 
-        // ======= MÉTODO QUE VIENE DE origin/develop =======
         public async Task<DateTime?> GetLastPeriodAsync(int benefitId)
         {
             using var connection = new SqlConnection(_connectionString);
