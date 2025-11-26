@@ -16,23 +16,23 @@ namespace backend.Repositories
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext")
-                ?? throw new InvalidOperationException("Connection string 'UserContext' not found. Añade ConnectionStrings:UserContext en appsettings.json.");
+                ?? throw new InvalidOperationException("Connection string 'UserContext' not found. Aï¿½ade ConnectionStrings:UserContext en appsettings.json.");
         }
 
         public List<UserModel> GetUsers()
         {
             if (string.IsNullOrWhiteSpace(_connectionString))
-                throw new InvalidOperationException("Connection string 'UserContext' está vacía.");
+                throw new InvalidOperationException("Connection string 'UserContext' estï¿½ vacï¿½a.");
 
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User]";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM [Fiesta_Fries_DB].[User]";
             return connection.Query<UserModel>(query).ToList();
         }
 
         public UserModel? GetById(Guid id)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE PK_User = @Id";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM [Fiesta_Fries_DB].[User] WHERE PK_User = @Id";
             return connection.QuerySingleOrDefault<UserModel>(query, new { Id = id });
         }
 
@@ -40,7 +40,7 @@ namespace backend.Repositories
         public UserModel? GetByEmail(string email)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE email = @Email";
+            const string query = "SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM [Fiesta_Fries_DB].[User] WHERE email = @Email";
             return connection.QuerySingleOrDefault<UserModel>(query, new { Email = email });
         }
 
@@ -60,7 +60,7 @@ namespace backend.Repositories
         public UserModel? EmailVerification(string email_)
         {
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM dbo.[User] WHERE email = @Email";
+            const string query = @"SELECT PK_User AS Id, email AS Email, [password] AS PasswordHash, active, admin FROM [Fiesta_Fries_DB].[User] WHERE email = @Email";
             return connection.QueryFirstOrDefault<UserModel>(query, new { Email = email_ });
         }
     }

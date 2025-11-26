@@ -10,7 +10,7 @@ GO
 -- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-CREATE TABLE [User] (
+CREATE TABLE [Fiesta_Fries_DB].[User] (
 	PK_User UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
 	email nvarchar(50) not null,
 	[password] nvarchar(50) not null, -- el password debe ser encriptado (hash)
@@ -18,8 +18,8 @@ CREATE TABLE [User] (
 	
 )
 
-ALTER TABLE [Fiesta_Fries_DB].[Persona] 
+ALTER TABLE [Fiesta_Fries_DB].[User] 
 ALTER COLUMN email nvarchar(60) NOT NULL; -- Modificar el tamaño del campo email a 60 caracteres para el hash
 
 
-select * FROM [Fiesta_Fries_DB].[Persona];
+select * FROM [Fiesta_Fries_DB].[User];

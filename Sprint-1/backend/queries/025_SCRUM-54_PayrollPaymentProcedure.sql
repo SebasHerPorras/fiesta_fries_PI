@@ -3,7 +3,7 @@ GO
 -- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-CREATE PROCEDURE sp_CreatePayrollPayment
+CREATE PROCEDURE [Fiesta_Fries_DB].sp_CreatePayrollPayment
     @PayrollId INT,
     @EmployeeId INT,
     @GrossSalary DECIMAL(18,2),

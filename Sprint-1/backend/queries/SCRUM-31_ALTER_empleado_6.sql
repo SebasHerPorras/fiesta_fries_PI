@@ -17,8 +17,10 @@ ADD idCompny BIGINT NULL, CONSTRAINT FK_Empleado_Empresa FOREIGN KEY(idCompny) R
 
 SELECT* FROM [Fiesta_Fries_DB].[Empleado];
 
+/*
 DELETE FROM [Fiesta_Fries_DB].[User];
 DELETE FROM [Fiesta_Fries_DB].[Empleado];
 DELETE FROM [Fiesta_Fries_DB].[Empleado];
 DELETE FROM [Fiesta_Fries_DB].[Empleado];
 DELETE FROM [Fiesta_Fries_DB].[Empleado];
+*/

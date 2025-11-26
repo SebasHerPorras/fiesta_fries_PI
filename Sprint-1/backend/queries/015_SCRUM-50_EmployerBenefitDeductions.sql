@@ -32,7 +32,7 @@ CREATE INDEX IX_EmployerBenefitDeductions_Company ON [Fiesta_Fries_DB].[Employer
 GO
 
 -- Stored Procedure para insertar deducciones de beneficios
-CREATE OR ALTER PROCEDURE SP_InsertEmployerBenefitDeduction
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_InsertEmployerBenefitDeduction
     @ReportId INT,
     @EmployeeId INT,
     @CedulaJuridicaEmpresa BIGINT,

@@ -65,7 +65,7 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = "SELECT TOP 1 Fecha FROM (SELECT CreatedDate   AS Fecha, EmployeeId FROM EmployeeDeductionsByPayroll)AS fechas WHERE Fecha <= GETDATE() AND EmployeeId = @id ORDER BY Fecha DESC";
+            const string query = "SELECT TOP 1 Fecha FROM (SELECT CreatedDate   AS Fecha, EmployeeId FROM [Fiesta_Fries_DB].[EmployeeDeductionsByPayroll])AS fechas WHERE Fecha <= GETDATE() AND EmployeeId = @id ORDER BY Fecha DESC";
 
             return connection.QuerySingleOrDefault<DateTime?>(query, new {id = id_});
         }
@@ -154,7 +154,7 @@ namespace backend.Repositories
                 return payrolls;
                 
             }catch(Exception ex){
-                Console.WriteLine("Ocurrió un error trayendo los datos del Payroll de este empleado en esta fecha");
+                Console.WriteLine("Ocurriï¿½ un error trayendo los datos del Payroll de este empleado en esta fecha");
                 return new List<EmployeeDeductionsByPayrollModel>();
             }
         }
@@ -182,7 +182,7 @@ namespace backend.Repositories
                 SELECT * FROM [Fiesta_Fries_DB].[Empleado] WHERE id = @id 
                   AND (IsDeleted = 0 OR IsDeleted IS NULL)";
             
-            Console.WriteLine("Querry realizado con éxito\n");
+            Console.WriteLine("Querry realizado con ï¿½xito\n");
 
             return connection.QuerySingleOrDefault<EmpleadoModel>(query, new { id = id_ });
         }

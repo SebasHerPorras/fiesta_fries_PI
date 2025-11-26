@@ -4,7 +4,7 @@ GO
 GO
 
 go
-CREATE FUNCTION CanEmployeeSelectBenefit(
+CREATE FUNCTION [Fiesta_Fries_DB].CanEmployeeSelectBenefit(
     @EmployeeId INT,
     @BenefitId INT
 )

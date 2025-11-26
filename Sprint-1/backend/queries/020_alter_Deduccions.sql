@@ -120,13 +120,13 @@ SELECT
     [Name] AS Nombre,
     CONCAT(CAST([Percentage] * 100 AS DECIMAL(5,2)), '%') AS Porcentaje,
     CASE WHEN [Active] = 1 THEN 'Activo' ELSE 'Inactivo' END AS Estado
-FROM EmployerSocialSecurityContributions
+FROM [Fiesta_Fries_DB].EmployerSocialSecurityContributions
 ORDER BY [Percentage] DESC;
 
 PRINT '';
 SELECT 
     CONCAT('Total Aporte Patronal: ', CAST(SUM([Percentage]) * 100 AS DECIMAL(5,2)), '%') AS Resumen
-FROM EmployerSocialSecurityContributions
+FROM [Fiesta_Fries_DB].EmployerSocialSecurityContributions
 WHERE [Active] = 1;
 
 PRINT '';
@@ -137,12 +137,12 @@ SELECT
     [Name] AS Nombre,
     CONCAT(CAST([Percentage] * 100 AS DECIMAL(5,2)), '%') AS Porcentaje,
     CASE WHEN [Active] = 1 THEN 'Activo' ELSE 'Inactivo' END AS Estado
-FROM EmployeeSocialSecurityContributions
+FROM [Fiesta_Fries_DB].EmployeeSocialSecurityContributions
 ORDER BY [Percentage] DESC;
 
 PRINT '';
 SELECT 
     CONCAT('Total Deducciones Empleado: ', CAST(SUM([Percentage]) * 100 AS DECIMAL(5,2)), '%') AS Resumen
-FROM EmployeeSocialSecurityContributions
+FROM [Fiesta_Fries_DB].EmployeeSocialSecurityContributions
 WHERE [Active] = 1;
 GO

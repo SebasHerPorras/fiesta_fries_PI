@@ -3,7 +3,7 @@ GO
 -- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
 GO
 
-CREATE OR ALTER PROCEDURE SP_InsertEmployeeDeductionsByPayroll
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_InsertEmployeeDeductionsByPayroll
     @ReportId INT,
     @EmployeeId INT,
     @CedulaJuridicaEmpresa BIGINT,

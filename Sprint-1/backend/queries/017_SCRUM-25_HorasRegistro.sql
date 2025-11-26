@@ -20,7 +20,7 @@ CREATE TABLE [Fiesta_Fries_DB].[Dia](
 );
 
 GO
-CREATE PROCEDURE sp_GetOrCreateWeek
+CREATE PROCEDURE [Fiesta_Fries_DB].sp_GetOrCreateWeek
     @start_date DATE,
     @id_employee INT
 AS
@@ -47,7 +47,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE sp_GetOrCreateDay
+CREATE PROCEDURE [Fiesta_Fries_DB].sp_GetOrCreateDay
     @date DATE,
     @week_start_date DATE,
     @id_employee INT
@@ -75,7 +75,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE sp_AddHoursToDay
+CREATE PROCEDURE [Fiesta_Fries_DB].sp_AddHoursToDay
     @hours_count INT,
     @date DATE,
     @week_start_date DATE,
@@ -89,7 +89,7 @@ END;
 GO
 
 
-CREATE PROCEDURE sp_AddHoursToDayAndGetTable
+CREATE PROCEDURE [Fiesta_Fries_DB].sp_AddHoursToDayAndGetTable
     @hours_count INT,
     @date DATE,
     @week_start_date DATE,
@@ -106,7 +106,7 @@ BEGIN
 END;
 GO
 
-CREATE FUNCTION Fn_ObtenerHoras(@id_employee int,@start_date DATE, @end_date DATE)
+CREATE FUNCTION [Fiesta_Fries_DB].Fn_ObtenerHoras(@id_employee int,@start_date DATE, @end_date DATE)
 RETURNS INT
 AS 
 BEGIN
@@ -119,7 +119,7 @@ FROM Semana WHERE [start_date] BETWEEN @start_date AND @end_date
 END;
 GO
 
-SELECT dbo.Fn_ObtenerHoras(119180745,'2025-10-1','2025-10-31') AS horas_semana;
+SELECT [Fiesta_Fries_DB].Fn_ObtenerHoras(119180745,'2025-10-1','2025-10-31') AS horas_semana;
 
 
 --

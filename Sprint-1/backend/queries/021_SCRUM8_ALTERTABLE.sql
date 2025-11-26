@@ -4,3 +4,4 @@ GO
 GO
 
 ALTER TABLE [Fiesta_Fries_DB].[Empresa] ADD [FechaCreacion] DATETIME NOT NULL;
+select * FROM [Fiesta_Fries_DB].[Empresa];

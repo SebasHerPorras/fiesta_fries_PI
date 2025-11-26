@@ -11,7 +11,7 @@ namespace backend.Repositories
         public MailRepository()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurriï¿½ un error con el appsettings.json");
         }
 
         public void insertMailNoty(MailModel model)
@@ -19,7 +19,7 @@ namespace backend.Repositories
             //vamos a realizar el query
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"INSERT INTO EmailVerification(userID,token,experationDate) VALUES
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].[EmailVerification](userID,token,experationDate) VALUES
                                    (@userID,@token,@experationDate)";
             connection.Execute(query, model);
         }
@@ -31,7 +31,7 @@ namespace backend.Repositories
 
             const string query = @"SELECT* FROM [Fiesta_Fries_DB].[EmailVerification] WHERE token = @token";
 
-            Console.WriteLine("Query realizado con éxito\n");
+            Console.WriteLine("Query realizado con ï¿½xito\n");
             return connection.QuerySingleOrDefault<MailModel>(query,new{ token = token_});
 
         }

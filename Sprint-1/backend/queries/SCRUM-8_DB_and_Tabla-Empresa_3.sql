@@ -26,7 +26,7 @@ GO
 ALTER TABLE [Fiesta_Fries_DB].[Empresa]  
     WITH CHECK ADD CONSTRAINT [FK_Empresa_Persona] 
     FOREIGN KEY([DueñoEmpresa])
-    REFERENCES [dbo].[Persona] ([id]);
+    REFERENCES [Fiesta_Fries_DB].[Persona] ([id]);
 GO
 
 

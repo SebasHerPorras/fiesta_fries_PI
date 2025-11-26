@@ -60,19 +60,19 @@ INSERT INTO [Fiesta_Fries_DB].[User] (email, password) VALUES
 ('diego.cerdasdelgado@ucr.ac.cr', 'password123'),
 ('enrique.bermudez@ucr.ac.cr', 'password123');
 
-UPDATE [Fiesta_Fries_DB].[Empresa] SET [password] = 'Hola.2025'
+UPDATE [Fiesta_Fries_DB].[User] SET [password] = 'Hola.2025'
 WHERE email = 'sebastian.hernandezporras@ucr.ac.cr';
 
-UPDATE [Fiesta_Fries_DB].[Empresa] SET [password] = 'Hola.2025'
+UPDATE [Fiesta_Fries_DB].[User] SET [password] = 'Hola.2025'
 WHERE email = 'emilio.romero@ucr.ac.cr';
 
-UPDATE [Fiesta_Fries_DB].[Empresa] SET [password] = 'Hola.2025'
+UPDATE [Fiesta_Fries_DB].[User] SET [password] = 'Hola.2025'
 WHERE email = 'diego.cerdasdelgado@ucr.ac.cr';
 
-UPDATE [Fiesta_Fries_DB].[Empresa] SET [password] = 'Hola.2025'
+UPDATE [Fiesta_Fries_DB].[User] SET [password] = 'Hola.2025'
 WHERE email = 'enrique.bermudez@ucr.ac.cr';
 
-UPDATE [Fiesta_Fries_DB].[Empresa] SET active = 1
+UPDATE [Fiesta_Fries_DB].[User] SET active = 1
 where email = 'sebastian.hernandezporras@ucr.ac.cr'
 
 update  [User] 
@@ -80,11 +80,11 @@ set [admin] = 1
 where email = 'sebastian.hernandezporras@ucr.ac.cr';
 
 -- Verificar que los usuarios est?n activos
-UPDATE [Fiesta_Fries_DB].[Empresa] SET active = 1 
+UPDATE [Fiesta_Fries_DB].[User] SET active = 1 
 WHERE email IN ('diego.cerdasdelgado@ucr.ac.cr', 'emilio.romero@ucr.ac.cr', 'enrique.bermudez@ucr.ac.cr');
 
 
-INSERT INTO [Fiesta_Fries_DB].[Empresa] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
+INSERT INTO [Fiesta_Fries_DB].[Beneficio] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
 VALUES (
     3101123456,
     'Seguro de coche',
@@ -93,7 +93,7 @@ VALUES (
     10.50,
     'Beneficio'
 );
-select * from Beneficio
+select * from [Fiesta_Fries_DB].Beneficio
 
 -- Insertar empleados para Taco Bell (CedulaJuridica: 3102234567)
 
@@ -202,7 +202,7 @@ INSERT INTO [Fiesta_Fries_DB].[Empleado] (id, position, employmentType, salary, 
 
 
 -- Beneficios para Fiesta Fries
-INSERT INTO [Fiesta_Fries_DB].[Empresa] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
+INSERT INTO [Fiesta_Fries_DB].[Beneficio] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
 VALUES 
 (3101123456, 'Seguro Médico', 'Porcentual', 'Empresa', 8.00, 'Beneficio'),
 (3101123456, 'Transporte', 'API', 'Empresa', 15000, 'Beneficio'),
@@ -210,7 +210,7 @@ VALUES
 (3101123456, 'Capacitación', 'Monto Fijo', 'Empresa', 10000, 'Beneficio');
 
 -- Beneficios para Taco Bell
-INSERT INTO [Fiesta_Fries_DB].[Empresa] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
+INSERT INTO [Fiesta_Fries_DB].[Beneficio] (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta)
 VALUES 
 (3102234567, 'Seguro de Vida', 'Porcentual', 'Empresa', 12.00, 'Beneficio'),
 (3102234567, 'Bonificación', 'Monto Fijo', 'Empresa', 20000, 'Beneficio'),

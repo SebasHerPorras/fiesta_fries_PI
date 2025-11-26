@@ -26,7 +26,7 @@ namespace backend.Controllers
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var query = @"SELECT TOP 1 id FROM Empleado WHERE idCompny = @empresaId ORDER BY id DESC";
+                var query = @"SELECT TOP 1 id FROM [Fiesta_Fries_DB].[Empleado] WHERE idCompny = @empresaId ORDER BY id DESC";
                 var cedula = connection.QueryFirstOrDefault<string>(query, new { empresaId });
                 return Ok(cedula ?? "0");
             }

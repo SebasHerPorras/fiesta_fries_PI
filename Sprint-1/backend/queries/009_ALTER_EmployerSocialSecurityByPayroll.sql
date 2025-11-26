@@ -13,8 +13,3 @@ ALTER TABLE [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll]
 ADD CONSTRAINT FK_EmployerSocialSecurityByPayroll_Empresa 
 FOREIGN KEY (CedulaJuridicaEmpresa) REFERENCES Empresa(CedulaJuridica);
 GO
-
-USE [G02-2025-II-DB];
-GO
--- Todas las tablas se crearÃ¡n bajo el schema Fiesta_Fries_DB
-GO

@@ -15,11 +15,11 @@ CREATE TABLE [Fiesta_Fries_DB].[PayrollPayment](
     [Status] [nvarchar](20) NOT NULL DEFAULT 'PENDIENTE',
     CONSTRAINT [PK_PayrollPayment] PRIMARY KEY ([PaymentId]),
     CONSTRAINT [FK_PayrollPayment_Payroll] FOREIGN KEY ([PayrollId]) 
-        REFERENCES [dbo].[Payroll] ([PayrollId]),
+        REFERENCES [Fiesta_Fries_DB].[Payroll] ([PayrollId]),
     CONSTRAINT [FK_PayrollPayment_Employee] FOREIGN KEY ([EmployeeId]) 
-        REFERENCES [dbo].[Empleado] ([id])
+        REFERENCES [Fiesta_Fries_DB].[Empleado] ([id])
 )
 
 --b�squedas por empleado-planilla
 CREATE UNIQUE INDEX [IX_PayrollPayment_EmployeePayroll] 
-ON [dbo].[PayrollPayment] ([EmployeeId], [PayrollId])
+ON [Fiesta_Fries_DB].[PayrollPayment] ([EmployeeId], [PayrollId])

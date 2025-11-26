@@ -82,7 +82,7 @@ namespace backend.Services
                     idCompny = req.idCompny
                 };
 
-                const string insertEmpleado = @"INSERT INTO dbo.Empleado (id, position, employmentType,salary,hireDate,department,idCompny) VALUES (@id, @position, @employmentType, @salary,@hireDate,@department,@idCompny)";
+                const string insertEmpleado = @"INSERT INTO [Fiesta_Fries_DB].[Empleado] (id, position, employmentType,salary,hireDate,department,idCompny) VALUES (@id, @position, @employmentType, @salary,@hireDate,@department,@idCompny)";
                 connection.Execute(insertEmpleado, empleadoD);
                 Console.WriteLine($"Empleado creado para persona id={personaUsed.id}");
 
@@ -107,7 +107,7 @@ namespace backend.Services
         public async Task<decimal> GetSalarioBrutoAsync(int cedulaEmpleado)
         {
             using var connection = new SqlConnection(_connectionString);
-            const string query = "SELECT salary FROM Empleado WHERE id = @Cedula";
+            const string query = "SELECT salary FROM [Fiesta_Fries_DB].[Empleado] WHERE id = @Cedula";
             var salario = await connection.ExecuteScalarAsync<int?>(query, new { Cedula = cedulaEmpleado });
             return salario ?? 0;
         }

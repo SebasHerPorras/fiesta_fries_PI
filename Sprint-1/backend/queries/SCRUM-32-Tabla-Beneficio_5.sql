@@ -1,7 +1,7 @@
-use Fiesta_Fries_DB
+USE [G02-2025-II-DB];
 GO
 
-CREATE TABLE [Fiesta_Fries_DB].[User](
+CREATE TABLE [Fiesta_Fries_DB].[Beneficio](
     IdBeneficio INT PRIMARY KEY IDENTITY(1,1),  
     CedulaJuridica BIGINT NOT NULL,       
     Nombre NVARCHAR(100) NOT NULL,          

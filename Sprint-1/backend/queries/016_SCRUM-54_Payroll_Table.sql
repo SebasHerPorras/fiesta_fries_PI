@@ -22,5 +22,5 @@ GO
 
 --para evitar duplicados por periodo y empresa
 CREATE UNIQUE INDEX [IX_Payroll_PeriodCompany]
-ON [dbo].[Payroll] ([PeriodDate], [CompanyId]);
+ON [Fiesta_Fries_DB].[Payroll] ([PeriodDate], [CompanyId]);
 GO

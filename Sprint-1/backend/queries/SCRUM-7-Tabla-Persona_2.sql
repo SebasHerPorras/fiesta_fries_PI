@@ -3,12 +3,12 @@ GO
 -- Todas las tablas se crearán bajo el schema Fiesta_Fries_DB
 GO
 
-ALTER TABLE [Fiesta_Fries_DB].[Persona]
+ALTER TABLE [Fiesta_Fries_DB].[User]
 ADD active BIT NOT NULL CONSTRAINT DF_User_Active DEFAULT 0;
-ALTER TABLE [Fiesta_Fries_DB].[Persona]
+ALTER TABLE [Fiesta_Fries_DB].[User]
 ADD [admin] BIT NOT NULL CONSTRAINT DF_User_Admin DEFAULT 0;
 
-CREATE TABLE [Fiesta_Fries_DB].[User](
+CREATE TABLE [Fiesta_Fries_DB].[Persona](
 id int Primary KEY NOT NULL,
 [firstName] varchar(50) NOT NULL,
 [secondName] varchar(50) NOT NULL, 
@@ -24,7 +24,7 @@ select * FROM [Fiesta_Fries_DB].[Persona];
 
 select * FROM [Fiesta_Fries_DB].[Persona];
 
-CREATE TABLE [Fiesta_Fries_DB].[User](
+CREATE TABLE [Fiesta_Fries_DB].[EmailVerification](
    userId UNIQUEIDENTIFIER NOT NULL ,Constraint FK_User_Notification FOREIGN KEY(userId) REFERENCES [User](PK_User),
    token nvarchar(200),
    experationDate DATETIME NOT NULL,

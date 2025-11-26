@@ -10,7 +10,7 @@ CREATE TABLE [Fiesta_Fries_DB].[EmployerSocialSecurityByPayroll](
     EmployeeId int NOT NULL,
     ChargeName VARCHAR(100) NOT NULL,
     Amount DECIMAL(18,2) NOT NULL,
-    Percentage DECIMAL(5,4) NOT NULL,
+    [Percentage] DECIMAL(5,4) NOT NULL,
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     
     FOREIGN KEY (EmployeeId) REFERENCES Empleado(id)
