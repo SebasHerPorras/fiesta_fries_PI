@@ -47,6 +47,10 @@
                   <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
               </li>
 
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/DashboardEmpleador">Dashboard de pago</router-link>
+              </li>
+
               <!-- Solo Empleado: Seleccionar Beneficios -->
               <li v-if="userRole === 'Empleado'">
                   <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
