@@ -312,7 +312,6 @@ async loadCompanies() {
     },
 
     onCompanyChange() {
-      // Solo redirigir si realmente seleccionó una empresa válida
       if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
         this.saveSelectedCompany();
         // Redirigir a la página de administración de empresas
