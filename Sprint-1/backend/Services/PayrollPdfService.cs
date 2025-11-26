@@ -225,6 +225,113 @@ namespace backend.Services
             }
         }
 
+        public Task<byte[]> GeneratePayrollEmployeePdfAsync(PayrollEmployeeReport report)
+        {
+            try
+            {
+                _logger.LogInformation("Inicio - Generando PDF reporte por empleado - Payroll: {PayrollId}, Employee: {EmployeeId}",
+                    report?.Header?.CompanyId, report?.Header?.EmployeeId);
+
+                if (report == null) throw new ArgumentNullException(nameof(report));
+                if (report.Header == null) throw new ArgumentNullException(nameof(report.Header));
+
+                var ms = new MemoryStream();
+
+                try
+                {
+                    var writer = new PdfWriter(ms);
+                    writer.SetCloseStream(false);
+                    var pdf = new PdfDocument(writer);
+                    var document = new Document(pdf);
+
+                    var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                    var normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                    document.Add(new Paragraph("REPORTE POR EMPLEADO")
+                        .SetFont(boldFont)
+                        .SetFontSize(18)
+                        .SetTextAlignment(TextAlignment.CENTER));
+
+                    document.Add(new Paragraph($"Empresa: {report.Header.NombreEmpresa ?? "N/A"}").SetFont(normalFont));
+                    document.Add(new Paragraph($"Empleado: {report.Header.NombreEmpleado ?? "N/A"}").SetFont(normalFont));
+                    document.Add(new Paragraph($"Tipo: {report.Header.TipoEmpleado ?? "N/A"}").SetFont(normalFont));
+                    document.Add(new Paragraph($"Fecha Pago: {report.Header.FechaPago:yyyy-MM-dd}").SetFont(normalFont));
+                    document.Add(new Paragraph($"Salario Bruto: CRC {report.Header.SalarioBruto:N2}").SetFont(normalFont));
+                    document.Add(new Paragraph("\n"));
+
+                    // Deducciones
+                    if (report.EmployeeDeductions != null && report.EmployeeDeductions.Any())
+                    {
+                        document.Add(new Paragraph("DEDUCCIONES OBLIGATORIAS").SetFont(boldFont).SetFontSize(14));
+                        var dedTable = new Table(3);
+                        dedTable.AddHeaderCell(new Cell().Add(new Paragraph("Concepto").SetFont(boldFont)));
+                        dedTable.AddHeaderCell(new Cell().Add(new Paragraph("Porcentaje").SetFont(boldFont)));
+                        dedTable.AddHeaderCell(new Cell().Add(new Paragraph("Monto (CRC)").SetFont(boldFont)));
+
+                        foreach (var d in report.EmployeeDeductions)
+                        {
+                            dedTable.AddCell(new Cell().Add(new Paragraph(d.DeductionName ?? "N/A").SetFont(normalFont)));
+                            dedTable.AddCell(new Cell().Add(new Paragraph($"{d.Percentage:N2}%").SetFont(normalFont)));
+                            dedTable.AddCell(new Cell().Add(new Paragraph($"{d.DeductionAmount:N2}").SetFont(normalFont)));
+                        }
+
+                        document.Add(dedTable);
+                        document.Add(new Paragraph($"\nTotal deducciones obligatorias: CRC {report.TotalEmployeeDeductions:N2}").SetFont(boldFont));
+                        document.Add(new Paragraph("\n"));
+                    }
+
+                    // Beneficios
+                    if (report.EmployerBenefits != null && report.EmployerBenefits.Any())
+                    {
+                        document.Add(new Paragraph("BENEFICIOS / DEDUCCIONES VOLUNTARIAS").SetFont(boldFont).SetFontSize(14));
+                        var benTable = new Table(3);
+                        benTable.AddHeaderCell(new Cell().Add(new Paragraph("Nombre").SetFont(boldFont)));
+                        benTable.AddHeaderCell(new Cell().Add(new Paragraph("Tipo").SetFont(boldFont)));
+                        benTable.AddHeaderCell(new Cell().Add(new Paragraph("Monto (CRC)").SetFont(boldFont)));
+
+                        foreach (var b in report.EmployerBenefits)
+                        {
+                            benTable.AddCell(new Cell().Add(new Paragraph(b.BenefitName ?? "N/A").SetFont(normalFont)));
+                            benTable.AddCell(new Cell().Add(new Paragraph(b.BenefitType ?? "N/A").SetFont(normalFont)));
+                            benTable.AddCell(new Cell().Add(new Paragraph($"{b.BenefitAmount:N2}").SetFont(normalFont)));
+                        }
+
+                        document.Add(benTable);
+                        document.Add(new Paragraph($"\nTotal beneficios voluntarios: CRC {report.TotalEmployerBenefits:N2}").SetFont(boldFont));
+                        document.Add(new Paragraph("\n"));
+                    }
+
+                    // Totales finales
+                    document.Add(new Paragraph("TOTALES FINALES").SetFont(boldFont).SetFontSize(14));
+                    var totalsTable = new Table(2);
+                    totalsTable.AddCell(new Cell().Add(new Paragraph("Total Deducciones Obligatorias").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph($"{report.Totals.TotalDeduccionesObligatorias:N2}").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph("Total Beneficios Voluntarios").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph($"{report.Totals.TotalBeneficiosVoluntarios:N2}").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph("Total Deducciones").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph($"{report.Totals.TotalDeducciones:N2}").SetFont(normalFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph("Pago Neto").SetFont(boldFont)));
+                    totalsTable.AddCell(new Cell().Add(new Paragraph($"CRC {report.Totals.PagoNeto:N2}").SetFont(boldFont)));
+
+                    document.Add(totalsTable);
+
+                    document.Close();
+
+                    var bytes = ms.ToArray();
+                    return Task.FromResult(bytes);
+                }
+                finally
+                {
+                    ms.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generando PDF reporte por empleado");
+                throw;
+            }
+        }
+
         private void AddTableRow(Table table, string label, decimal value, PdfFont font)
         {
             try

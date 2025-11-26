@@ -1,12 +1,18 @@
-﻿using backend.Models;
-using System.Data;
-using System.Data.SqlClient;
+﻿using backend.Interfaces;
+using backend.Models;
+using backend.Repositories;
 using Dapper;
+using Microsoft.AspNetCore.Builder;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Linq;
 
 namespace backend.Handlers.backend.Repositories
 {
-    public class BeneficioRepository
+    public class BeneficioRepository : IBeneficioRepository
     {
         private readonly string _connectionString;
         private readonly ILogger<BeneficioRepository> _logger;
@@ -86,6 +92,7 @@ namespace backend.Handlers.backend.Repositories
                     SELECT * 
                     FROM Beneficio 
                     WHERE CedulaJuridica = @CedulaJuridica
+                    AND IsDeleted = 0
                     ORDER BY Nombre";
 
                 _logger.LogInformation("Buscando beneficios para empresa {Cedula}", cedulaJuridica);

@@ -107,18 +107,35 @@ export const API_ENDPOINTS = {
   // Reportes de Planilla
   PAYROLL_REPORT_LAST_12: (companyId) =>
     buildApiUrl(`PayrollReport/company/${companyId}/last-12`),
+
   PAYROLL_REPORT_PDF: (payrollId) =>
     buildApiUrl(`PayrollReport/${payrollId}/pdf`),
+
   PAYROLL_REPORT_CSV: (payrollId) =>
     buildApiUrl(`PayrollReport/${payrollId}/csv`),
+
   PAYROLL_REPORT_JSON: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}`),
 
+  // Reporte por empleado en una planilla específica
+  PAYROLL_EMPLOYEE_REPORT_JSON: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}`),
+
+  PAYROLL_EMPLOYEE_REPORT_PDF: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}/pdf`),
+
+  PAYROLL_EMPLOYEE_REPORT_CSV: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}/csv`),
+
+  // Últimos 12 pagos de un empleado (histórico)
+  PAYROLL_EMPLOYEE_LAST_12_PAYMENTS: (employeeId) =>
+    buildApiUrl(`PayrollReport/employee/${employeeId}/last-payments`),
   // Borrados
   DELETE_EMPLEADO: (id, companyId) =>
     `${buildApiUrl(
       `Empleado/${encodeURIComponent(id)}`
     )}?companyId=${encodeURIComponent(companyId)}`,
   DELETE_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
+  COMPANY_DELETION: (cedulaJuridica) => buildApiUrl(`CompanyDeletion/${cedulaJuridica}`),
 };
 
 // Log de configuración (solo en desarrollo)
