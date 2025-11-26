@@ -11,7 +11,7 @@ import PersonalProfile from "./components/DatosPersonales.vue";
 import FormBeneficios from "./components/FormBeneficios.vue";
 import RegisterHoras from "./components/RegisterHoras.vue";
 import SelectBeneficios from "./components/SelectBeneficios.vue";
-import ReporteHistorico from "./components/ReporteHistorico.vue"; 
+import Reportes from "./components/Reportes.vue"; 
 
 const DEVELOPMENT_MODE = true;
 
@@ -121,9 +121,9 @@ const router = createRouter({
       },
     },
         {
-      path: "/ReporteHistorico",
-      name: "ReporteHistorico",
-      component: ReporteHistorico,
+      path: "/Reportes",
+      name: "Reportes",
+      component: Reportes,
       meta: {
        requieresAuth: false,
        public: true,
