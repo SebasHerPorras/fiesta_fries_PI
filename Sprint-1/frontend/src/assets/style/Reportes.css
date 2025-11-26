@@ -315,6 +315,106 @@
     width: 100%;
   }
 
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+  }
+  /* Para filtros que ocupan 2 columnas */
+.filters-grid-full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+/* Grupo individual de filtro */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Grupo que ocupa 2 columnas */
+.filter-group-full {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Etiquetas de los filtros */
+.filter-group label {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Inputs y selects de filtros */
+.filter-group input,
+.filter-group select {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  border-color: #007bff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Input para cédula (más ancho) */
+.filter-group input[type="text"] {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Botón aplicar filtros */
+.btn-apply-filters {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.15s ease-in-out;
+  height: fit-content;
+}
+
+.btn-apply-filters:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-apply-filters:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* Botón descargar CSV */
+.btn-download-csv {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s ease-in-out;
+  margin-top: 16px;
+}
+
+.btn-download-csv:hover {
+  background-color: #218838;
+}
+
   .load-row {
     display: flex;
     justify-content: center;

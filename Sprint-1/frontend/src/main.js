@@ -132,7 +132,6 @@ const router = createRouter({
        allowedRoles: ["empleado", "empleador"],
       },
     },  
-      },
     {
       path: "/DashBoardEmpleado",
       name: "DashBoardEmpleado",
