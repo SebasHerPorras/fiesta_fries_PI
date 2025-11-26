@@ -98,6 +98,8 @@ builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>(
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddScoped<ICompanyDeletionService, CompanyDeletionService>();
+builder.Services.AddScoped<IBeneficioRepository, BeneficioRepository>();
 
 // Payroll Reports employee
 builder.Services.AddScoped<PayrollReportRepository>();
