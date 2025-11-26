@@ -56,9 +56,26 @@ builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
 builder.Services.AddScoped<IEmployeeSocialSecurityContributionsService, EmployeeSocialSecurityContributionsService>();
 builder.Services.AddScoped<IPersonalIncomeTaxService, PersonalIncomeTaxService>();
 builder.Services.AddScoped<IEmployeeDeductionsByPayrollService, EmployeeDeductionsByPayrollService>();
-builder.Services.AddScoped<ICalculatorDeductionsEmployeeService, CalculatorDeductionsEmployeeService>();
-builder.Services.AddScoped<ICalculatorBenefitsService, CalculatorBenefitsService>();
 builder.Services.AddScoped<IEmployerBenefitDeductionService, EmployerBenefitDeductionService>();
+
+// Factory para servicios de cálculo con booleano saveInDB
+builder.Services.AddScoped<ICalculatorDeductionsEmployeeService>(sp =>
+    new CalculatorDeductionsEmployeeService(
+        sp.GetRequiredService<IEmployeeSocialSecurityContributionsService>(),
+        sp.GetRequiredService<IPersonalIncomeTaxService>(),
+        sp.GetRequiredService<IEmployeeDeductionsByPayrollService>(),
+        saveInDB: true // Por defecto guarda en BD
+    ));
+
+builder.Services.AddScoped<ICalculatorBenefitsService>(sp =>
+    new CalculatorBenefitsService(
+        sp.GetRequiredService<IEmployeeDeductionsByPayrollService>(),
+        sp.GetRequiredService<IEmployerBenefitDeductionService>(),
+        sp.GetRequiredService<IExternalApiFactory>(),
+        sp.GetRequiredService<IEmployeeBenefitService>(),
+        sp.GetRequiredService<ILogger<CalculatorBenefitsService>>(),
+        saveInDB: true // Por defecto guarda en BD
+    ));
 builder.Services.AddScoped<IPayrollPeriodService, PayrollPeriodService>();
 builder.Services.AddScoped<IPeriodCalculator, BiweeklyPeriodCalculator>();
 builder.Services.AddScoped<IPeriodCalculator, MonthlyPeriodCalculator>();
@@ -92,12 +109,25 @@ builder.Services.AddScoped<IVoluntaryPensionsService, VoluntaryPensionsService>(
 builder.Services.AddScoped<IExternalApiFactory, ExternalApiFactory>();
 
 builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
-builder.Services.AddScoped<ICalculationService, CalculationService>();
 builder.Services.AddScoped<IEmployeeService, EmpleadoService>();
 builder.Services.AddScoped<IPayrollProcessingService, PayrollProcessingService>();
 builder.Services.AddScoped<IPayrollValidator, PayrollValidator>();
 builder.Services.AddScoped<IPayrollResultBuilder, PayrollResultBuilder>();
 builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+
+// CalculationService con todas las dependencias necesarias para crear instancias dinámicas
+builder.Services.AddScoped<ICalculationService>(sp =>
+    new CalculationService(
+        sp.GetRequiredService<ICalculatorDeductionsEmployerService>(),
+        sp.GetRequiredService<IPersonalIncomeTaxService>(),
+        sp.GetRequiredService<ILogger<CalculationService>>(),
+        sp, // IServiceProvider
+        sp.GetRequiredService<IEmployeeSocialSecurityContributionsService>(),
+        sp.GetRequiredService<IEmployeeDeductionsByPayrollService>(),
+        sp.GetRequiredService<IEmployerBenefitDeductionService>(),
+        sp.GetRequiredService<IExternalApiFactory>(),
+        sp.GetRequiredService<IEmployeeBenefitService>()
+    ));
 
 // Payroll Reports employee
 builder.Services.AddScoped<PayrollReportRepository>();

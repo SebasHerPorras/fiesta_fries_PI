@@ -8,37 +8,61 @@ namespace backend.Services
     public class CalculationService : ICalculationService
     {
         private readonly ICalculatorDeductionsEmployerService _deductionsService;
-        private readonly ICalculatorDeductionsEmployeeService _employeeDeductionsService;
         private readonly IPersonalIncomeTaxService _incomeTaxService;
-        private readonly ICalculatorBenefitsService _benefitsService;
         private readonly ILogger<CalculationService> _logger;
+        private readonly IServiceProvider _serviceProvider;
+
+        // Servicios base para crear instancias con saveInDB
+        private readonly IEmployeeSocialSecurityContributionsService _socialSecurityService;
+        private readonly IEmployeeDeductionsByPayrollService _payrollDeductionService;
+        private readonly IEmployerBenefitDeductionService _employerBenefitService;
+        private readonly IExternalApiFactory _apiFactory;
+        private readonly IEmployeeBenefitService _employeeBenefitService;
 
         public CalculationService(
             ICalculatorDeductionsEmployerService deductionsService,
-            ICalculatorDeductionsEmployeeService employeeDeductionsService,
             IPersonalIncomeTaxService incomeTaxService,
-            ICalculatorBenefitsService benefitsService,
-            ILogger<CalculationService> logger)
+            ILogger<CalculationService> logger,
+            IServiceProvider serviceProvider,
+            IEmployeeSocialSecurityContributionsService socialSecurityService,
+            IEmployeeDeductionsByPayrollService payrollDeductionService,
+            IEmployerBenefitDeductionService employerBenefitService,
+            IExternalApiFactory apiFactory,
+            IEmployeeBenefitService employeeBenefitService)
         {
             _deductionsService = deductionsService ?? throw new ArgumentNullException(nameof(deductionsService));
-            _employeeDeductionsService = employeeDeductionsService;
             _incomeTaxService = incomeTaxService;
-            _benefitsService = benefitsService ?? throw new ArgumentNullException(nameof(benefitsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _serviceProvider = serviceProvider;
+            _socialSecurityService = socialSecurityService;
+            _payrollDeductionService = payrollDeductionService;
+            _employerBenefitService = employerBenefitService;
+            _apiFactory = apiFactory;
+            _employeeBenefitService = employeeBenefitService;
         }
 
         public async Task<decimal> CalculateDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
             _logger.LogDebug("=== CALCULANDO DEDUCCIONES ===");
-            _logger.LogDebug("Empleado: {Nombre}, Salario: {Salario}",
-                empleado.NombreEmpleado, empleado.SalarioBruto);
+            _logger.LogDebug("Empleado: {Nombre}, Salario: {Salario}, PayrollId: {PayrollId}",
+                empleado.NombreEmpleado, empleado.SalarioBruto, payrollId);
 
             try
             {
-                var deducciones = _employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
+                // Si payrollId == 0, es PREVIEW (no guardar en BD)
+                bool saveInDB = payrollId > 0;
+                
+                var employeeDeductionsService = new CalculatorDeductionsEmployeeService(
+                    _socialSecurityService,
+                    _incomeTaxService,
+                    _payrollDeductionService,
+                    saveInDB
+                );
 
-                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre}",
-                     deducciones, empleado.NombreEmpleado);
+                var deducciones = employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
+
+                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre} (SaveInDB: {SaveInDB})",
+                     deducciones, empleado.NombreEmpleado, saveInDB);
 
                 return await Task.FromResult(deducciones);
             }
@@ -54,10 +78,22 @@ namespace backend.Services
             try
             {
                 _logger.LogDebug("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
-                _logger.LogDebug("Empleado: {Nombre} ({Cedula})",
-                    empleado.NombreEmpleado, empleado.CedulaEmpleado);
+                _logger.LogDebug("Empleado: {Nombre} ({Cedula}), PayrollId: {PayrollId}",
+                    empleado.NombreEmpleado, empleado.CedulaEmpleado, payrollId);
 
-                var totalBenefits = await _benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
+                // Si payrollId == 0, es PREVIEW (no guardar en BD)
+                bool saveInDB = payrollId > 0;
+
+                var benefitsService = new CalculatorBenefitsService(
+                    _payrollDeductionService,
+                    _employerBenefitService,
+                    _apiFactory,
+                    _employeeBenefitService,
+                    _serviceProvider.GetRequiredService<ILogger<CalculatorBenefitsService>>(),
+                    saveInDB
+                );
+
+                var totalBenefits = await benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
 
                 _logger.LogDebug("Total beneficios para {Nombre}: ₡{Total}",
                     empleado.NombreEmpleado, totalBenefits);
