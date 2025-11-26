@@ -4,7 +4,7 @@ GO
 GO
 
 -- Tabla para almacenar el puesto asignado por empleado en una planilla
-IF OBJECT_ID('dbo.EmployeePayrollPosition', 'U') IS NULL
+IF OBJECT_ID('[Fiesta_Fries_DB].EmployeePayrollPosition', 'U') IS NULL
 BEGIN
     CREATE TABLE [Fiesta_Fries_DB].EmployeePayrollPosition (
         Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/b6c17bce-1a60-4567-a972-0c59457d03ed/resourceGroups/backend20251123203422ResourceGroup/providers/Microsoft.Web/sites/backend20251126142440",
+  "appService.deploySubpath": "publish"
+}

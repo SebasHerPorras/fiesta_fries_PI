@@ -1,7 +1,7 @@
-use Fiesta_Fries_DB
-go
+uSE [G02-2025-II-DB];
+GO
 
-CREATE OR ALTER FUNCTION CanEmployeeSelectBenefit(
+CREATE OR ALTER FUNCTION [Fiesta_Fries_DB].CanEmployeeSelectBenefit(
     @EmployeeId INT,
     @BenefitId INT
 )

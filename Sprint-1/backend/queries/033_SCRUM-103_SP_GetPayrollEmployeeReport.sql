@@ -15,7 +15,7 @@ GO
 -- 6) Totales finales: TotalDeducciones, TotalBeneficios, TotalDeduccionesTotales, PagoNeto
 -- =============================================
 
-CREATE OR ALTER PROCEDURE SP_GetPayrollEmployeeReport
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_GetPayrollEmployeeReport
     @PayrollId INT,
     @EmployeeId INT
 AS

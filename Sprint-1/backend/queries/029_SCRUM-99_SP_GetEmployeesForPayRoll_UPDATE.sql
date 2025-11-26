@@ -9,7 +9,7 @@ GO
 -- ACTUALIZADO SCRUM-99: Filtrar empleados eliminados (IsDeleted)
 -- =============================================
 
-CREATE OR ALTER PROCEDURE SP_GetEmployeesForPayroll
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_GetEmployeesForPayroll
     @CedulaJuridica BIGINT,
     @FechaInicio DATE,
     @FechaFin DATE

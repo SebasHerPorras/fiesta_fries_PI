@@ -10,7 +10,7 @@ GO
 -- Solo si NO tiene pagos registrados en planilla
 -- =============================================
 
-CREATE OR ALTER PROCEDURE SP_DeleteEmployee_Physical
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_DeleteEmployee_Physical
     @PersonaId INT
 AS
 BEGIN

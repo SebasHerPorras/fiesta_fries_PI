@@ -11,14 +11,14 @@ namespace backend.Repositories
         public EmailRepositoryE()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurriï¿½ un error con el appsettings.json");
         }
 
         public void insertMailNoty(EmailModelE model)
         {
             //vamos a realizar el query
             using var connection = new SqlConnection(this._connectionString);
-            const string query = @"INSERT INTO [Fiesta_Fries_DB].EmailVerificationE(token,expirationDate) VALUES
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].[EmailVerificationE](token,expirationDate) VALUES
                                     (@token,@expirationDate)";
             connection.Execute(query, model);
         }

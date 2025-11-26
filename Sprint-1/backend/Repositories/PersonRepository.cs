@@ -17,7 +17,7 @@ namespace backend.Repositories
         public PersonRepository()
         {
             var builder = WebApplication.CreateBuilder();
-            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurrió un error con el appsettings.json");
+            this._connectionString = builder.Configuration.GetConnectionString("UserContext") ?? throw new InvalidOperationException("Ocurriï¿½ un error con el appsettings.json");
         }
 
         public void Insert(PersonModel person)
@@ -25,10 +25,10 @@ namespace backend.Repositories
             Console.WriteLine("Entra en el Insert\n");
             using var connection = new SqlConnection(this._connectionString);
 
-            const string query = @"INSERT INTO [Fiesta_Fries_DB].Persona(id,firstName,secondName,birthdate,direction,personalPhone,homePhone,uniqueUser,personType) VALUES
+            const string query = @"INSERT INTO [Fiesta_Fries_DB].[Persona](id,firstName,secondName,birthdate,direction,personalPhone,homePhone,uniqueUser,personType) VALUES
                                  (@id, @firstName, @secondName,@birthdate,@direction,@personalPhone,@homePhone,@uniqueUser,@personType)";
 
-            Console.WriteLine("Query realizado con éxito");
+            Console.WriteLine("Query realizado con ï¿½xito");
             connection.Execute(query, person);
                                   
         }
@@ -45,7 +45,7 @@ namespace backend.Repositories
         {
             using var connection = new SqlConnection(this._connectionString);
             const string query = "SELECT * FROM [Fiesta_Fries_DB].[Persona] WHERE uniqueUser = @uniqueUser";
-            Console.WriteLine("Query funciona con éxito\n");
+            Console.WriteLine("Query funciona con ï¿½xito\n");
             return connection.QuerySingleOrDefault<PersonModel>(query, new { uniqueUser = id });
 
         }
@@ -55,7 +55,7 @@ namespace backend.Repositories
             using var connection = new SqlConnection(this._connectionString);
 
             const string query = @"SELECT* FROM [Fiesta_Fries_DB].[PERSONA] WHERE id = @id";
-            Console.WriteLine("Querry realizado con éxito\n");
+            Console.WriteLine("Querry realizado con ï¿½xito\n");
 
             return connection.QuerySingleOrDefault<PersonModel>(query, new { id = id_ });
         }

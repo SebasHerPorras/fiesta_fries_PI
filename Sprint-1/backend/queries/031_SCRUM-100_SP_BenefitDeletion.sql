@@ -1,7 +1,7 @@
-﻿use Fiesta_Fries_DB
+﻿USE [G02-2025-II-DB];
 GO
 
-CREATE OR ALTER PROCEDURE SP_Benefit_PhysicalDeletion
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_Benefit_PhysicalDeletion
     @IdBeneficio INT
 AS
 BEGIN
@@ -33,7 +33,7 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE SP_Benefit_LogicalDeletion
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_Benefit_LogicalDeletion
     @IdBeneficio INT,
     @LastPeriod DATETIME = NULL
 AS

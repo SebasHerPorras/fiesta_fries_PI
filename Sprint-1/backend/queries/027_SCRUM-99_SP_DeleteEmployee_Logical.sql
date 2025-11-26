@@ -10,7 +10,7 @@ GO
 -- en Empleado, Persona y desactiva User
 -- =============================================
 
-CREATE OR ALTER PROCEDURE SP_DeleteEmployee_Logical
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_DeleteEmployee_Logical
     @PersonaId INT
 AS
 BEGIN

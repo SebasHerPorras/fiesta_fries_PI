@@ -17,6 +17,6 @@ INSERT INTO [Fiesta_Fries_DB].[Persona] (id, firstName, secondName, birthDate,di
 VALUES (999999999, 'Selenium', 'test', '1985-11-17', 'San Jose, Costa Rica', '8888-1111', NULL, @userGuid, 'Empleador', 0);
 
 
-INSERT INTO [Fiesta_Fries_DB].[Empresa] (CedulaJuridica, Nombre, DuenoEmpresa, Telefono, DireccionEspecifica, NoMaxBeneficios, DiaPago, FrecuenciaPago, FechaCreacion)
+INSERT INTO [Fiesta_Fries_DB].[Empresa] (CedulaJuridica, Nombre, DueñoEmpresa, Telefono, DireccionEspecifica, NoMaxBeneficios, DiaPago, FrecuenciaPago, FechaCreacion)
 VALUES (9999999999, 'Empresa SeleniumTest', 999999999, 22243333, 'San Jose, Centro Empresarial', 3, 1, 'Mensual', '2025-01-01');
 

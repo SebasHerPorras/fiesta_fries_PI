@@ -1,1 +1,4 @@
-﻿ALTER TABLE [Fiesta_Fries_DB].[Empresa] ADD IsDeleted BIT NOT NULL DEFAULT 0;
+﻿USE [G02-2025-II-DB];
+GO
+
+ALTER TABLE [Fiesta_Fries_DB].[Empresa] ADD IsDeleted BIT NOT NULL DEFAULT 0;

@@ -1,4 +1,4 @@
-﻿use Fiesta_Fries_DB
+﻿USE [G02-2025-II-DB];
 GO
 
 ALTER TABLE [Fiesta_Fries_DB].[Beneficio]
@@ -19,7 +19,7 @@ ADD CONSTRAINT FK_EmployerBenefitDeductions_Beneficio
 GO
 
 
-CREATE OR ALTER PROCEDURE SP_InsertEmployerBenefitDeduction
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_InsertEmployerBenefitDeduction
     @ReportId INT,
     @EmployeeId INT,
     @CedulaJuridicaEmpresa BIGINT,

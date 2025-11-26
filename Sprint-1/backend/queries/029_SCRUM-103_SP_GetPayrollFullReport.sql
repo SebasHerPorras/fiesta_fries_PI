@@ -9,7 +9,7 @@ GO
 -- Retorna todos los datos necesarios para generar reportes PDF/CSV
 -- =============================================
 
-CREATE OR ALTER PROCEDURE SP_GetPayrollFullReport
+CREATE OR ALTER PROCEDURE [Fiesta_Fries_DB].SP_GetPayrollFullReport
     @PayrollId INT
 AS
 BEGIN
@@ -34,7 +34,7 @@ BEGIN
         p.LastModified
     FROM Payroll p
     INNER JOIN Empresa e ON p.CompanyId = e.CedulaJuridica
-    INNER JOIN Persona per ON e.Due�oEmpresa = per.id
+    INNER JOIN Persona per ON e.DueñoEmpresa = per.id
     WHERE p.PayrollId = @PayrollId;
 
     -- 2. DETALLE POR EMPLEADO

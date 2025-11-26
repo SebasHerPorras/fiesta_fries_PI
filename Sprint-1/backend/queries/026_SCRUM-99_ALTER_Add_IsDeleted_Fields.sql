@@ -53,7 +53,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE NONCLUSTERED INDEX IX_Empleado_IsDeleted_Company
-    ON Empleado(IsDeleted, idCompny)
+    ON [Fiesta_Fries_DB].Empleado(IsDeleted, idCompny)
     INCLUDE (id, position, department);
     
     PRINT 'Índice IX_Empleado_IsDeleted_Company creado';
@@ -72,7 +72,7 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE NONCLUSTERED INDEX IX_Persona_IsDeleted_Type
-    ON Persona(IsDeleted, personType)
+    ON [Fiesta_Fries_DB].Persona(IsDeleted, personType)
     INCLUDE (id, uniqueUser);
     
     PRINT 'Índice IX_Persona_IsDeleted_Type creado';
