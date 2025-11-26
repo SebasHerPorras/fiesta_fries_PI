@@ -22,7 +22,6 @@ namespace backend_test
 
             try
             {
-                // 1. Login como empleador de pruebas (LA RUTA ES "/" NO "/login")
                 driver.Navigate().GoToUrl(BaseUrl);
 
                 // Esperar que la página cargue completamente
