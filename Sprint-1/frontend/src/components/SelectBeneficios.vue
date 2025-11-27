@@ -1,35 +1,73 @@
 <template>
   <div class="wrap">
-    <!-- HEADER (igual al de DatosPersonales.vue) -->
+<!-- HEADER -->
     <header class="header">
       <nav class="nav">
-        <div class="display">
-          <div class="logo-box">
-            <span class="f">F</span>
+          <div class="display">
+              <div class="logo-box">
+                  <span class="f">F</span>
+              </div>
+              <div class="texts">
+                  <h1>{{ userName }}</h1>
+                  <p>{{ userRole }}</p>
+              </div>
           </div>
-          <div class="texts">
-            <h1>{{ userName }}</h1>
-            <p>{{ userRole }}</p>
-          </div>
-        </div>
 
-        <ul class="nav-list">
-          <li><router-link to="/Profile">Datos Personales</router-link></li>
-          <li><router-link to="/Reportes">Reportes</router-link></li>
-          <li v-if="userRole === 'Empleado'">
-            <router-link to="/RegisterHoras">Registrar Horas</router-link>
-          </li>
-          <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
-            <a href="#" @click.prevent>Empresa: {{ selectedCompany.nombre }}</a>
-          </li>
-          <li v-if="userRole === 'Empleado'">
-            <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
-          </li>
-          <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-        </ul>
+          <ul class="nav-list">
+              <!-- Siempre visibles -->
+              <li><router-link to="/Profile">Datos Personales</router-link></li>
+              <li><router-link to="/Reportes">Reportes</router-link></li>
+              <!-- Solo Empleador: Registrar Empresa -->
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/FormEmpresa">Registrar Empresa</router-link>
+              </li>
+
+              <!--Solo Empleado: Añadir horas-->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/RegisterHoras">Registrar Horas</router-link>
+              </li>
+
+
+              <!-- Dropdown de empresas SOLO para Empleador -->
+              <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
+                  <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                      <option :value="null">Seleccionar Empresa</option>
+                      <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
+                          {{ company.nombre }}
+                      </option>
+                  </select>
+              </li>
+
+              <!-- Solo Administrador: Ver Toda Empresa -->
+              <li v-if="isAdmin">
+                  <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/DashboardEmpleador">Dashboard de pago</router-link>
+              </li>
+
+              <!-- Solo Empleado: Seleccionar Beneficios -->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
+              </li>
+
+              <!-- Nombre de Empresa: Solo Empleados -->
+              <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
+                  <a href="#" @click.prevent>
+                      Empresa: {{ selectedCompany.nombre }}
+                  </a>
+              </li>
+
+              <!-- Siempre visible -->
+              <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
+          </ul>
       </nav>
-    </header>
-
+  </header>
     <main class="hero">
       <div class="beneficios-container">
         <div class="page-header">

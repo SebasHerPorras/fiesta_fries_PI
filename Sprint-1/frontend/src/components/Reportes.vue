@@ -1,34 +1,73 @@
 <template>
   <div class="wrap">
-    <!-- HEADER -->
+<!-- HEADER -->
     <header class="header">
       <nav class="nav">
-        <div class="display">
-          <div class="logo-box">
-            <span class="f">F</span>
+          <div class="display">
+              <div class="logo-box">
+                  <span class="f">F</span>
+              </div>
+              <div class="texts">
+                  <h1>{{ userName }}</h1>
+                  <p>{{ userRole }}</p>
+              </div>
           </div>
-          <div class="texts">
-            <h1>{{ userName }}</h1>
-            <p>{{ userRole }}</p>
-          </div>
-        </div>
 
-        <ul class="nav-list">
-          <li><router-link to="/Profile">Datos Personales</router-link></li>
-          <li><router-link to="/Reportes">Reportes</router-link></li>
-          <li v-if="userRole === 'Empleador'">
-            <router-link to="/FormEmpresa">Registrar Empresa</router-link>
-          </li>
-          <li v-if="userRole === 'Empleado'">
-            <router-link to="/RegisterHoras">Registrar Horas</router-link>
-          </li>
-          <li v-if="isAdmin">
-            <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
-          </li>
-          <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-        </ul>
+          <ul class="nav-list">
+              <!-- Siempre visibles -->
+              <li><router-link to="/Profile">Datos Personales</router-link></li>
+              <li><router-link to="/Reportes">Reportes</router-link></li>
+              <!-- Solo Empleador: Registrar Empresa -->
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/FormEmpresa">Registrar Empresa</router-link>
+              </li>
+
+              <!--Solo Empleado: Añadir horas-->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/RegisterHoras">Registrar Horas</router-link>
+              </li>
+
+
+              <!-- Dropdown de empresas SOLO para Empleador -->
+              <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
+                  <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                      <option :value="null">Seleccionar Empresa</option>
+                      <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
+                          {{ company.nombre }}
+                      </option>
+                  </select>
+              </li>
+
+              <!-- Solo Administrador: Ver Toda Empresa -->
+              <li v-if="isAdmin">
+                  <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/DashboardEmpleador">Dashboard de pago</router-link>
+              </li>
+
+              <!-- Solo Empleado: Seleccionar Beneficios -->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
+              </li>
+
+              <!-- Nombre de Empresa: Solo Empleados -->
+              <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
+                  <a href="#" @click.prevent>
+                      Empresa: {{ selectedCompany.nombre }}
+                  </a>
+              </li>
+
+              <!-- Siempre visible -->
+              <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
+          </ul>
       </nav>
-    </header>
+  </header>
 
     <!-- BOTONES DE VISTA -->
     <div class="report-buttons">
@@ -1069,9 +1108,6 @@ export default {
           params.cedula = this.reportePorEmpleadoCedula;
         }
 
-        const queryString = new URLSearchParams(params).toString();
-        const urlCompleta = `${API_ENDPOINTS.EMPLOYER_BY_PERSON_REPORT}?${queryString}`;
-
         const response = await axios.get(API_ENDPOINTS.EMPLOYER_BY_PERSON_REPORT, { params });
 
         if (response.data && response.data.success) {
@@ -1279,7 +1315,7 @@ export default {
                   return;
               }
 
-              const params = {};
+              let params = {};
 
               if (this.employeeHistoricalStartDate) {
                   params.startDate = this.employeeHistoricalStartDate;
@@ -1288,9 +1324,39 @@ export default {
                   params.endDate = this.employeeHistoricalEndDate;
               }
 
+              // Asegurar que tenemos employeeId numérico o al menos definido
+                      let resolvedEmployeeId = employeeId;
+                      if (!resolvedEmployeeId) {
+                        // intentar recuperar desde localStorage como fallback
+                        try {
+                          const raw = localStorage.getItem('userData');
+                          const parsed = raw ? JSON.parse(raw) : null;
+                          resolvedEmployeeId = parsed?.personaId || parsed?.id || resolvedEmployeeId;
+                        } catch (e) {
+                          // noop
+                        }
+                      }
+
+                      if (!resolvedEmployeeId) {
+                        alert('No se pudo obtener el ID del empleado. Revisa tu sesión.');
+                        this.employeeHistoricalLoading = false;
+                        return;
+                      }
+
+                      // Log para depuración: params y URL completa
+                      try {
+                        const q = new URLSearchParams();
+                        Object.entries({ ...params, employeeId: resolvedEmployeeId }).forEach(([k, v]) => q.append(k, String(v)));
+                        const fullUrl = `${API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT}${q.toString() ? '?' + q.toString() : ''}`;
+                        console.log('loadEmployeeHistoricalData - params:', { ...params, employeeId: resolvedEmployeeId });
+                        console.log('loadEmployeeHistoricalData - fullUrl:', fullUrl);
+                      } catch (e) {
+                        console.warn('No se pudo construir fullUrl para debug', e);
+                      }
+
           
               const response = await axios.get(API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT, {
-                  params: { ...params, employeeId }
+                  params: { ...params, employeeId: resolvedEmployeeId }
               });
 
         
@@ -1334,7 +1400,6 @@ export default {
               this.employeeHistoricalLoading = false;
           }
       },
-    },
 
 
     async downloadEmployeeHistoricalCSV() {
@@ -1395,7 +1460,6 @@ export default {
       }
     },
 
-
     clearAllReports() {
       // Limpiar reportes de EMPLEADOR
       try {
@@ -1444,7 +1508,7 @@ export default {
       localStorage.removeItem("selectedCompany");
       this.$router.push("/");
     }
-  
+  }
 };
 </script>
 
