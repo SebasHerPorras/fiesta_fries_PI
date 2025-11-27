@@ -39,9 +39,9 @@ PRINT '';
 PRINT 'PASO 2: Creando Empresa Sprint 3...';
 
 INSERT INTO Empresa (CedulaJuridica, Nombre, DueñoEmpresa, Telefono, DireccionEspecifica, NoMaxBeneficios, DiaPago, FrecuenciaPago, FechaCreacion)
-VALUES (3101123456, 'Empresa Sprint 3', 117851985, 22223333, 'San José, Centro Empresarial', 3, 1, 'Mensual', '2025-01-01');
+VALUES (3108123456, 'Empresa Sprint 3', 117851985, 22223333, 'San José, Centro Empresarial', 3, 1, 'Mensual', '2025-01-01');
 
-PRINT '✓ Empresa Sprint 3 creada (Cédula: 3101123456, Pago: Mensual día 1)';
+PRINT '✓ Empresa Sprint 3 creada (Cédula: 3108123456, Pago: Mensual día 1)';
 GO
 
 -- =============================================
@@ -52,27 +52,27 @@ PRINT 'PASOS 3-7: Creando beneficios para Empresa Sprint 3...';
 
 -- PASO 3: Beneficio Gimnasio (Monto fijo ₡25,000)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Gimnasio', 'Monto Fijo', 'Empresa', 25000.00, 'Beneficio', 0);
+VALUES (3108123456, 'Gimnasio', 'Monto Fijo', 'Empresa', 25000.00, 'Beneficio', 0);
 PRINT '✓ Beneficio Gimnasio creado (Monto fijo: ₡25,000)';
 
 -- PASO 4: Beneficio Educación (Porcentual 3%)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Educación', 'Porcentual', 'Empresa', 3.00, 'Beneficio', 0);
+VALUES (3108123456, 'Educación', 'Porcentual', 'Empresa', 3.00, 'Beneficio', 0);
 PRINT '✓ Beneficio Educación creado (Porcentual: 3%)';
 
 -- PASO 5: Beneficio Seguro Privado (API)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Seguro Privado', 'API', 'Empresa', NULL, 'Deducción', 0);
+VALUES (3108123456, 'Seguro Privado', 'API', 'Empresa', NULL, 'Deducción', 0);
 PRINT '✓ Beneficio Seguro Privado creado (API: SeguroPrivado)';
 
 -- PASO 6: Beneficio Pensión Voluntaria (API)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Pension Voluntaria', 'API', 'Empleado', NULL, 'Deducción', 0);
+VALUES (3108123456, 'Pension Voluntaria', 'API', 'Empleado', NULL, 'Deducción', 0);
 PRINT '✓ Beneficio Pensión Voluntaria de Vida creado (API: PensionesVoluntarias)';
 
 -- PASO 7: Beneficio Asociación Solidarista (API)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Asociación Solidarista', 'API', 'Empleado', NULL, 'Beneficio', 0);
+VALUES (3108123456, 'Asociación Solidarista', 'API', 'Empleado', NULL, 'Beneficio', 0);
 PRINT '✓ Beneficio Asociación Solidarista creado (API: AsociacionSolidarista)';
 GO
 
@@ -95,17 +95,38 @@ INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPh
 VALUES (117111985, 'Ana', 'Madrigal', '1985-11-17', 'San José, Sabana', '8888-7777', NULL, @UserAnaEmpleadaGuid, 'Empleado', 0);
 
 INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
-VALUES (117111985, 'Gerente', 'Tiempo Completo', 4845000, '2025-05-01', 'Gerencia', 3101123456, 0);
+VALUES (117111985, 'Gerente', 'Tiempo Completo', 4845000, '2025-05-01', 'Gerencia', 3108123456, 0);
 
 PRINT '✓ Ana Madrigal (empleada) creada (Gerente, ₡4,845,000, Cédula: 117111985)';
 GO
 
 
--- AGREGAR HORAS PARA LA EMPLEADA ANA MADRIGAL (EMPLEADA) PARA QUE SE TOME EN CUENTA PARA EL PAGO DE MAYO 2025
-/*
-INSERT INTO EmployeeHours (employeeId, month, year, hoursWorked, IsDeleted)
-VALUES (117111985, 5, 2025, 160, 0);
-*/
+-- =============================================
+-- INSERCIÓN DE HORAS SEMANALES - ANA MADRIGAL (117111985)
+-- PERIODO: MAYO 2025 (1 al 31 de mayo)
+-- Contratada: 1/Mayo/2025
+-- =============================================
+PRINT '';
+PRINT 'Insertando horas semanales para Ana Madrigal - Mayo 2025...';
+
+-- MAYO 2025: Semanas del mes (del 1 al 31 de mayo)
+-- Semana del 28/04/2025 (lunes) - incluye 1 y 2 de mayo (jueves y viernes)
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-04-28', 117111985, 16);
+
+-- Semana del 05/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-05', 117111985, 40);
+
+-- Semana del 12/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-12', 117111985, 40);
+
+-- Semana del 19/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-19', 117111985, 40);
+
+-- Semana del 26/05/2025 (lunes) - incluye hasta 31 de mayo (sábado) = 5 días
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-26', 117111985, 40);
+
+PRINT '✓ Horas de Mayo 2025 insertadas para Ana Madrigal (176 horas total)';
+GO
 
 -- NOTE: PASO 9 - Ejecutar planilla Mayo 2025 se debe hacer manualmente desde la aplicación
 
@@ -128,7 +149,7 @@ INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPh
 VALUES (116012000, 'Sara', 'Rodriguez', '2000-01-16', 'Heredia, Costa Rica', '8888-2222', NULL, @UserSaraGuid, 'Empleado', 0);
 
 INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
-VALUES (116012000, 'Desarrollador Jr.', 'Tiempo Completo', 900000, '2025-06-01', 'Desarrollo', 3101123456, 0);
+VALUES (116012000, 'Desarrollador Jr.', 'Tiempo Completo', 900000, '2025-06-01', 'Desarrollo', 3108123456, 0);
 
 PRINT '✓ Sara Rodriguez creada (Desarrollador Jr., ₡900,000)';
 GO
@@ -152,7 +173,7 @@ INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPh
 VALUES (123121988, 'Jenny', 'Durango', '1988-12-23', 'Cartago, Costa Rica', '8888-3333', NULL, @UserJennyGuid, 'Empleado', 0);
 
 INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
-VALUES (123121988, 'Desarrollador Senior', 'Tiempo Completo', 2500000, '2025-06-16', 'Desarrollo', 3101123456, 0);
+VALUES (123121988, 'Desarrollador Senior', 'Tiempo Completo', 2500000, '2025-06-16', 'Desarrollo', 3108123456, 0);
 
 PRINT '✓ Jenny Durango creada (Desarrollador Senior, ₡2,500,000)';
 GO
@@ -264,7 +285,7 @@ INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPh
 VALUES (125031995, 'John', 'Smith', '1995-03-25', 'San José, Escazú', '8888-4444', NULL, @UserJohnGuid, 'Empleado', 0);
 
 INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
-VALUES (125031995, 'Product Owner', 'Tiempo Completo', 1800000, '2025-10-01', 'Producto', 3101123456, 0);
+VALUES (125031995, 'Product Owner', 'Tiempo Completo', 1800000, '2025-10-01', 'Producto', 3108123456, 0);
 
 PRINT '✓ John Smith creado (Product Owner, ₡1,800,000)';
 GO
@@ -277,12 +298,12 @@ PRINT 'PASOS 22-23: Creando beneficios adicionales...';
 
 -- PASO 22: Beneficio Spa (Monto fijo ₡35,000)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Spa', 'Monto Fijo', 'Empresa', 35000.00, 'Beneficio', 0);
+VALUES (3108123456, 'Spa', 'Monto Fijo', 'Empresa', 35000.00, 'Beneficio', 0);
 PRINT '✓ Beneficio Spa creado (Monto fijo: ₡35,000)';
 
 -- PASO 23: Beneficio Club Pass (Monto fijo ₡40,000)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
-VALUES (3101123456, 'Club Pass', 'Monto Fijo', 'Empresa', 40000.00, 'Beneficio', 0);
+VALUES (3108123456, 'Club Pass', 'Monto Fijo', 'Empresa', 40000.00, 'Beneficio', 0);
 PRINT '✓ Beneficio Club Pass creado (Monto fijo: ₡40,000)';
 GO
 
@@ -327,7 +348,7 @@ INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPh
 VALUES (125031991, 'Jane', 'Doe', '1991-03-25', 'Alajuela, Costa Rica', '8888-5555', NULL, @UserJaneGuid, 'Empleado', 0);
 
 INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
-VALUES (125031991, 'Sin Puesto', 'Tiempo Completo', 1600000, '2025-11-01', 'General', 3101123456, 0);
+VALUES (125031991, 'Sin Puesto', 'Tiempo Completo', 1600000, '2025-11-01', 'General', 3108123456, 0);
 
 PRINT '✓ Jane Doe creada (Sin Puesto, ₡1,600,000)';
 GO
@@ -413,6 +434,8 @@ GO
 
 -- NOTE: PASOS 32-34 - Asignación de beneficios y planillas Nov 2024 - Oct 2025 se hacen desde la aplicación
 
+
+
 PRINT '';
 PRINT '========================================';
 PRINT 'SCRIPT COMPLETADO EXITOSAMENTE';
@@ -425,6 +448,7 @@ PRINT '- Empleados Empresa Sprint 3: 5';
 PRINT '- Empleados Empresa Integradora: 1';
 PRINT '- Beneficios Empresa Sprint 3: 7';
 PRINT '- Beneficios Empresa Integradora: 2';
+PRINT '- Horas trabajadas Mayo 2025: Ana Madrigal (176 horas)';
 PRINT '';
 PRINT 'NOTA: Las planillas y asignación de beneficios deben';
 PRINT 'ejecutarse desde la aplicación web según los pasos indicados.';
