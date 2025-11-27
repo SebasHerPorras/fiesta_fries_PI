@@ -1,9 +1,10 @@
-﻿using NUnit.Framework;
-using Moq;
-using FluentAssertions;
-using backend.Services;
+﻿using backend.Interfaces;
 using backend.Models;
-using backend.Interfaces;
+using backend.Services;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
 
 namespace backend_test
 {
@@ -14,7 +15,9 @@ namespace backend_test
         private Mock<IEmployerBenefitDeductionService> _mockEmployerBenefitDeductionService;
         private Mock<IExternalApiFactory> _mockApiFactory;
         private Mock<IEmployeeBenefitService> _mockEmployeeBenefitService;
+        private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
         private CalculatorBenefitsService _service;
+        private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
 
         [SetUp]
         public void Setup()
@@ -23,12 +26,15 @@ namespace backend_test
             _mockEmployerBenefitDeductionService = new Mock<IEmployerBenefitDeductionService>();
             _mockApiFactory = new Mock<IExternalApiFactory>();
             _mockEmployeeBenefitService = new Mock<IEmployeeBenefitService>();
+            _mockLogger = new Mock<ILogger<CalculatorBenefitsService>>();
 
             _service = new CalculatorBenefitsService(
                 _mockEmployeeDeductionService.Object,
                 _mockEmployerBenefitDeductionService.Object,
                 _mockApiFactory.Object,
-                _mockEmployeeBenefitService.Object
+                _mockEmployeeBenefitService.Object,
+                _mockLogger.Object,
+                true
             );
         }
 

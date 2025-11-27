@@ -1,7 +1,5 @@
-<template>
+﻿<template>
     <div class="wrap">
-
-        <!-- Encabezado -->
         <header class="header">
             <div class="header-content">
                 <div class="display">
@@ -9,142 +7,268 @@
                         <span class="f">F</span>
                     </div>
                     <div class="texts">
-                        <h1>Mi Empresa</h1>
-                        <p>Usuario</p>
+                        <h1 v-if="companyName">{{companyName}}</h1>
+                        <p>{{employeeName}}</p>
                     </div>
                 </div>
 
+                <button @click="volverAtras" class="btn-volver">
+                    ← Volver
+                </button>
+
                 <!-- Texto alineado a la derecha -->
                 <div class="dash-right">
-                    <h2>Dashboard Empleado</h2>
+                    <h2>Dashboard Empleador</h2>
                 </div>
             </div>
         </header>
 
-        <!-- Contenedor principal -->
         <section class="hero">
+           
             <div class="big-container">
-
-                <!-- Contenedores 2x2 -->
                 <div class="img-grid">
+                    
                     <div class="img-box">
-                        <img src="@/assets/style/grafico1.jpg" alt="Imagen 1" />
+                        <img v-bind:src="imageDataEmployeesRoleCount" alt="Gráfico de empleados por tipo" />
                     </div>
 
+                    
                     <div class="img-box">
-                        <img src="@/assets/style/grafico1.jpg" alt="Imagen 2" />
-                    </div>
-
-                    <div class="img-box">
-                        <img src="@/assets/style/grafico1.jpg" alt="Imagen 3" />
-                    </div>
-
-                    <div class="img-box">
-                        <img src="@/assets/style/grafico1.jpg" alt="Imagen 4" />
+                        <div class="table-container">
+                            <h3 class="table-title">&Uacute;ltimos pagos</h3>
+                            <table class="empresas-table">
+                                <thead>
+                                    <tr>
+                                        <th>Planillas</th>
+                                        <th>Fecha</th>
+                                        <th>Costo total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{empresas.primeraEmpresa}}</td>
+                                        <td>{{planillas.primeraPlanilla}}</td>
+                                        <td>{{costo.primerCosto}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{empresas.segundaEmpresa}}</td>
+                                        <td>{{planillas.segundaPlanilla}}</td>
+                                        <td>{{costo.segundoCosto}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{empresas.terceraEmpresa}}</td>
+                                        <td>{{planillas.terceraPlanilla}}</td>
+                                        <td>{{costo.tercerCosto}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+            </div>
 
+            
+            <div class="big-container">
+                <div class="single-image-container">
+                    <img v-bind:src="imageDataCakeChart" alt="Gráfico principal" class="main-image" />
+                </div>
             </div>
         </section>
-
     </div>
 </template>
 
 <script>
+    import axios from "axios";
+    import { API_ENDPOINTS } from "../config/apiConfig";
+
     export default {
         name: "DashboardEmpleadoImagenes",
+        data() {
+            return {
+                companyId: "",
+                imageDataEmployeesRoleCount: "",
+                employeeName: "",
+                companyName: "",
+                hoursList: "",
+                imageDataCakeChart: "",
+                planillas: {
+                    primeraPlanilla: "",
+                    segundaPlanilla: "",
+                    terceraPlanilla: "",
+                },
+                empresas: {
+                    primeraEmpresa: "",
+                    segundaEmpresa: "",
+                    terceraEmpresa: "",
+                },
+                costo: {
+                    primerCosto: "",
+                    segundoCosto: "",
+                    tererCosto: "",
+                },
+                fecha: "",
+            };
+        },
+        async mounted() {
+            this.getCompanyData();
+            this.setLocalData();
+            await this.serveImages();
+            await this.getHoursList();
+            await this.displayTableData();
+            await this.serveImageCake();
+        },
+        methods: {
+            volverAtras() {
+                this.$router.push('/Profile');
+            },
+            getCompanyData() {
+                let data = JSON.parse(localStorage.getItem("selectedCompany"));
+                this.companyId = data.cedulaJuridica;
+                this.companyName = data.nombre;
+            },
+
+            async getHoursList() {
+                const fecha = new Date();
+
+                const yy = fecha.getFullYear(); 
+                const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+                const dd = String(fecha.getDate()).padStart(2, '0');
+
+                const formato = `${yy}-${mm}-${dd}`;
+
+                this.fecha = formato;
+
+                const getHoursUrl = API_ENDPOINTS.EMPRESA_PAY_DATES(this.companyId, formato);
+                const result = await axios.get(getHoursUrl);
+
+                this.hoursList = result.data;
+                
+            },
+            setLocalData() {
+                let data = JSON.parse(localStorage.getItem("userData"));
+                let completeName = data.firstName + " " + data.secondName;
+                this.employeeName = completeName;
+            },
+            async serveImageCake() {
+                if (this.hoursList[0] == null) {
+                    this.imageDataCakeChart = new URL('@/assets/NotFound.png', import.meta.url).href
+                    return;
+                }
+
+                const fechaSimple = this.hoursList[0].split("T")[0];
+                try {
+                    const imageUrl = API_ENDPOINTS.CAKE_GRAPH(this.companyId,fechaSimple)
+                    const response = await axios.get(imageUrl, {
+                        responseType: 'arraybuffer'
+                    });
+
+                    console.log("Datos recibidos:", response.data);
+                    console.log("Tipo de datos:", typeof response.data);
+
+                    const bytes = new Uint8Array(response.data);
+                    const base64String = btoa(
+                        bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), "")
+                    );
+
+                    this.imageDataCakeChart = `data:image/png;base64,${base64String}`;
+                    console.log("Imagen convertida correctamente");
+                } catch (error) {
+                    console.error("Error al cargar la imagen:", error);
+                }
+            }, 
+            async displayTableData() {
+                if (this.hoursList[0] != null) {
+
+                    this.planillas.primeraPlanilla = this.hoursList[0].split("T")[0];
+                    this.empresas.primeraEmpresa = this.companyName;
+                    const fechaSimple = this.hoursList[0].split("T")[0];
+
+                    const URL = API_ENDPOINTS.SPREADSHEET_COST(this.companyId, fechaSimple);
+
+                    const response = await axios.get(URL);
+
+                    this.costo.primerCosto = response.data + "₡";
+                }
+                if (this.hoursList[1] != null) {
+                    this.planillas.segundaPlanilla = this.hoursList[1].split("T")[0];
+                    this.empresas.segundaEmpresa = this.companyName;
+
+                    const fechaSimple = this.hoursList[1].split("T")[0];
+
+                    const URL = API_ENDPOINTS.SPREADSHEET_COST(this.companyId, fechaSimple);
+
+                    const response = await axios.get(URL);
+
+                    this.costo.segundoCosto = response.data + "₡";
+                } 
+  
+                if (this.hoursList[2] != null) {
+                    this.planillas.terceraPlanilla = this.hoursList[2].split("T")[0];
+                    this.empresas.terceraEmpresa = this.companyName;
+                    const fechaSimple = this.hoursList[1].split("T")[0];
+
+                    const URL = API_ENDPOINTS.SPREADSHEET_COST(this.companyId, fechaSimple);
+
+                    const response = await axios.get(URL);
+
+                    this.costo.tercerCosto = response.data + "₡";
+                }  
+            },
+
+
+            async serveImages() {
+                await this.serveRoleCountImage();
+            },
+
+            async serveRoleCountImage() {
+                console.log(this.companyId);
+                try {
+                    const imageUrl = API_ENDPOINTS.EMPRESA_COUNT_ROLES(this.companyId,);
+                    const response = await axios.get(imageUrl, {
+                        responseType: 'arraybuffer'
+                    });
+
+                    console.log("Datos recibidos:", response.data);
+                    console.log("Tipo de datos:", typeof response.data);
+
+                    const bytes = new Uint8Array(response.data);
+                    const base64String = btoa(
+                        bytes.reduce((acc, byte) => acc + String.fromCharCode(byte), "")
+                    );
+
+                    this.imageDataEmployeesRoleCount = `data:image/png;base64,${base64String}`;
+                    console.log("Imagen convertida correctamente");
+                } catch (error) {
+                    console.error("Error al cargar la imagen:", error);
+                }
+            },
+        }
+
     };
 </script>
 
+<style src="@/assets/style/DashboardEmpleador.css" scoped></style>
 <style scoped>
-    .wrap {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        background: #1e1e1e;
-        color: whitesmoke;
-    }
+.btn-volver {
+  background: linear-gradient(135deg, #1fb9b4, #51a3a0);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(31, 185, 180, 0.3);
+}
 
-    .header {
-        background: rgba(0, 0, 0, 0.25);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 16px 64px;
-    }
+.btn-volver:hover {
+  background: linear-gradient(135deg, #51a3a0, #1fb9b4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.5);
+}
 
-    .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .display {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-    }
-
-    .logo-box {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(180deg, #51a3a0, hsl(178, 77%, 86%));
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .logo-box .f {
-            font-weight: 800;
-            font-size: 24px;
-            color: white;
-        }
-
-    .dash-right h2 {
-        color: white;
-        font-size: 22px;
-        margin: 0;
-    }
-
-    .hero {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 48px 64px;
-        gap: 40px;
-        flex: 1 0 auto;
-    }
-
-    .big-container {
-        width: 100%;
-        background: #2a2a2a;
-        padding: 24px;
-        border-radius: 12px;
-    }
-
-    .img-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-
-    .img-box {
-        background: #1e1e1e;
-        border: 2px solid #1fb9b4;
-        padding: 16px;
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-        .img-box img {
-            width: 100%;
-            border-radius: 8px;
-        }
-
-    @media (max-width: 700px) {
-        .img-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+.btn-volver:active {
+  transform: translateY(0);
+}
 </style>

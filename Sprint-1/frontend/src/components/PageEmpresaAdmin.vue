@@ -63,6 +63,7 @@
                     <th>Nombre</th>
                     <th>Empleados</th>
                     <th>Frecuencia Pago</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -71,6 +72,11 @@
                     <td>{{ empresa.nombre }}</td>
                     <td>{{ empresa.cantidadEmpleados || 0 }}</td>
                     <td>{{ formatFrecuenciaPago(empresa.frecuenciaPago) }}</td>
+                    <td>
+                      <button @click="abrirModalEliminarEmpresa(empresa)" class="btn-eliminar">
+                        Borrar
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -219,7 +225,7 @@
             
             <!-- 📅 INFORMACIÓN DEL PERIODO SELECCIONADO -->
             <transition name="fade">
-              <div v-if="selectedPeriod" key="period-detail" class="selected-period-detail">
+              <div v-if="selectedPeriod" :key="selectedPeriod.startDate" class="selected-period-detail">
                 <h4>📅 Información del Periodo Seleccionado</h4>
                 <table class="payroll-table">
                   <thead>
@@ -507,6 +513,16 @@
       @confirm="confirmarEliminarEmpleado"
     />
 
+    <!-- Confirmar eliminación para empresa (placeholder) -->
+    <ModalWarning
+      v-if="selectedEmpresa"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpresa.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpresa"
+    />
+
     <!-- Confirmar eliminación para beneficios -->
     <ModalWarning
       v-if="selectedBeneficio"
@@ -577,11 +593,20 @@ export default {
       currentReportBlob: null,
       currentReportText: null,
 
+      // PROPIEDADES REACTIVAS PARA PAYROLL (CRÍTICO para Vue)
+      pendingPeriods: [],
+      overduePeriods: [],
+      nextPeriod: null,
+      selectedPeriod: null,
+      payrollLoading: false,
+
       selectedCompany: null,
       selectedCompanyId: null,
       selectedCompanyCedula: null,
       selectedBeneficio: null,
       selectedEmpleado: null,
+      selectedEmpresa: null,
+      selectedEmpresaCedula: null,
       showDeleteModal: false,
       isDeleting: false
     }
@@ -739,7 +764,7 @@ export default {
 
      async hacerPreview(period) {
       if (!period || !this.selectedCompanyCedula) return;
-        
+      
       this.payrollLoading = true;
       try {
         const periodDate = new Date(period.startDate);
@@ -750,26 +775,34 @@ export default {
           periodDate: formattedDate
         };
 
+        console.log('📡 Solicitando preview para:', formattedDate);
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PREVIEW, request);
+        console.log('📥 Respuesta del backend:', response.data);
 
         if (response.data.success) {
+          // ✅ Asignación simple - Vue ahora rastrea selectedPeriod reactivamente
           this.selectedPeriod = {
-            ...period,
-            ...response.data.previewData,
+            description: period.description,
+            startDate: period.startDate,
+            endDate: period.endDate,
+            isProcessed: period.isProcessed,
+            periodType: period.periodType,
+            totalGrossSalary: response.data.previewData.totalGrossSalary || 0,
             totalEmployeeDeductions: response.data.previewData.totalEmployeeDeductions || 0,
             totalEmployerDeductions: response.data.previewData.totalEmployerDeductions || 0,
             totalBenefits: response.data.previewData.totalBenefits || 0,
             totalNetSalary: response.data.previewData.totalNetSalary || 0,
             totalEmployerCost: response.data.previewData.totalEmployerCost || 0,
-            totalAmount: response.data.totalAmount
+            totalAmount: response.data.totalAmount || 0
           };
           
+          console.log('✅ selectedPeriod actualizado:', this.selectedPeriod);
           this.showMessage(`Preview calculado - ${response.data.message}`, 'success');
         } else {
           this.showMessage(`${response.data.message}`, 'error');
         }
       } catch (error) {
-        console.error('Error en preview:', error);
+        console.error('❌ Error en preview:', error);
         this.showMessage('Error al calcular preview', 'error');
       } finally {
         this.payrollLoading = false;
@@ -1091,9 +1124,10 @@ export default {
       },
 
 
-    selectPeriod(period) {
-      this.selectedPeriod = period;
-      this.hacerPreview(period);
+    async selectPeriod(period) {
+      console.log('🎯 Periodo seleccionado:', period.description);
+      // NO asignar period vacío - esperar a que hacerPreview cargue datos reales
+      await this.hacerPreview(period);
     },
 
      async procesarPlanilla() {
@@ -1289,8 +1323,8 @@ export default {
     },
 
     formatCurrency(amount) {
-      if (!amount) return '0';
-      return parseFloat(amount).toLocaleString('es-CR');
+      if (amount === null || amount === undefined) return '0';
+      return Number(amount).toLocaleString('es-CR');
     },
 
     abrirModalEliminarBeneficio(beneficio) {
@@ -1386,6 +1420,89 @@ export default {
         this.selectedEmpleado = null;
       }
     },
+
+    abrirModalEliminarEmpresa(empresa) {
+      this.selectedEmpresa = empresa;
+      this.selectedEmpresaCedula = empresa?.cedulaJuridica || empresa?.cedula || null;
+      this.showDeleteModal = true;
+
+      console.log("Empresa a eliminar:", empresa?.nombre);
+      console.log("Cédula de empresa seleccionada:", this.selectedEmpresaCedula);
+    },
+
+    async confirmarEliminarEmpresa() {
+      if (!this.selectedEmpresa || !this.selectedEmpresaCedula) {
+        this.showMessage('No se ha seleccionado una empresa válida', 'error');
+        return;
+      }
+
+      this.isDeleting = true;
+
+      try {
+        const resultado = await this.BorrarEmpresa(this.selectedEmpresaCedula);
+        
+        if (resultado.success) {
+          this.showMessage(
+            `Empresa eliminada exitosamente. ` +
+            `Empleados: ${resultado.successfulDeletions}/${resultado.employeesProcessed}, ` +
+            `Beneficios: ${resultado.successfulBenefitDeletions}/${resultado.benefitsProcessed}. `, 
+            'success'
+          );
+          setTimeout(() => {
+            this.$router.push('/Profile');
+          }, 3500);
+        } else {
+          this.showMessage(`Error al eliminar empresa: ${resultado.message}`, 'error');
+        }
+      } catch (err) {
+        console.error('Error en confirmarEliminarEmpresa:', err);
+        
+        if (err.response?.data?.message) {
+          this.showMessage(`Error: ${err.response.data.message}`, 'error');
+        } else if (err.message?.includes('Network Error')) {
+          this.showMessage('Error de conexión. Verifique su internet e intente nuevamente.', 'error');
+        } else {
+          this.showMessage('Error interno al intentar borrar la empresa', 'error');
+        }
+      } finally {
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.selectedEmpresa = null;
+        this.selectedEmpresaCedula = null;
+      }
+    },
+
+    async BorrarEmpresa(cedulaJuridica) {
+      try {
+        const response = await fetch(API_ENDPOINTS.COMPANY_DELETION(cedulaJuridica), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage = `Error ${response.status}: ${response.statusText}`;
+          
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            errorMessage = errorText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Error en BorrarEmpresa:', error);
+        throw error;
+      }
+    },
+        
     // ============================================
     // NUEVOS MÉTODOS PARA REPORTES
     // ============================================

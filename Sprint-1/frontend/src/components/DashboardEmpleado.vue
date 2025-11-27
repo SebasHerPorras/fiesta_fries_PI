@@ -15,7 +15,10 @@
           </div>
         </div>
 
-        
+        <button @click="volverAtras" class="btn-volver">
+          ← Volver
+        </button>
+
         <div class="dashboard-texts">
           <h2>Dashboard-Empleado</h2>
           <p>Fecha del &uacute;ltimo pago</p>
@@ -99,6 +102,10 @@
         },
         
         methods: {
+         volverAtras() {
+           this.$router.push('/Profile');
+         },
+         
          async getEmployeeId() {
               let dataTemp = localStorage.getItem("userData");
               let objectTemp = JSON.parse(dataTemp);
@@ -231,3 +238,27 @@
 </script>
 
 <style src="@/assets/style/DashboardEmpleado.css" scoped></style>
+<style scoped>
+.btn-volver {
+  background: linear-gradient(135deg, #1fb9b4, #51a3a0);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(31, 185, 180, 0.3);
+}
+
+.btn-volver:hover {
+  background: linear-gradient(135deg, #51a3a0, #1fb9b4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.5);
+}
+
+.btn-volver:active {
+  transform: translateY(0);
+}
+</style>
