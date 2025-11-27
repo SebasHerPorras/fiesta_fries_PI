@@ -84,6 +84,9 @@ builder.Services.AddScoped<ICalculationService, CalculationService>();
 builder.Services.AddScoped<IEmployerHistoricalReportRepository, EmployerHistoricalReportRepository>();
 builder.Services.AddScoped<IEmployerHistoricalReportService, EmployerHistoricalReportService>();
 
+builder.Services.AddScoped<IEmployerByPersonReportRepository, EmployerByPersonReportRepository>();
+builder.Services.AddScoped<IEmployerByPersonReportService, EmployerByPersonReportService>();
+
 // Deletion Service
 builder.Services.AddScoped<IEmployeeDeletionRepository, EmployeeDeletionRepository>();
 builder.Services.AddScoped<IEmployeeDeletionService, EmployeeDeletionService>();
@@ -141,6 +144,7 @@ builder.Services.AddScoped<PayrollPdfService>();
 builder.Services.AddScoped<PayrollCsvService>();
 builder.Services.AddScoped<EmployerHistoricalReportCsvService>();
 builder.Services.AddScoped<PayrollReportService>();
+builder.Services.AddScoped<EmployerByPersonReportCsvService>();
 
 // Beneficios
 builder.Services.AddScoped<BeneficioRepository>();

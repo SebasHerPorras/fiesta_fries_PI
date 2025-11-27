@@ -118,6 +118,8 @@ export const API_ENDPOINTS = {
   
   EMPLOYER_HISTORICAL_REPORT: buildApiUrl("EmployerHistoricalReport"),
   EMPLOYER_HISTORICAL_REPORT_CSV: buildApiUrl("EmployerHistoricalReport/csv"),
+  EMPLOYER_BY_PERSON_REPORT: buildApiUrl("EmployerByPersonReport"),
+  EMPLOYER_BY_PERSON_REPORT_CSV: buildApiUrl("EmployerByPersonReport/csv"),
 
   // Reporte por empleado en una planilla específica
   PAYROLL_EMPLOYEE_REPORT_JSON: (payrollId, employeeId) =>
