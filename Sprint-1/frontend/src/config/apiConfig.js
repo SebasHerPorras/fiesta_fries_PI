@@ -118,6 +118,8 @@ export const API_ENDPOINTS = {
   
   EMPLOYER_HISTORICAL_REPORT: buildApiUrl("EmployerHistoricalReport"),
   EMPLOYER_HISTORICAL_REPORT_CSV: buildApiUrl("EmployerHistoricalReport/csv"),
+  EMPLOYER_BY_PERSON_REPORT: buildApiUrl("EmployerByPersonReport"),
+  EMPLOYER_BY_PERSON_REPORT_CSV: buildApiUrl("EmployerByPersonReport/csv"),
   EMPLOYEE_HISTORICAL_REPORT: buildApiUrl("EmployeeHistoricalReport"),
   EMPLOYEE_HISTORICAL_REPORT_CSV: buildApiUrl("EmployeeHistoricalReport/csv"),
 
