@@ -244,17 +244,25 @@ export default {
       modalConfirmText: null
     };
   },
-  mounted() {
+  async mounted() {
     this.loadUserData();
-    this.loadSelectedCompany();
-    this.resolveEmpleadoId().then(() => {
-      if (this.empleadoId) {
-        this.loadBeneficios();
-        this.loadSelectedBenefits();
-      } else {
-        console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
-      }
-    });
+    
+    // ✅ Esperar a que se cargue la empresa antes de continuar
+    const hasCompany = await this.loadSelectedCompany();
+    
+    if (!hasCompany) {
+      console.warn("No se pudo cargar empresa, abortando carga de beneficios");
+      return;
+    }
+    
+    await this.resolveEmpleadoId();
+    
+    if (this.empleadoId) {
+      this.loadBeneficios();
+      this.loadSelectedBenefits();
+    } else {
+      console.warn("empleadoId no resuelto, no se cargan beneficios");
+    }
   },
   methods: {
     /* -------------------------
@@ -285,18 +293,42 @@ export default {
       }
     },
 
-    loadSelectedCompany() {
+    async loadSelectedCompany() {
       try {
         const savedCompany = localStorage.getItem("selectedCompany");
         if (savedCompany) {
           this.selectedCompany = JSON.parse(savedCompany);
+          console.log("✅ Empresa cargada desde localStorage:", this.selectedCompany.nombre);
           return true;
         } else {
-          this.showMessage("No hay empresa seleccionada", "error");
-          this.$router.push("/Profile");
+          // ✅ Fallback: intentar cargar empresa del backend para empleados
+          console.log("⚠️ No hay empresa en localStorage, intentando cargar del backend...");
+          const userData = localStorage.getItem("userData");
+          if (userData) {
+            const user = JSON.parse(userData);
+            if (user.personType === "Empleado" && user.id) {
+              try {
+                const response = await axios.get(API_ENDPOINTS.EMPRESA_BY_EMPLOYEE(user.id));
+                if (response.data?.success && response.data.empresa) {
+                  this.selectedCompany = response.data.empresa;
+                  localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+                  console.log("✅ Empresa cargada del backend y guardada:", this.selectedCompany.nombre);
+                  return true;
+                }
+              } catch (error) {
+                console.error("Error cargando empresa del backend:", error);
+              }
+            }
+          }
+          
+          this.showMessage("No hay empresa seleccionada. Redirigiendo a Datos Personales...", "error");
+          setTimeout(() => {
+            this.$router.push("/Profile");
+          }, 2000);
           return false;
         }
       } catch (error) {
+        console.error("Error en loadSelectedCompany:", error);
         this.showMessage("Error al cargar empresa", "error");
         return false;
       }
@@ -326,6 +358,15 @@ export default {
     async loadBeneficios() {
       if (!this.empleadoId) {
         this.showMessage("No se pudo determinar el id del empleado. Imposible cargar beneficios.", "error");
+        return;
+      }
+
+      // ✅ Validar que existe empresa seleccionada
+      if (!this.selectedCompany || !this.selectedCompany.cedulaJuridica) {
+        this.showMessage("No hay empresa seleccionada. Redirigiendo a Datos Personales...", "error");
+        setTimeout(() => {
+          this.$router.push("/Profile");
+        }, 2000);
         return;
       }
 
