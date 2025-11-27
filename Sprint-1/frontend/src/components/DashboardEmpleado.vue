@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <meta charset="UTF-8">
   <div class="wrap">
     
@@ -145,9 +145,14 @@
                   this.serveNonPayrrollImage();
                   return
               }
-              let lastPayroll = response.data;
-              lastPayroll = new Date(lastPayroll);
-              this.lastPaymentDay = lastPayroll.toISOString().split("T")[0];
+              const lastPayroll = response.data;
+              // Extraer la fecha en formato YYYY-MM-DD sin convertir a UTC.
+              if (typeof lastPayroll === 'string' && lastPayroll.includes('T')) {
+                this.lastPaymentDay = lastPayroll.split('T')[0];
+              } else {
+                const d = new Date(lastPayroll);
+                this.lastPaymentDay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              }
               this.serveData();
             },
           serveNonPayroll() {
@@ -194,6 +199,8 @@
               });
           },
           async getSalaryData() {
+            console.log("EmployeeId: ", this.employeeId);
+            console.log("lastPaymentDay: ", this.lastPaymentDay);
               const dashboardDataUrl = API_ENDPOINTS.GET_SALARY_DATA(this.employeeId, this.lastPaymentDay);
               const dataS = await axios.get(dashboardDataUrl);
               this.payrollData = dataS.data;
