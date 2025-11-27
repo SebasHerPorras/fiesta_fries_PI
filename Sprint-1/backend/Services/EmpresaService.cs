@@ -267,7 +267,7 @@ namespace backend.Services
             decimal result = 0;
 
             result += this._empresaRepository.getEmployerDeductions(id, fecha);
-            result += this._empresaRepository.GetBeneficiosEmpresa(id);
+            result += this._empresaRepository.GetBeneficiosEmpresa(id,fecha);
             result += this._empresaRepository.GetTotalSalarios(id);
 
             return result;
@@ -280,7 +280,7 @@ namespace backend.Services
 
 
                 decimal deducciones = _empresaRepository.getEmployerDeductions(id, fecha);
-                decimal beneficios = _empresaRepository.GetBeneficiosEmpresa(id);
+                decimal beneficios = _empresaRepository.GetBeneficiosEmpresa(id,fecha);
                 decimal salarios = _empresaRepository.GetTotalSalarios(id);
                 decimal total = deducciones + beneficios + salarios;
 
