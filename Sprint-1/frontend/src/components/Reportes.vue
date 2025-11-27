@@ -30,7 +30,7 @@
 
               <!-- Dropdown de empresas SOLO para Empleador -->
               <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
-                  <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                  <select v-model="selectedCompany" @change="onCompanyChangeDropdown" class="company-select">
                       <option :value="null">Seleccionar Empresa</option>
                       <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
                           {{ company.nombre }}
@@ -741,6 +741,24 @@ export default {
         console.error("Error cargando empresas:", err);
         this.companies = [];
         this.selectedCompanyId = "";
+      }
+    },
+
+    onCompanyChangeDropdown() {
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
+        this.saveSelectedCompany();
+        // Redirigir a la página de administración de empresas
+        this.$router.push('/PageEmpresaAdmin');
+      }
+    },
+
+    saveSelectedCompany() {
+      if (this.selectedCompany && this.selectedCompany.cedulaJuridica) {
+        // Guardar toda la información de la empresa en localStorage
+        localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+        console.log("Empresa seleccionada guardada:", this.selectedCompany.nombre);
+      } else {
+        localStorage.removeItem("selectedCompany");
       }
     },
 

@@ -127,7 +127,7 @@ namespace backend.Handlers.backend.Repositories
             SELECT e.*, 
                    0 as CantidadEmpleados  -- Por ahora 0, luego puedes contar empleados reales
             FROM Empresa e
-            WHERE e.DueñoEmpresa = @OwnerId
+            WHERE e.DueñoEmpresa = @OwnerId AND e.isDeleted = 0
             ORDER BY e.Nombre";
 
                 Console.WriteLine($"Buscando empresas para DueñoEmpresa: {ownerId}");
