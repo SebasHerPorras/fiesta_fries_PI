@@ -288,6 +288,27 @@ GO
 
 -- NOTE: PASO 24-25 - Asignación de beneficios a John Smith y planilla Octubre se hacen desde la aplicación
 
+DECLARE @benefitID5 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Seguro Privado');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID5, NULL, 1, 'Seguro Privado', NULL, 'API', 0);
+
+DECLARE @benefitID6 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Club Pass');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID6, NULL, NULL, 'Club Pass', 40000, 'Monto Fijo', 0);
+
+DECLARE @benefitID7 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Pension Voluntaria');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID7, 'A', NULL, 'Pension Voluntaria', NULL, 'API', 0);
+
+
+-- ==================
+-- PLANILLA DE OCTUBRE 2025
+-- ==================
+
+
 -- =============================================
 -- PASO 26: Crear empleada Jane Doe
 -- Nacida: 25/Mar/1991
@@ -311,7 +332,23 @@ VALUES (125031991, 'Sin Puesto', 'Tiempo Completo', 1600000, '2025-11-01', 'Gene
 PRINT '✓ Jane Doe creada (Sin Puesto, ₡1,600,000)';
 GO
 
+
+
 -- NOTE: PASO 27 - Asignación de beneficios a Jane Doe se hace desde la aplicación
+
+DECLARE @benefitID8 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Educación');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID8, NULL, NULL, 'Educación', 3.00, 'Porcentual', 0);
+
+DECLARE @benefitID9 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Spa');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID9, NULL, NULL, 'Spa', 35000, 'Monto Fijo', 0);
+
+DECLARE @benefitID10 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Club Pass');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID10, NULL, NULL, 'Club Pass', 40000, 'Monto Fijo', 0);
+
+
 
 -- =============================================
 -- PASO 28: Crear Empresa Integradora
@@ -333,6 +370,11 @@ GO
 -- =============================================
 PRINT '';
 PRINT 'PASOS 29-30: Creando beneficios para Empresa Integradora...';
+
+-- ==============================
+-- La empleadore es la misma Ana Madrigal (dueña) de la empresa anterior
+-- ==============================
+
 
 -- PASO 29: Beneficio Asociación Solidarista (API)
 INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
