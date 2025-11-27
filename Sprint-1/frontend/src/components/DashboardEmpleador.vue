@@ -11,6 +11,12 @@
                         <p>{{employeeName}}</p>
                     </div>
                 </div>
+
+                <button @click="volverAtras" class="btn-volver">
+                    ← Volver
+                </button>
+
+                <!-- Texto alineado a la derecha -->
                 <div class="dash-right">
                     <h2>Dashboard Empleador</h2>
                 </div>
@@ -112,6 +118,9 @@
             await this.serveImageCake();
         },
         methods: {
+            volverAtras() {
+                this.$router.push('/Profile');
+            },
             getCompanyData() {
                 let data = JSON.parse(localStorage.getItem("selectedCompany"));
                 this.companyId = data.cedulaJuridica;
@@ -239,3 +248,27 @@
 </script>
 
 <style src="@/assets/style/DashboardEmpleador.css" scoped></style>
+<style scoped>
+.btn-volver {
+  background: linear-gradient(135deg, #1fb9b4, #51a3a0);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(31, 185, 180, 0.3);
+}
+
+.btn-volver:hover {
+  background: linear-gradient(135deg, #51a3a0, #1fb9b4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.5);
+}
+
+.btn-volver:active {
+  transform: translateY(0);
+}
+</style>

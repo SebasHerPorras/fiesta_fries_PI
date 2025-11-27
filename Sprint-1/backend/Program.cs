@@ -152,6 +152,11 @@ builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<EmpresaService>();
 
+builder.Services.AddScoped<IEmployeeHistoricalReportRepository, EmployeeHistoricalReportRepository>();
+builder.Services.AddScoped<IEmployeeHistoricalReportService, EmployeeHistoricalReportService>();
+builder.Services.AddScoped<EmployeeHistoricalReportCsvService>();
+
+
 var app = builder.Build();
 
 // Solo habilitar Swagger en desarrollo

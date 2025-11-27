@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <header class="header">
       <nav class="nav">
-        <div class="brand">
+        <div class="display">
           <div class="logo-box">
             <span class="f">F</span>
           </div>
@@ -485,27 +485,24 @@
         <div v-if="employeeHistoricalLoading" class="loading">Cargando datos históricos...</div>
         
         <div v-else-if="employeeHistoricalData.length > 0" class="table-container">
-          <table class="historical-table">
-            <thead>
-              <tr>
-                <th>Periodo</th>
-                <th>Salario Bruto</th>
-                <th>Salario Neto</th>
-                <th>Deducciones</th>
-                <th>Beneficios</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, index) in employeeHistoricalData" :key="index">
-                <td>{{ formatDate(row.periodo) }}</td>
-                <td>{{ formatMoney(row.salarioBruto) }}</td>
-                <td>{{ formatMoney(row.salarioNeto) }}</td>
-                <td>{{ formatMoney(row.deducciones) }}</td>
-                <td>{{ formatMoney(row.beneficios) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          
+            <table class="historical-table">
+                <thead>
+                    <tr>
+                        <th>Fecha Pago&nbsp;</th>
+                        <th>Salario Bruto&nbsp; </th>
+                        <th>Salario Neto&nbsp; </th>
+                        <th>Deducciones&nbsp; </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in employeeHistoricalData" :key="index">
+                        <td>{{ formatDate(row.paymentDate) }}</td>
+                        <td>{{ formatMoney(row.salary) }}</td>
+                        <td>{{ formatMoney(row.netSalary) }}</td>
+                        <td>{{ formatMoney(row.deductionsAmount) }}</td>
+                    </tr>
+                </tbody>
+            </table>
           <div style="margin-top: 16px;">
             <button @click="downloadEmployeeHistoricalCSV" class="btn-download-csv">
               📥 Descargar CSV Histórico
@@ -1272,72 +1269,129 @@ export default {
       this.mostrarReporteHistoricoEmpleado = !this.mostrarReporteHistoricoEmpleado;
     },
 
-    // ---------------------------
-    // Histórico Empleado (SIN ENDPOINT AÚN)
-    // ---------------------------
-    async loadEmployeeHistoricalData() {
-      this.employeeHistoricalLoading = true;
-      try {
-        const employeeId = this.userData?.personaId;
-        const params = {};
+      async loadEmployeeHistoricalData() {
+          this.employeeHistoricalLoading = true;
+          try {
+              const employeeId = this.userData?.personaId;
+
+              if (!employeeId) {
+                  alert('No se pudo obtener el ID del empleado');
+                  return;
+              }
+
+              const params = {};
+
+              if (this.employeeHistoricalStartDate) {
+                  params.startDate = this.employeeHistoricalStartDate;
+              }
+              if (this.employeeHistoricalEndDate) {
+                  params.endDate = this.employeeHistoricalEndDate;
+              }
+
+          
+              const response = await axios.get(API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT, {
+                  params: { ...params, employeeId }
+              });
+
         
-        // Solo agregar fechas si tienen valor
-        if (this.employeeHistoricalStartDate) {
-          params.startDate = this.employeeHistoricalStartDate;
-        }
-        if (this.employeeHistoricalEndDate) {
-          params.endDate = this.employeeHistoricalEndDate;
-        }
-        
-        // Implementar endpoint real cuando esté disponible
-        console.log('🔍 Cargando histórico empleado - employeeId:', employeeId, 'params:', params);
-        // console.log('📡 Endpoint:', API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT(employeeId));
-        
-        // Simular carga de datos mientras tanto
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Datos de ejemplo para preview
-        this.employeeHistoricalData = [
-          {
-            periodo: '2024-01-01',
-            salarioBruto: 500000,
-            salarioNeto: 450000,
-            deducciones: 50000,
-            beneficios: 20000
+              if (response.data) {
+                  console.log('🏷️ ¿Es array?:', Array.isArray(response.data));
+                  console.log('🔑 Keys de response.data:', Object.keys(response.data));
+                  if (Array.isArray(response.data) && response.data.length > 0) {
+                      console.log('📋 Primer elemento del array:', response.data[0]);
+                      console.log('🔑 Keys del primer elemento:', Object.keys(response.data[0]));
+                  }
+              }
+
+              // Procesar la respuesta
+              let historicalData = [];
+
+              if (Array.isArray(response.data)) {
+                  historicalData = response.data;
+              } else if (response.data && typeof response.data === 'object') {
+                  // Intentar diferentes estructuras comunes
+                  if (response.data.success && Array.isArray(response.data.data)) {
+                      historicalData = response.data.data;
+                  } else if (Array.isArray(response.data.reports)) {
+                      historicalData = response.data.reports;
+                  } else if (Array.isArray(response.data.payrolls)) {
+                      historicalData = response.data.payrolls;
+                  } else {
+                      // Si es un objeto pero no tiene estructura conocida, convertirlo en array
+                      historicalData = [response.data];
+                  }
+              }
+
+              console.table(historicalData);
+
+              this.employeeHistoricalData = historicalData;
+              
+
+          } catch (error) {
+              alert('Error al cargar datos históricos: ' + (error.response?.data?.message || error.message));
+              this.employeeHistoricalData = [];
+          } finally {
+              this.employeeHistoricalLoading = false;
           }
-        ];
-        
-      } catch (error) {
-        console.error('Error cargando histórico de empleado:', error);
-        this.employeeHistoricalData = [];
-      } finally {
-        this.employeeHistoricalLoading = false;
-      }
+      },
     },
 
 
     async downloadEmployeeHistoricalCSV() {
       try {
-        const employeeId = this.userData?.personaId;
-        const params = {};
-        
-        // Solo agregar fechas si tienen valor
-        if (this.employeeHistoricalStartDate) {
-          params.startDate = this.employeeHistoricalStartDate;
-        }
-        if (this.employeeHistoricalEndDate) {
-          params.endDate = this.employeeHistoricalEndDate;
-        }
-        
-        // a implementar
-        console.log('📥 Descargando CSV histórico - employeeId:', employeeId, 'params:', params);
-        // console.log('📡 Endpoint CSV:', API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT_CSV(employeeId));
-        
-        // Simular descarga
-        alert('Funcionalidad de descarga CSV lista para conectar con endpoint real');
-        
-      } catch (error) {
-        console.error('Error descargando CSV histórico:', error);
+    const employeeId = this.userData?.personaId;
+    
+    if (!employeeId) {
+      alert('No se pudo obtener el ID del empleado');
+      return;
+    }
+
+    const params = { employeeId };
+    
+    // Solo agregar fechas si tienen valor
+    if (this.employeeHistoricalStartDate) {
+      params.startDate = this.employeeHistoricalStartDate;
+    }
+    if (this.employeeHistoricalEndDate) {
+      params.endDate = this.employeeHistoricalEndDate;
+    }
+    
+    console.log('📥 Descargando CSV histórico - employeeId:', employeeId, 'params:', params);
+    console.log('📡 Endpoint CSV:', API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT_CSV);
+    
+    // LLAMADA AL ENDPOINT REAL
+    const response = await axios.get(API_ENDPOINTS.EMPLOYEE_HISTORICAL_REPORT_CSV, {
+      params,
+      responseType: 'blob'
+    });
+
+    // Crear y descargar el archivo
+    const blob = new Blob([response.data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Nombre del archivo con fechas si existen
+    let fileName = 'Reporte_Historico_Empleado';
+    if (this.employeeHistoricalStartDate || this.employeeHistoricalEndDate) {
+      const start = this.employeeHistoricalStartDate || 'inicio';
+      const end = this.employeeHistoricalEndDate || 'fin';
+      fileName += `_${start}_a_${end}`;
+    }
+    fileName += '.csv';
+    
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    console.log('✅ CSV descargado:', fileName);
+    
+  } catch (error) {
+    console.error('❌ Error descargando CSV histórico:', error);
+    console.error('Response:', error.response?.data);
+    alert('Error al descargar CSV: ' + (error.response?.data?.message || error.message));
       }
     },
 
@@ -1390,7 +1444,7 @@ export default {
       localStorage.removeItem("selectedCompany");
       this.$router.push("/");
     }
-  }
+  
 };
 </script>
 
