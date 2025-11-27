@@ -305,29 +305,32 @@
         </div>
 
         <div v-else-if="reportePorEmpleadoData.length > 0" class="table-container">
-          <h4>Resultados del Reporte</h4>
+          <h4>Resultados del Reporte ({{ reportePorEmpleadoData.length }} registros)</h4>
+
+          <!-- TABLA CON COLUMNAS ESPECÍFICAS -->
           <table class="profile-table">
             <thead>
               <tr>
                 <th>Empleado</th>
                 <th>Cédula</th>
-                <th>Tipo</th>
-                <th>Empresa</th>
-                <th>Periodo</th>
+                <th>Periodo Pago</th>
+                <th>Fecha Pago</th>
                 <th>Salario Bruto</th>
-                <th>Salario Neto</th>
-                <!-- Agregar más columnas según necesites -->
+                <th>Cargas Sociales</th>
+                <th>Deducciones Voluntarias</th>
+                <th>Costo Empleador</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(row, index) in reportePorEmpleadoData" :key="index">
-                <td>{{ row.nombreEmpleado || 'N/A' }}</td>
+                <td>{{ row.nombre || 'N/A' }}</td>
                 <td>{{ row.cedula || 'N/A' }}</td>
-                <td>{{ row.tipoEmpleado || 'N/A' }}</td>
-                <td>{{ row.nombreEmpresa || 'N/A' }}</td>
-                <td>{{ formatDate(row.periodo) }}</td>
+                <td>{{ formatDate(row.periodoPago) }}</td>
+                <td>{{ formatDate(row.fechaPago) }}</td>
                 <td>{{ formatMoney(row.salarioBruto) }}</td>
-                <td>{{ formatMoney(row.salarioNeto) }}</td>
+                <td>{{ formatMoney(row.cargasSocialesEmpleador) }}</td>
+                <td>{{ formatMoney(row.deduccionesVoluntarias) }}</td>
+                <td>{{ formatMoney(row.costoEmpleador) }}</td>
               </tr>
             </tbody>
           </table>
@@ -1044,68 +1047,114 @@ export default {
     // ---------------------------
     // Por Empleado - Empleador
     // ---------------------------
-    async aplicarFiltrosPorEmpleado() {
+      async aplicarFiltrosPorEmpleado() {
       this.reportePorEmpleadoLoading = true;
       
       try {
         // Construir objeto con todos los filtros
-        const filtros = {
-          startDate: this.reportePorEmpleadoStartDate || null,
-          endDate: this.reportePorEmpleadoEndDate || null,
-          tipoEmpleado: this.reportePorEmpleadoTipoEmpleado || null,
-          companyId: this.reportePorEmpleadoCompanyId || null,
-          cedulaEmpleado: this.reportePorEmpleadoCedula || null
+        const params = {
+          employerId: this.userData?.personaId || this.userData?.id
         };
 
-        console.log('🎯 FILTROS APLICADOS - Reporte por Empleado:', filtros);
+        if (this.reportePorEmpleadoStartDate) {
+          params.startDate = this.reportePorEmpleadoStartDate;
+        }
+        if (this.reportePorEmpleadoEndDate) {
+          params.endDate = this.reportePorEmpleadoEndDate;
+        }
+        if (this.reportePorEmpleadoTipoEmpleado) {
+          params.employmentType = this.reportePorEmpleadoTipoEmpleado;
+        }
+        if (this.reportePorEmpleadoCompanyId) {
+          params.companyId = this.reportePorEmpleadoCompanyId;
+        }
+        if (this.reportePorEmpleadoCedula) {
+          params.cedula = this.reportePorEmpleadoCedula;
+        }
 
-        // SIMULAR CARGA (reemplazar con endpoint real después)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('📡 Endpoint que se llamaría:', '/api/reporte/por-empleado', 'con params:', filtros);
+        const queryString = new URLSearchParams(params).toString();
+        const urlCompleta = `${API_ENDPOINTS.EMPLOYER_BY_PERSON_REPORT}?${queryString}`;
+
+        const response = await axios.get(API_ENDPOINTS.EMPLOYER_BY_PERSON_REPORT, { params });
+
+        if (response.data && response.data.success) {
+          this.reportePorEmpleadoData = response.data.data || [];
+        } else {
+          this.reportePorEmpleadoData = [];
+        }
+
+        this.$forceUpdate();
         
-        // Ejemplo para preview (Borrar al implementar)
-        this.reportePorEmpleadoData = [
-          {
-            nombreEmpleado: 'Juan Pérez',
-            cedula: '123456789',
-            tipoEmpleado: 'Tiempo Completo',
-            nombreEmpresa: 'Empresa Ejemplo',
-            periodo: '2024-01-01',
-            salarioBruto: 500000,
-            salarioNeto: 450000
-          }
-        ];
 
       } catch (error) {
-        console.error('Error aplicando filtros:', error);
+        console.error('Error cargando reporte por empleado:', error);
         this.reportePorEmpleadoData = [];
+        alert('Error al cargar el reporte: ' + (error.response?.data?.message || error.message));
       } finally {
         this.reportePorEmpleadoLoading = false;
       }
     },
+        async descargarReportePorEmpleadoCSV() {
+          try {
+            const params = {
+              employerId: this.userData?.personaId || this.userData?.id
+            };
 
-    async descargarReportePorEmpleadoCSV() {
-      try {
-        // Construir filtros para el CSV
-        const filtros = {
-          startDate: this.reportePorEmpleadoStartDate || null,
-          endDate: this.reportePorEmpleadoEndDate || null,
-          tipoEmpleado: this.reportePorEmpleadoTipoEmpleado || null,
-          companyId: this.reportePorEmpleadoCompanyId || null,
-          cedulaEmpleado: this.reportePorEmpleadoCedula || null
-        };
+            if (this.reportePorEmpleadoStartDate) {
+              params.startDate = this.reportePorEmpleadoStartDate;
+            }
+            if (this.reportePorEmpleadoEndDate) {
+              params.endDate = this.reportePorEmpleadoEndDate;
+            }
+            if (this.reportePorEmpleadoTipoEmpleado) {
+              params.employmentType = this.reportePorEmpleadoTipoEmpleado; 
+            }
+            if (this.reportePorEmpleadoCompanyId) {
+              params.companyId = this.reportePorEmpleadoCompanyId;
+            }
+            if (this.reportePorEmpleadoCedula) {
+              params.cedula = this.reportePorEmpleadoCedula; 
+            }
 
-        console.log('📥 DESCARGANDO CSV - Filtros aplicados:', filtros);
-        console.log('📡 Endpoint CSV que se llamaría:', '/api/reporte/por-empleado/csv', 'con params:', filtros);
+            const response = await axios.get(API_ENDPOINTS.EMPLOYER_BY_PERSON_REPORT_CSV, {
+              params,
+              responseType: "blob"
+    });
 
-        // Simular descarga (reemplazar con endpoint real después)
-        alert('Funcionalidad de descarga CSV lista para conectar con el endpoint');
+        let fileName = 'Reporte_Por_Empleado';
+        
+        const filtros = [];
+        if (this.reportePorEmpleadoStartDate) filtros.push(`desde-${this.reportePorEmpleadoStartDate}`);
+        if (this.reportePorEmpleadoEndDate) filtros.push(`hasta-${this.reportePorEmpleadoEndDate}`);
+        if (this.reportePorEmpleadoTipoEmpleado) filtros.push(this.reportePorEmpleadoTipoEmpleado.replace(/\s+/g, '-'));
+        if (this.reportePorEmpleadoCedula) filtros.push(`cedula-${this.reportePorEmpleadoCedula}`);
+        
+        if (filtros.length > 0) {
+          fileName += '_' + filtros.join('_');
+        }
+        fileName += '.csv';
+
+        const blob = new Blob([response.data], { 
+          type: response.headers['content-type'] || 'text/csv' 
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
 
       } catch (error) {
-        console.error('Error descargando CSV:', error);
+        console.error('Error descargando CSV por empleado:', error);
+        console.error('Response:', error.response?.data);
+        console.error('Status:', error.response?.status);
+        
+        alert('Error al descargar el CSV: ' + (error.response?.data?.message || error.message));
       }
     },
-
 
     // ---------------------------
     // Completo Empleado
