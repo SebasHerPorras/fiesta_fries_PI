@@ -223,7 +223,7 @@ namespace backend.Services
                 .Select(g => g.OrderBy(p => p.IsProcessed ? 1 : 0).First())
                 .ToList();
 
-            // 🎯 BÚSQUEDA EXACTA: Períodos que contengan la fecha especificada
+            // Búsqueda exacta: Períodos que contengan la fecha especificada
             var matches = deduped
                 .Where(p => periodDate.Date >= p.StartDate.Date && periodDate.Date <= p.EndDate.Date)
                 .OrderBy(p => p.StartDate)
@@ -251,7 +251,7 @@ namespace backend.Services
                 return chosen;
             }
 
-            // ⚠️ FALLBACK: Solo si NO hay período exacto, buscar alternativas
+            // FALLBACK: Solo si NO hay período exacto, buscar alternativas
             _logger.LogWarning("No exact period found containing date {Date} for company {CompanyId}, searching for alternatives", 
                 periodDate.ToString("yyyy-MM-dd"), companyId);
 

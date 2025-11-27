@@ -143,7 +143,7 @@ namespace backend.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ERROR CRÍTICO en cálculo de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
-                // ⚠️ Solo retornar 0 si el error es en el CÁLCULO, no en el guardado
+                // Solo retornar 0 si el error es en el CÁLCULO, no en el guardado
                 throw;
             }
         }

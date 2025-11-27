@@ -775,9 +775,9 @@ export default {
           periodDate: formattedDate
         };
 
-        console.log('📡 Solicitando preview para:', formattedDate);
+        console.log('Solicitando preview para:', formattedDate);
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PREVIEW, request);
-        console.log('📥 Respuesta del backend:', response.data);
+        console.log('Respuesta del backend:', response.data);
 
         if (response.data.success) {
           // ✅ Asignación simple - Vue ahora rastrea selectedPeriod reactivamente
@@ -796,13 +796,13 @@ export default {
             totalAmount: response.data.totalAmount || 0
           };
           
-          console.log('✅ selectedPeriod actualizado:', this.selectedPeriod);
+          console.log('selectedPeriod actualizado:', this.selectedPeriod);
           this.showMessage(`Preview calculado - ${response.data.message}`, 'success');
         } else {
           this.showMessage(`${response.data.message}`, 'error');
         }
       } catch (error) {
-        console.error('❌ Error en preview:', error);
+        console.error('Error en preview:', error);
         this.showMessage('Error al calcular preview', 'error');
       } finally {
         this.payrollLoading = false;
@@ -1125,22 +1125,22 @@ export default {
 
 
     async selectPeriod(period) {
-      // 🔒 Evitar cambiar periodo si hay un procesamiento en curso
+      // Evitar cambiar periodo si hay un procesamiento en curso
       if (this.payrollLoading) {
-        console.warn('⚠️ No se puede cambiar de periodo mientras se procesa una planilla');
+        console.warn('No se puede cambiar de periodo mientras se procesa una planilla');
         this.showMessage('Espera a que termine el procesamiento actual', 'warning');
         return;
       }
       
-      console.log('🎯 Periodo seleccionado:', period.description);
+      console.log('Periodo seleccionado:', period.description);
       // NO asignar period vacío - esperar a que hacerPreview cargue datos reales
       await this.hacerPreview(period);
     },
 
      async procesarPlanilla() {
-      // 🔒 Evitar doble procesamiento
+      // Evitar doble procesamiento
       if (this.payrollLoading) {
-        console.warn('⚠️ Ya hay un procesamiento en curso, ignorando...');
+        console.warn('Ya hay un procesamiento en curso, ignorando...');
         return;
       }
 
@@ -1159,7 +1159,7 @@ export default {
         return;
       }
 
-      // 🔒 Crear copia inmutable del periodo para evitar cambios durante el procesamiento
+      // Crear copia inmutable del periodo para evitar cambios durante el procesamiento
       const periodToProcess = {
         startDate: this.selectedPeriod.startDate,
         description: this.selectedPeriod.description
@@ -1176,15 +1176,15 @@ export default {
           approvedBy: 'Usuario'
         };
 
-        console.log('🚀 PROCESANDO PLANILLA DEFINITIVA');
-        console.log('📋 Periodo a procesar:', periodToProcess.description);
-        console.log('📅 Fecha enviada:', formattedDate);
-        console.log('🏢 CompanyId:', request.companyId);
-        console.log('📦 Request completo:', JSON.stringify(request, null, 2));
+        console.log('PROCESANDO PLANILLA DEFINITIVA');
+        console.log('Periodo a procesar:', periodToProcess.description);
+        console.log('Fecha enviada:', formattedDate);
+        console.log('CompanyId:', request.companyId);
+        console.log('Request completo:', JSON.stringify(request, null, 2));
 
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
         
-        console.log('✅ Respuesta del servidor:', response.data);
+        console.log('Respuesta del servidor:', response.data);
 
         if (response.data.success) {
           this.showMessage(`Planilla procesada exitosamente: ${periodToProcess.description}`, 'success');
@@ -1557,7 +1557,7 @@ export default {
   console.log('Cedula empresa:', this.selectedCompanyCedula);
   
   if (!this.selectedCompanyCedula) {
-    console.error('❌ No hay cedula de empresa');
+    console.error('No hay cedula de empresa');
     this.showMessage('No hay empresa seleccionada', 'error');
     return;
   }
@@ -1565,27 +1565,27 @@ export default {
   this.reportLoading = true;
   try {
     const url = API_ENDPOINTS.PAYROLL_REPORT_LAST_12(this.selectedCompanyCedula);
-    console.log('📡 Llamando a:', url);
+    console.log('Llamando a:', url);
     
     const response = await axios.get(url);
-    console.log('📥 Respuesta completa:', response);
-    console.log('📦 Datos recibidos:', response.data);
+    console.log('Respuesta completa:', response);
+    console.log('Datos recibidos:', response.data);
 
     let payrolls = [];
     
     if (response.data && response.data.success) {
       payrolls = response.data.payrolls || [];
-      console.log('✅ Formato con success:', payrolls);
+      console.log('Formato con success:', payrolls);
     } else if (Array.isArray(response.data)) {
       payrolls = response.data;
-      console.log('✅ Formato array directo:', payrolls);
+      console.log('Formato array directo:', payrolls);
     } else {
-      console.warn('⚠️ Formato inesperado:', response.data);
+      console.warn('Formato inesperado:', response.data);
       payrolls = [];
     }
 
     this.last12Payrolls = payrolls;
-    console.log('📋 Planillas asignadas:', this.last12Payrolls.length);
+    console.log('Planillas asignadas:', this.last12Payrolls.length);
 
     // Inicializar formatos
     const formats = {};
@@ -1593,14 +1593,14 @@ export default {
       formats[payroll.payrollId] = 'pdf';
     });
     this.reportFormats = formats;
-    console.log('🎨 Formatos inicializados:', this.reportFormats);
+    console.log('Formatos inicializados:', this.reportFormats);
 
     this.showMessage(
       `${payrolls.length} reporte(s) disponible(s)`, 
       payrolls.length > 0 ? 'success' : 'error'
     );
   } catch (error) {
-    console.error('❌ ERROR COMPLETO:', error);
+    console.error('ERROR COMPLETO:', error);
     console.error('Respuesta de error:', error.response?.data);
     console.error('Status:', error.response?.status);
     
