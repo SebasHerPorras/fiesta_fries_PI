@@ -16,7 +16,7 @@ BEGIN
         E.salary AS [SalarioBruto],
         ISNULL(ESS.TotalCargasSociales, 0) AS [CargasSocialesEmpleador],
         ISNULL(EDD.TotalDeducciones, 0) AS [DeduccionesVoluntarias],
-        (E.salary + ISNULL(ESS.TotalCargasSociales, 0)) AS [CostoEmpleador]
+        (E.salary + ISNULL(ESS.TotalCargasSociales, 0)+ ISNULL(EDD.TotalDeducciones, 0)) AS [CostoEmpleador]
     FROM 
         Payroll PY
         INNER JOIN payrollPayment PP ON PY.PayrollId = PP.PayrollId
@@ -48,4 +48,3 @@ BEGIN
         AND (@CedulaEmpleador IS NULL OR EMP.dueñoEmpresa = @CedulaEmpleador)  
     ORDER BY PY.PeriodDate, P.id
 END
-
