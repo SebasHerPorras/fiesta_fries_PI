@@ -1,10 +1,12 @@
 ﻿using backend.Interfaces;
 using backend.Models;
 using Dapper;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace backend.Handlers.backend.Repositories
 {
@@ -307,20 +309,21 @@ namespace backend.Handlers.backend.Repositories
 
         }
 
-        public decimal GetBeneficiosEmpresa(long cedula)
+        public decimal GetBeneficiosEmpresa(long companyId, DateTime date)
         {
             using var connection = new SqlConnection(_connectionString);
 
-            const string query = @"
-            SELECT 
-            ISNULL(SUM(b.Valor), 0) AS MontoTotal
-            FROM Beneficio b
-            INNER JOIN Empresa e ON b.CedulaJuridica = e.CedulaJuridica
-            WHERE e.CedulaJuridica = @Cedula
-            AND b.QuienAsume = 'Empresa'
-            AND b.IsDeleted = 0;";
+            string sql = @"
+             SELECT TOP 1 TotalBenefits
+             FROM Payroll
+             WHERE CompanyId = @CompanyId
+             ORDER BY ABS(DATEDIFF(DAY, PeriodDate, @PeriodDate)) ASC;";
 
-            return connection.ExecuteScalar<decimal>(query, new { Cedula = cedula });
+            return connection.ExecuteScalar<decimal>(sql, new
+            {
+                CompanyId = companyId,
+                PeriodDate = date
+            });
         }
 
         public decimal GetTotalSalarios(long cedula)
