@@ -29,12 +29,14 @@
       <button @click="togglePayroll" class="btn-info">
         📝 {{ mostrandoPayroll ? 'Ver Empresas' : 'Generar Planilla' }}
       </button>
-      <!-- NUEVO BOTÓN DE REPORTES -->
+
+      <!-- NUEVO BOTÓN DE REPORTES
       <button @click="toggleReportes" class="btn-info">
         📊 {{ mostrandoReportes ? 'Ver Empresas' : 'Reportes' }}
-      </button>
-      <button class="btn-info" @click="editarEmpresaPropia">
-        ✏️ Modificar Empresa
+      </button> -->
+
+      <button class="btn-info" @click="goToDashboard">
+        📊 Dashboard
       </button>
     </div>
 
@@ -1529,6 +1531,10 @@ export default {
         throw error;
       }
     },
+    goToDashboard() {
+      this.$router.push('/DashboardEmpleador');
+    },
+
         
     // ============================================
     // NUEVOS MÉTODOS PARA REPORTES
