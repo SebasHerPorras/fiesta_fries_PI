@@ -400,7 +400,7 @@
 
 /* Botón descargar CSV */
 .btn-download-csv {
-  background-color: #28a745;
+  background-color: #1fb9b4;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -412,7 +412,7 @@
 }
 
 .btn-download-csv:hover {
-  background-color: #218838;
+  background-color: #1fb9b4;
 }
 
   .load-row {
