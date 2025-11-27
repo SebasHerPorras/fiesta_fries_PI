@@ -1,3 +1,7 @@
+GO
+USE Fiesta_Fries_DB
+GO
+
 CREATE OR ALTER PROCEDURE GetEmployerReport
     @CedulaEmpleador INT, 
     @StartDate DATE = NULL,
