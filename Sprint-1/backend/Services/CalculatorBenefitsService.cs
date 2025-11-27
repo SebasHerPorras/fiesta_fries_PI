@@ -113,22 +113,38 @@ namespace backend.Services
                     _logger.LogWarning("ADVERTENCIA: Beneficios superan el 100% del salario");
                 }
 
+                // Guardar en BD si es necesario (capturar errores de guardado por separado)
                 if (_saveInDB && employeeDeductions.Any())
                 {
-                    _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
+                    try
+                    {
+                        _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        _logger.LogError(saveEx, "Error guardando deducciones de empleado, pero continuando con el cálculo");
+                    }
                 }
 
                 if (_saveInDB && employerDeductions.Any())
                 {
-                    _employerBenefitDeductionService.SaveEmployerBenefitDeductions(employerDeductions);
+                    try
+                    {
+                        _employerBenefitDeductionService.SaveEmployerBenefitDeductions(employerDeductions);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        _logger.LogError(saveEx, "Error guardando deducciones del empleador, pero continuando con el cálculo");
+                    }
                 }
 
                 return Math.Round(totalEmployerCost, 2);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ERROR en validación de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
-                return 0;
+                _logger.LogError(ex, "ERROR CRÍTICO en cálculo de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
+                // ⚠️ Solo retornar 0 si el error es en el CÁLCULO, no en el guardado
+                throw;
             }
         }
 

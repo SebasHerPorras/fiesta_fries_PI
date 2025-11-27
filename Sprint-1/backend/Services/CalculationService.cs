@@ -47,13 +47,14 @@ namespace backend.Services
 
         public async Task<decimal> CalculateDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogDebug("=== CALCULANDO DEDUCCIONES ===");
-            _logger.LogDebug("Empleado: {Nombre}, Salario: {Salario}, PayrollId: {PayrollId}",
+            _logger.LogInformation("🔵 === CALCULANDO DEDUCCIONES EMPLEADO ===");
+            _logger.LogInformation("🔵 Empleado: {Nombre}, Salario: ₡{Salario}, PayrollId: {PayrollId}",
                 empleado.NombreEmpleado, empleado.SalarioBruto, payrollId);
 
             try
             {
                 bool saveInDB = payrollId > 0;
+                _logger.LogInformation("🔵 SaveInDB: {SaveInDB}", saveInDB);
 
                 var employeeDeductionsService = new CalculatorDeductionsEmployeeService(
                     _socialSecurityService,
@@ -64,14 +65,14 @@ namespace backend.Services
 
                 var deducciones = employeeDeductionsService.CalculateEmployeeDeductions(empleado, payrollId, companyId);
 
-                _logger.LogDebug("DEDUCCIONES CALCULADAS: {Deducciones} para {Nombre}",
+                _logger.LogInformation("🔵 DEDUCCIONES CALCULADAS: ₡{Deducciones} para {Nombre}",
                      deducciones, empleado.NombreEmpleado);
 
                 return await Task.FromResult(deducciones);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculando deducciones");
+                _logger.LogError(ex, "❌ ERROR calculando deducciones - RETORNANDO 0");
                 return 0;
             }
         }
@@ -80,11 +81,12 @@ namespace backend.Services
         {
             try
             {
-                _logger.LogDebug("=== INICIANDO CÁLCULO DE BENEFICIOS ===");
-                _logger.LogDebug("Empleado: {Nombre} ({Cedula})",
-                    empleado.NombreEmpleado, empleado.CedulaEmpleado);
+                _logger.LogInformation("🟢 === CALCULANDO BENEFICIOS ===");
+                _logger.LogInformation("🟢 Empleado: {Nombre} ({Cedula}), PayrollId: {PayrollId}",
+                    empleado.NombreEmpleado, empleado.CedulaEmpleado, payrollId);
 
                 bool saveInDB = payrollId > 0;
+                _logger.LogInformation("🟢 SaveInDB: {SaveInDB}", saveInDB);
 
                 var benefitsService = new CalculatorBenefitsService(
                     _payrollDeductionService,
@@ -97,14 +99,14 @@ namespace backend.Services
 
                 var totalBenefits = await benefitsService.CalculateBenefitsAsync(empleado, payrollId, companyId);
 
-                _logger.LogDebug("Total beneficios para {Nombre}: ₡{Total}",
-                    empleado.NombreEmpleado, totalBenefits);
+                _logger.LogInformation("🟢 BENEFICIOS CALCULADOS: ₡{Total} para {Nombre}",
+                    totalBenefits, empleado.NombreEmpleado);
 
                 return totalBenefits;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ERROR calculando beneficios para empleado {Cedula}",
+                _logger.LogError(ex, "❌ ERROR calculando beneficios para empleado {Cedula} - RETORNANDO 0",
                     empleado.CedulaEmpleado);
                 return 0m;
             }
@@ -136,13 +138,15 @@ namespace backend.Services
 
         public async Task<decimal> CalculateEmployerDeductionsAsync(EmployeeCalculationDto empleado, long companyId, int payrollId)
         {
-            _logger.LogDebug("=== CALCULANDO CARGAS SOCIALES PATRONALES ===");
-            _logger.LogDebug("Empleado: {Nombre}, Salario: {Salario}, PayrollId: {PayrollId}",
+            _logger.LogInformation("🟡 === CALCULANDO CARGAS SOCIALES PATRONALES ===");
+            _logger.LogInformation("🟡 Empleado: {Nombre}, Salario: ₡{Salario}, PayrollId: {PayrollId}",
                 empleado.NombreEmpleado, empleado.SalarioBruto, payrollId);
 
             try
             {
                 bool saveInDB = payrollId > 0;
+                _logger.LogInformation("🟡 SaveInDB: {SaveInDB}", saveInDB);
+                
                 var employerDeductionsService = new CalculatorDeductionsEmployerService(
                     _employerSocialSecurityService,
                     _employerPayrollService,
@@ -152,15 +156,14 @@ namespace backend.Services
                 var deductions = employerDeductionsService
                     .CalculateEmployerDeductions(empleado, payrollId, companyId);
 
-
-                _logger.LogDebug("CARGAS PATRONALES CALCULADAS: {Deductions} para {Nombre} (SaveInDB: {SaveInDB})",
-                     deductions, empleado.NombreEmpleado, saveInDB);
+                _logger.LogInformation("🟡 CARGAS PATRONALES CALCULADAS: ₡{Deductions} para {Nombre}",
+                     deductions, empleado.NombreEmpleado);
 
                 return deductions;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculando cargas patronales");
+                _logger.LogError(ex, "❌ ERROR calculando cargas patronales - RETORNANDO 0");
                 return 0;
             }
         }

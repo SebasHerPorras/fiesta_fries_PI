@@ -1125,12 +1125,25 @@ export default {
 
 
     async selectPeriod(period) {
+      // 🔒 Evitar cambiar periodo si hay un procesamiento en curso
+      if (this.payrollLoading) {
+        console.warn('⚠️ No se puede cambiar de periodo mientras se procesa una planilla');
+        this.showMessage('Espera a que termine el procesamiento actual', 'warning');
+        return;
+      }
+      
       console.log('🎯 Periodo seleccionado:', period.description);
       // NO asignar period vacío - esperar a que hacerPreview cargue datos reales
       await this.hacerPreview(period);
     },
 
      async procesarPlanilla() {
+      // 🔒 Evitar doble procesamiento
+      if (this.payrollLoading) {
+        console.warn('⚠️ Ya hay un procesamiento en curso, ignorando...');
+        return;
+      }
+
       if (!this.selectedPeriod) {
         this.showMessage('Selecciona un periodo primero', 'error');
         return;
@@ -1146,9 +1159,15 @@ export default {
         return;
       }
 
+      // 🔒 Crear copia inmutable del periodo para evitar cambios durante el procesamiento
+      const periodToProcess = {
+        startDate: this.selectedPeriod.startDate,
+        description: this.selectedPeriod.description
+      };
+
       this.payrollLoading = true;
       try {
-        const periodDate = new Date(this.selectedPeriod.startDate);
+        const periodDate = new Date(periodToProcess.startDate);
         const formattedDate = periodDate.toISOString().split('T')[0];
 
         const request = {
@@ -1157,10 +1176,18 @@ export default {
           approvedBy: 'Usuario'
         };
 
+        console.log('🚀 PROCESANDO PLANILLA DEFINITIVA');
+        console.log('📋 Periodo a procesar:', periodToProcess.description);
+        console.log('📅 Fecha enviada:', formattedDate);
+        console.log('🏢 CompanyId:', request.companyId);
+        console.log('📦 Request completo:', JSON.stringify(request, null, 2));
+
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
+        
+        console.log('✅ Respuesta del servidor:', response.data);
 
         if (response.data.success) {
-          this.showMessage(`Planilla procesada exitosamente`, 'success');
+          this.showMessage(`Planilla procesada exitosamente: ${periodToProcess.description}`, 'success');
           await this.loadPayrollData();
         } else {
           this.showMessage(`Error al procesar planilla`, 'error');

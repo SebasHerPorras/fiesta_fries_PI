@@ -48,7 +48,14 @@ namespace backend.Services
 
                 if (_saveInDB)
                 {
-                    _payrollService.SaveEmployerDeductions(deduccionesSinCargo);
+                    try
+                    {
+                        _payrollService.SaveEmployerDeductions(deduccionesSinCargo);
+                    }
+                    catch (Exception)
+                    {
+                        // Error al guardar, pero continuar
+                    }
                 }
                 return 0;
             }
@@ -80,7 +87,15 @@ namespace backend.Services
 
             if (_saveInDB)
             {
-                _payrollService.SaveEmployerDeductions(deducciones);
+                try
+                {
+                    _payrollService.SaveEmployerDeductions(deducciones);
+                }
+                catch (Exception)
+                {
+                    // Error al guardar, pero continuar con el cálculo
+                    // El valor calculado es correcto independientemente del guardado
+                }
             }
 
             return Math.Round(totalDeducciones, 2);

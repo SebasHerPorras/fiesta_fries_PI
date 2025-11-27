@@ -410,18 +410,20 @@ async loadCompanies() {
       return;
     }
 
-    // ✅ Auto-seleccionar empresa si solo hay una (especialmente para empleados)
-    if (this.companies.length === 1) {
+    // Para empleados: auto-seleccionar si solo hay una empresa
+    // Para empleadores: SIEMPRE reiniciar el dropdown
+    if (userType === "Empleado" && this.companies.length === 1) {
       this.selectedCompany = this.companies[0];
       this.saveSelectedCompany();
-      console.log(`✅ Empresa auto-seleccionada: ${this.selectedCompany.nombre}`);
-    } else if (this.companies.length > 1) {
-      // Si hay múltiples empresas, mostrar dropdown para seleccionar
-      this.selectedCompany = null;
-      console.log(`${this.companies.length} empresas cargadas - Usuario debe seleccionar una`);
+      console.log(`✅ Empresa auto-seleccionada para empleado: ${this.selectedCompany.nombre}`);
     } else {
+      // Empleadores o múltiples empresas: SIEMPRE mostrar "Seleccionar Empresa"
       this.selectedCompany = null;
-      console.log("No se encontraron empresas asociadas");
+      if (this.companies.length > 0) {
+        console.log(`${this.companies.length} empresa(s) cargada(s) - Usuario debe seleccionar`);
+      } else {
+        console.log("No se encontraron empresas asociadas");
+      }
     }
   } catch (err) {
     console.error("Error cargando empresas:", err);

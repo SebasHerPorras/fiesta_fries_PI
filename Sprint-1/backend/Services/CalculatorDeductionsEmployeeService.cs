@@ -53,7 +53,16 @@ namespace backend.Services
                 });
 
                 if (_saveInDB)
-                    _payrollService.SaveEmployeeDeductions(deducciones);
+                {
+                    try
+                    {
+                        _payrollService.SaveEmployeeDeductions(deducciones);
+                    }
+                    catch (Exception)
+                    {
+                        // Error al guardar, continuar
+                    }
+                }
                 return 0;
             }
 
@@ -91,7 +100,16 @@ namespace backend.Services
                 totalDeducciones += impuestoRenta;
             }
             if (_saveInDB)
-                _payrollService.SaveEmployeeDeductions(deducciones);
+            {
+                try
+                {
+                    _payrollService.SaveEmployeeDeductions(deducciones);
+                }
+                catch (Exception)
+                {
+                    // Error al guardar, continuar con el cálculo
+                }
+            }
 
             return Math.Round(totalDeducciones, 2);
         }
