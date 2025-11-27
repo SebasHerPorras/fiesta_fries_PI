@@ -17,7 +17,6 @@ namespace backend_test
         private Mock<IEmployeeBenefitService> _mockEmployeeBenefitService;
         private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
         private CalculatorBenefitsService _service;
-        private Mock<ILogger<CalculatorBenefitsService>> _mockLogger;
 
         [SetUp]
         public void Setup()

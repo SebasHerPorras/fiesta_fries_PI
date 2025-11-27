@@ -258,10 +258,10 @@ async loadCompanies() {
         console.log('🔗 Endpoint URL:', endpointURL);
         
         const empresaRes = await axios.get(endpointURL);
-        console.log('📡 Response status:', empresaRes.status);
-        console.log('📡 Response headers:', empresaRes.headers);
-        console.log('📡 Response data:', empresaRes.data);
-        console.log('📡 Response data type:', typeof empresaRes.data);
+        console.log('Response status:', empresaRes.status);
+        console.log('Response headers:', empresaRes.headers);
+        console.log('Response data:', empresaRes.data);
+        console.log('Response data type:', typeof empresaRes.data);
         
         if (empresaRes.data) {
           console.log('Data recibida válida');
@@ -299,18 +299,20 @@ async loadCompanies() {
       return;
     }
 
-    // ✅ Auto-seleccionar empresa si solo hay una (especialmente para empleados)
-    if (this.companies.length === 1) {
+    // Para empleados: auto-seleccionar si solo hay una empresa
+    // Para empleadores: SIEMPRE reiniciar el dropdown
+    if (userType === "Empleado" && this.companies.length === 1) {
       this.selectedCompany = this.companies[0];
       this.saveSelectedCompany();
-      console.log(`✅ Empresa auto-seleccionada: ${this.selectedCompany.nombre}`);
-    } else if (this.companies.length > 1) {
-      // Si hay múltiples empresas, mostrar dropdown para seleccionar
-      this.selectedCompany = null;
-      console.log(`${this.companies.length} empresas cargadas - Usuario debe seleccionar una`);
+      console.log(`Empresa auto-seleccionada para empleado: ${this.selectedCompany.nombre}`);
     } else {
+      // Empleadores o múltiples empresas: SIEMPRE mostrar "Seleccionar Empresa"
       this.selectedCompany = null;
-      console.log("No se encontraron empresas asociadas");
+      if (this.companies.length > 0) {
+        console.log(`${this.companies.length} empresa(s) cargada(s) - Usuario debe seleccionar`);
+      } else {
+        console.log("No se encontraron empresas asociadas");
+      }
     }
   } catch (err) {
     console.error("Error cargando empresas:", err);
@@ -357,14 +359,14 @@ async loadCompanies() {
       // Obtener cédula del empleado (ID numérico)
       const stored = JSON.parse(localStorage.getItem("userData"));
       
-      console.log('📋 Datos en localStorage:', stored);
-      console.log('🆔 PersonaId del empleado:', stored?.personaId);
+      console.log('Datos en localStorage:', stored);
+      console.log('PersonaId del empleado:', stored?.personaId);
       
       // Usar el personaId del empleado (ID numérico)
       const employeeId = stored?.personaId;
       
       if (!employeeId) {
-        console.error('❌ No hay personaId en localStorage');
+        console.error('No hay personaId en localStorage');
         alert('No se pudo obtener el ID del empleado');
         return;
       }
@@ -372,7 +374,7 @@ async loadCompanies() {
       this.reportLoading = true;
       try {
         const url = API_ENDPOINTS.PAYROLL_EMPLOYEE_LAST_12_PAYMENTS(employeeId);
-        console.log('📡 Cargando reportes desde:', url);
+        console.log('Cargando reportes desde:', url);
         console.log('   PersonaId empleado:', employeeId);
         
         const response = await axios.get(url);
@@ -388,8 +390,8 @@ async loadCompanies() {
         }
 
         this.last12Payrolls = reports;
-        console.log('✅ Reportes cargados:', this.last12Payrolls.length);
-        console.log('📋 Datos del primer reporte:', this.last12Payrolls[0]);
+        console.log('Reportes cargados:', this.last12Payrolls.length);
+        console.log('Datos del primer reporte:', this.last12Payrolls[0]);
 
         // Inicializar formatos usando reportId
         const formats = {};
@@ -399,7 +401,7 @@ async loadCompanies() {
         this.reportFormats = formats;
 
       } catch (error) {
-        console.error('❌ Error cargando reportes:', error);
+        console.error('Error cargando reportes:', error);
         console.error('Response:', error.response?.data);
         console.error('Status:', error.response?.status);
         alert('Error al cargar reportes: ' + (error.response?.data?.message || error.message));
@@ -419,7 +421,7 @@ async loadCompanies() {
         const stored = JSON.parse(localStorage.getItem("userData"));
         const employeeId = stored?.personaId;
         
-        console.log('🆔 Generando reporte - PersonaId empleado:', employeeId);
+        console.log('Generando reporte - PersonaId empleado:', employeeId);
         
         if (!employeeId) {
           alert('No se pudo obtener el ID del empleado');
@@ -440,7 +442,7 @@ async loadCompanies() {
           responseType: 'blob'
         });
 
-        console.log('✅ Reporte generado');
+        console.log('Reporte generado');
 
         // Crear URL del blob
         const blob = new Blob([response.data], {
@@ -453,7 +455,7 @@ async loadCompanies() {
         this.currentReportBlob = blob;
 
       } catch (error) {
-        console.error('❌ Error generando reporte:', error);
+        console.error('Error generando reporte:', error);
         alert('Error al generar el reporte');
       } finally {
         this.generatingReport = false;
@@ -472,7 +474,7 @@ async loadCompanies() {
       link.download = fileName;
       link.click();
 
-      console.log('📥 Descargando:', fileName);
+      console.log('Descargando:', fileName);
     },
 
     clearReport() {
