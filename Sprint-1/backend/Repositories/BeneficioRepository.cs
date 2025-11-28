@@ -1,19 +1,27 @@
-﻿using backend.Models;
-using System.Data;
-using System.Data.SqlClient;
+﻿using backend.Interfaces;
+using backend.Models;
+using backend.Repositories;
 using Dapper;
+using Microsoft.AspNetCore.Builder;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Linq;
 
 namespace backend.Handlers.backend.Repositories
 {
-    public class BeneficioRepository
+    public class BeneficioRepository : IBeneficioRepository
     {
         private readonly string _connectionString;
+        private readonly ILogger<BeneficioRepository> _logger;
 
-        public BeneficioRepository()
+        public BeneficioRepository(ILogger<BeneficioRepository> logger)
         {
             var builder = WebApplication.CreateBuilder();
             _connectionString = builder.Configuration.GetConnectionString("UserContext");
+            _logger = logger;
         }
 
         public string CreateBeneficio(BeneficioModel beneficio)
@@ -29,13 +37,7 @@ namespace backend.Handlers.backend.Repositories
                               VALUES (@CedulaJuridica, @Nombre, @Tipo, @QuienAsume, 
                                       @Valor, @Etiqueta)";
 
-                Console.WriteLine("-- Nuevo Beneficio: --");
-                Console.WriteLine($"Cédula: {beneficio.CedulaJuridica}");
-                Console.WriteLine($"Nombre: {beneficio.Nombre}");
-                Console.WriteLine($"Tipo: {beneficio.Tipo}");
-                Console.WriteLine($"QuienAsume: {beneficio.QuienAsume}");
-                Console.WriteLine($"Valor: {beneficio.Valor}");
-                Console.WriteLine($"Etiqueta: {beneficio.Etiqueta}");
+                _logger.LogInformation("Insertando nuevo beneficio: {Nombre}", beneficio.Nombre);
 
                 var affectedRows = connection.Execute(query, new
                 {
@@ -47,11 +49,10 @@ namespace backend.Handlers.backend.Repositories
                     Etiqueta = beneficio.Etiqueta
                 });
 
-                Console.WriteLine($"Filas afectadas: {affectedRows}");
+                _logger.LogInformation("Filas afectadas: {Rows}", affectedRows);
 
                 if (affectedRows >= 1)
                 {
-                    Console.WriteLine(" BENEFICIO INSERTADO (Rep)");
                     return string.Empty;
                 }
                 else
@@ -61,7 +62,7 @@ namespace backend.Handlers.backend.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR EN REPOSITORY BENEFICIO: {ex.Message}");
+                _logger.LogError(ex, "Error en CreateBeneficio");
                 return $"Error general: {ex.Message}";
             }
         }
@@ -76,7 +77,7 @@ namespace backend.Handlers.backend.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Repository GetBeneficios: {ex.Message}");
+                _logger.LogError(ex, "Error en GetAll");
                 throw;
             }
         }
@@ -91,17 +92,18 @@ namespace backend.Handlers.backend.Repositories
                     SELECT * 
                     FROM Beneficio 
                     WHERE CedulaJuridica = @CedulaJuridica
+                    AND IsDeleted = 0
                     ORDER BY Nombre";
 
-                Console.WriteLine($"Buscando beneficios para empresa con cédula: {cedulaJuridica}");
+                _logger.LogInformation("Buscando beneficios para empresa {Cedula}", cedulaJuridica);
                 var beneficios = connection.Query<BeneficioModel>(query, new { CedulaJuridica = cedulaJuridica }).ToList();
-                Console.WriteLine($"Se encontraron {beneficios.Count} beneficios para la empresa");
+                _logger.LogInformation("Se encontraron {Count} beneficios", beneficios.Count);
 
                 return beneficios;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Repository GetByEmpresa: {ex.Message}");
+                _logger.LogError(ex, "Error en GetByEmpresa");
                 throw;
             }
         }
@@ -117,19 +119,19 @@ namespace backend.Handlers.backend.Repositories
                     FROM Beneficio 
                     WHERE IdBeneficio = @Id";
 
-                Console.WriteLine($"Buscando beneficio con ID: {id}");
+                _logger.LogInformation("Buscando beneficio con ID {Id}", id);
                 var beneficio = connection.QueryFirstOrDefault<BeneficioModel>(query, new { Id = id });
 
                 if (beneficio != null)
-                    Console.WriteLine($"Beneficio encontrado: {beneficio.Nombre}");
+                    _logger.LogInformation("Beneficio encontrado: {Nombre}", beneficio.Nombre);
                 else
-                    Console.WriteLine($"Beneficio con ID {id} no encontrado");
+                    _logger.LogWarning("Beneficio con ID {Id} no encontrado", id);
 
                 return beneficio;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Repository GetById: {ex.Message}");
+                _logger.LogError(ex, "Error en GetById");
                 throw;
             }
         }
@@ -150,7 +152,7 @@ namespace backend.Handlers.backend.Repositories
                         Etiqueta = @Etiqueta
                     WHERE IdBeneficio = @IdBeneficio";
 
-                Console.WriteLine($"Actualizando beneficio ID: {beneficio.IdBeneficio}");
+                _logger.LogInformation("Actualizando beneficio ID {Id}", beneficio.IdBeneficio);
 
                 var filasAfectadas = connection.Execute(query, new
                 {
@@ -162,14 +164,44 @@ namespace backend.Handlers.backend.Repositories
                     beneficio.IdBeneficio
                 });
 
-                Console.WriteLine($"Filas afectadas: {filasAfectadas}");
+                _logger.LogInformation("Filas afectadas: {Rows}", filasAfectadas);
                 return filasAfectadas > 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Repository Update: {ex.Message}");
+                _logger.LogError(ex, "Error en Update");
                 return false;
             }
+        }
+
+        public bool ExistsInEmployerBenefitDeductions(int benefitId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            const string query = @"SELECT COUNT(1)
+                                   FROM EmployerBenefitDeductions 
+                                   WHERE BenefitId = @BenefitId";
+
+            var count = connection.ExecuteScalar<int>(query, new { BenefitId = benefitId });
+            _logger.LogInformation("Checking EmployerBenefitDeductions for benefit {BenefitId}: {Count}", benefitId, count);
+            return count > 0;
+        }
+
+        public void PhysicalDeletion(int benefitId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Execute("SP_Benefit_PhysicalDeletion",
+                new { IdBeneficio = benefitId },
+                commandType: CommandType.StoredProcedure);
+            _logger.LogInformation("Physical deletion executed for benefit {BenefitId}", benefitId);
+        }
+
+        public void LogicalDeletion(int benefitId, DateTime? lastPeriod)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Execute("SP_Benefit_LogicalDeletion",
+                new { IdBeneficio = benefitId, LastPeriod = lastPeriod },
+                commandType: CommandType.StoredProcedure);
+            _logger.LogInformation("Logical deletion executed for benefit {BenefitId}, last period {LastPeriod}", benefitId, lastPeriod);
         }
 
     }

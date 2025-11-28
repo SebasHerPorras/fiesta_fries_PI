@@ -29,25 +29,32 @@
       <button @click="togglePayroll" class="btn-info">
         📝 {{ mostrandoPayroll ? 'Ver Empresas' : 'Generar Planilla' }}
       </button>
-      <button class="btn-info" @click="editarEmpresaPropia">
-        ✏️ Modificar Empresa
-      </button>
 
+      <!-- NUEVO BOTÓN DE REPORTES
+      <button @click="toggleReportes" class="btn-info">
+        📊 {{ mostrandoReportes ? 'Ver Empresas' : 'Reportes' }}
+      </button> -->
+
+      <button class="btn-info" @click="goToDashboard">
+        📊 Dashboard
+      </button>
     </div>
 
     <div class="content">
       <!-- Estado de carga -->
       <div v-if="loading" class="loading">
-    ⏳ {{  mostrandoEmpleados ? 'Cargando empleados...' : 
-            mostrandoBeneficios ? 'Cargando beneficios...' : 
-            mostrandoPayroll ? 'Cargando planillas...' :
-            'Cargando empresas...' 
-          }}
-        </div>
-      <!-- Vista principal con condiciones anidadas -->
+        ⏳ {{ mostrandoEmpleados ? 'Cargando empleados...' : 
+               mostrandoBeneficios ? 'Cargando beneficios...' : 
+               mostrandoPayroll ? 'Cargando planillas...' :
+               mostrandoReportes ? 'Cargando reportes...' :
+               'Cargando empresas...' 
+            }}
+      </div>
+
+      <!-- Vista principal -->
       <div v-else>
         <!-- Vista de EMPRESAS -->
-        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios && !mostrandoPayroll">
+        <div v-if="!mostrandoEmpleados && !mostrandoBeneficios && !mostrandoPayroll && !mostrandoReportes">
           <!-- Lista de empresas -->
           <div v-if="empresas.length > 0" class="empresas-list">
             <div class="table-container">
@@ -58,6 +65,7 @@
                     <th>Nombre</th>
                     <th>Empleados</th>
                     <th>Frecuencia Pago</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -66,6 +74,11 @@
                     <td>{{ empresa.nombre }}</td>
                     <td>{{ empresa.cantidadEmpleados || 0 }}</td>
                     <td>{{ formatFrecuenciaPago(empresa.frecuenciaPago) }}</td>
+                    <td>
+                      <button @click="abrirModalEliminarEmpresa(empresa)" class="btn-eliminar">
+                        Borrar
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -101,6 +114,7 @@
                     <th>Departamento</th>
                     <th>Tipo Contrato</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,7 +138,11 @@
                         Editar
                       </button>
                     </td>
-                      
+                    <td>
+                      <button @click="abrirModalEliminarEmpleado(empleado)" class="btn-eliminar">
+                        Eliminar
+                      </button>
+                    </td>
 
                   </tr>
                 </tbody>
@@ -150,6 +168,7 @@
                     <th>Valor</th>
                     <th>Etiqueta</th>
                     <th>Editar</th>
+                    <th>Eliminar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,6 +199,11 @@
                           Editar
                       </button>
                     </td>
+                    <td>
+                      <button @click="abrirModalEliminarBeneficio(beneficio)" class="btn-eliminar">
+                          Eliminar
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -203,7 +227,7 @@
             
             <!-- 📅 INFORMACIÓN DEL PERIODO SELECCIONADO -->
             <transition name="fade">
-              <div v-if="selectedPeriod" key="period-detail" class="selected-period-detail">
+              <div v-if="selectedPeriod" :key="selectedPeriod.startDate" class="selected-period-detail">
                 <h4>📅 Información del Periodo Seleccionado</h4>
                 <table class="payroll-table">
                   <thead>
@@ -350,18 +374,181 @@
             </div>
           </div>
         </div>
-   </div> 
+
+        <!-- 📊 NUEVA VISTA DE REPORTES -->
+        <div v-else-if="mostrandoReportes" class="reportes-management">
+          <div class="reportes-header">
+            <h3>📊 Reportes de Planillas - {{ selectedCompany?.nombre }}</h3>
+            <span class="count-badge">{{ last12Payrolls.length }} reportes disponibles</span>
+          </div>
+
+          <div v-if="reportLoading" class="loading">
+            ⏳ Cargando reportes...
+          </div>
+
+          <div v-else class="reportes-content">
+            <!-- LISTA DE ÚLTIMAS 12 PLANILLAS -->
+            <div class="reportes-list-section">
+              <h4>📋 Seleccione una planilla para generar reporte</h4>
+              
+              <div v-if="last12Payrolls.length === 0" class="empty-state">
+                <p>No hay planillas procesadas disponibles</p>
+              </div>
+
+              <div v-else class="table-container">
+                <table class="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th>Costo Total</th>
+                      <th>Salario Neto</th>
+                      <th>Formato</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="payroll in last12Payrolls" :key="payroll.payrollId" 
+                        class="payroll-row"
+                        :class="{ 'selected-row': selectedReportPayrollId === payroll.payrollId }">
+                      <td>{{ formatDate(payroll.periodDate) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalEmployerCost) }}</td>
+                      <td>₡{{ formatCurrency(payroll.totalNetSalary) }}</td>
+                      <td>
+                        <select 
+                          v-model="reportFormats[payroll.payrollId]"
+                          class="format-selector"
+                          @change="clearReport"
+                        >
+                          <option value="pdf">📄 PDF</option>
+                          <option value="csv">📊 CSV</option>
+                        </select>
+                      </td>
+                      <td>
+                        <button 
+                          @click="generateReport(payroll.payrollId)"
+                          class="btn-generate"
+                          :disabled="generatingReport"
+                        >
+                          {{ generatingReport && selectedReportPayrollId === payroll.payrollId 
+                             ? '⏳ Generando...' 
+                             : '🚀 Generar' }}
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- VISOR DE REPORTES -->
+            <transition name="fade">
+              <div v-if="reportUrl || currentReportText" class="report-viewer">
+                <div class="viewer-header">
+                  <h4>📄 Vista Previa del Reporte</h4>
+                  <div class="viewer-actions">
+                    <button @click="downloadReport" class="btn-download">
+                      ⬇️ Descargar {{ currentReportFormat.toUpperCase() }}
+                    </button>
+                    <button @click="clearReport" class="btn-close-viewer">
+                      ✕ Cerrar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- IFRAME PARA PDF -->
+                <div v-if="currentReportFormat === 'pdf' && reportUrl" class="pdf-viewer">
+                  <iframe 
+                    :src="reportUrl" 
+                    width="100%" 
+                    height="700px"
+                    frameborder="0"
+                  ></iframe>
+                </div>
+
+                <!-- PREVIEW PARA CSV -->
+                <div v-else-if="currentReportFormat === 'csv' && currentReportText" class="csv-preview-wrapper">
+                  <div class="csv-message">
+                    <div class="csv-icon">📊</div>
+                    <h3>CSV - Vista Previa</h3>
+                    <p>Contenido de la planilla (solo lectura) — use "Descargar" para obtener el archivo.</p>
+                  </div>
+
+                  <div class="csv-preview">
+                    <pre class="csv-preview-text">{{ currentReportText }}</pre>
+                  </div>
+                </div>
+
+                <!-- MENSAJE SI NO HAY PREVIEW -->
+                <div v-else class="csv-message">
+                  <div class="csv-icon">📄</div>
+                  <h3>Previsualización no disponible</h3>
+                  <p>Use "Descargar" para obtener el archivo.</p>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+      </div>
+
       <!-- Mensajes de éxito/error -->
       <div v-if="message" class="message" :class="{ 'error': messageType === 'error', 'success': messageType === 'success' }">
         {{ message }}
       </div>
     </div>
 
-    <!-- Footer de la página con copyright y redes sociales -->
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
+    <!-- Confirmar eliminación para empresa (placeholder) -->
+    <ModalWarning
+      v-if="selectedEmpresa"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpresa.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpresa"
+    />
+
+    <!-- Confirmar eliminación para beneficios -->
+    <ModalWarning
+      v-if="selectedBeneficio"
+      :visible="showDeleteModal"
+      :itemName="selectedBeneficio.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarBeneficio"
+    />
+    <!-- Confirmar eliminación para empleados -->
+    <ModalWarning
+      v-if="selectedEmpleado"
+      :visible="showDeleteModal"
+      :itemName="selectedEmpleado.nombre"
+      :submitting="isDeleting"
+      @volver="showDeleteModal = false"
+      @confirm="confirmarEliminarEmpleado"
+    />
+
+    <!-- Footer -->
+    
     <footer>
       <div>©2025 Fiesta Fries</div>
       <div class="socials">
-        <!-- Enlaces a redes sociales (solo íconos, no funcionales) -->
         <a href="#" aria-label="Facebook">f</a>
         <a href="#" aria-label="LinkedIn">in</a>
         <a href="#" aria-label="YouTube">▶</a>
@@ -371,13 +558,16 @@
   </div> 
 </template>
 
-
 <script>
 import axios from "axios";
 import { API_ENDPOINTS } from '../config/apiConfig';
+import ModalWarning from "./ModalWarning.vue"; 
 
 export default {
   name: 'EmpresaAdmin',
+  components: {
+    ModalWarning
+  },
   data() {
     return {
       empresas: [],
@@ -387,17 +577,40 @@ export default {
       mostrandoEmpleados: false,
       mostrandoBeneficios: false,
       mostrandoPayroll: false,
+      mostrandoReportes: false, // NUEVO
       empleadosQuemados: [],
       beneficios: [],
       payrolls: [],
+      
+      // NUEVOS DATOS PARA REPORTES
+      last12Payrolls: [],
+      reportFormats: {}, // { payrollId: 'pdf' | 'csv' }
+      reportUrl: null,
+      currentReportFormat: 'pdf',
+      selectedReportPayrollId: null,
+      reportLoading: false,
+      generatingReport: false,
+      
+      // Guardar blob para preview / descarga segura
+      currentReportBlob: null,
+      currentReportText: null,
+
+      // PROPIEDADES REACTIVAS PARA PAYROLL (CRÍTICO para Vue)
       pendingPeriods: [],
-      overduePeriods: [], 
+      overduePeriods: [],
       nextPeriod: null,
       selectedPeriod: null,
       payrollLoading: false,
+
       selectedCompany: null,
       selectedCompanyId: null,
-      selectedCompanyCedula: null  
+      selectedCompanyCedula: null,
+      selectedBeneficio: null,
+      selectedEmpleado: null,
+      selectedEmpresa: null,
+      selectedEmpresaCedula: null,
+      showDeleteModal: false,
+      isDeleting: false
     }
   },
   mounted() {
@@ -553,7 +766,7 @@ export default {
 
      async hacerPreview(period) {
       if (!period || !this.selectedCompanyCedula) return;
-        
+      
       this.payrollLoading = true;
       try {
         const periodDate = new Date(period.startDate);
@@ -564,20 +777,28 @@ export default {
           periodDate: formattedDate
         };
 
+        console.log('Solicitando preview para:', formattedDate);
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PREVIEW, request);
+        console.log('Respuesta del backend:', response.data);
 
         if (response.data.success) {
+          // ✅ Asignación simple - Vue ahora rastrea selectedPeriod reactivamente
           this.selectedPeriod = {
-            ...period,
-            ...response.data.previewData,
+            description: period.description,
+            startDate: period.startDate,
+            endDate: period.endDate,
+            isProcessed: period.isProcessed,
+            periodType: period.periodType,
+            totalGrossSalary: response.data.previewData.totalGrossSalary || 0,
             totalEmployeeDeductions: response.data.previewData.totalEmployeeDeductions || 0,
             totalEmployerDeductions: response.data.previewData.totalEmployerDeductions || 0,
             totalBenefits: response.data.previewData.totalBenefits || 0,
             totalNetSalary: response.data.previewData.totalNetSalary || 0,
             totalEmployerCost: response.data.previewData.totalEmployerCost || 0,
-            totalAmount: response.data.totalAmount
+            totalAmount: response.data.totalAmount || 0
           };
           
+          console.log('selectedPeriod actualizado:', this.selectedPeriod);
           this.showMessage(`Preview calculado - ${response.data.message}`, 'success');
         } else {
           this.showMessage(`${response.data.message}`, 'error');
@@ -905,12 +1126,26 @@ export default {
       },
 
 
-    selectPeriod(period) {
-      this.selectedPeriod = period;
-      this.hacerPreview(period);
+    async selectPeriod(period) {
+      // Evitar cambiar periodo si hay un procesamiento en curso
+      if (this.payrollLoading) {
+        console.warn('No se puede cambiar de periodo mientras se procesa una planilla');
+        this.showMessage('Espera a que termine el procesamiento actual', 'warning');
+        return;
+      }
+      
+      console.log('Periodo seleccionado:', period.description);
+      // NO asignar period vacío - esperar a que hacerPreview cargue datos reales
+      await this.hacerPreview(period);
     },
 
      async procesarPlanilla() {
+      // Evitar doble procesamiento
+      if (this.payrollLoading) {
+        console.warn('Ya hay un procesamiento en curso, ignorando...');
+        return;
+      }
+
       if (!this.selectedPeriod) {
         this.showMessage('Selecciona un periodo primero', 'error');
         return;
@@ -926,9 +1161,15 @@ export default {
         return;
       }
 
+      // Crear copia inmutable del periodo para evitar cambios durante el procesamiento
+      const periodToProcess = {
+        startDate: this.selectedPeriod.startDate,
+        description: this.selectedPeriod.description
+      };
+
       this.payrollLoading = true;
       try {
-        const periodDate = new Date(this.selectedPeriod.startDate);
+        const periodDate = new Date(periodToProcess.startDate);
         const formattedDate = periodDate.toISOString().split('T')[0];
 
         const request = {
@@ -937,10 +1178,18 @@ export default {
           approvedBy: 'Usuario'
         };
 
+        console.log('PROCESANDO PLANILLA DEFINITIVA');
+        console.log('Periodo a procesar:', periodToProcess.description);
+        console.log('Fecha enviada:', formattedDate);
+        console.log('CompanyId:', request.companyId);
+        console.log('Request completo:', JSON.stringify(request, null, 2));
+
         const response = await axios.post(API_ENDPOINTS.PAYROLL_PROCESS, request);
+        
+        console.log('Respuesta del servidor:', response.data);
 
         if (response.data.success) {
-          this.showMessage(`Planilla procesada exitosamente`, 'success');
+          this.showMessage(`Planilla procesada exitosamente: ${periodToProcess.description}`, 'success');
           await this.loadPayrollData();
         } else {
           this.showMessage(`Error al procesar planilla`, 'error');
@@ -1103,10 +1352,402 @@ export default {
     },
 
     formatCurrency(amount) {
-      if (!amount) return '0';
-      return parseFloat(amount).toLocaleString('es-CR');
+      if (amount === null || amount === undefined) return '0';
+      return Number(amount).toLocaleString('es-CR');
     },
+
+    abrirModalEliminarBeneficio(beneficio) {
+      if (!beneficio) {
+        console.error("No se recibió beneficio válido");
+        return;
+      }
+      this.selectedBeneficio = beneficio;
+      this.showDeleteModal = true;
+    },
+
+    async confirmarEliminarBeneficio() {
+      if (!this.selectedBeneficio) return;
+
+      try {
+        const response = await fetch(API_ENDPOINTS.DELETE_BENEFICIO(this.selectedBeneficio.idBeneficio), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(`Error: ${errorData.message || "No se pudo eliminar el beneficio"}`);
+        } else {
+            this.beneficios = this.beneficios.filter(
+              b => b.idBeneficio !== this.selectedBeneficio.idBeneficio
+          );
+          this.$emit("beneficioEliminado", this.selectedBeneficio.idBeneficio);
+        }
+      } catch (error) {
+        alert("Error interno al eliminar beneficio");
+      } finally {
+        this.showDeleteModal = false;
+        this.selectedBeneficio = null;
+      }
+    },
+
+    abrirModalEliminarEmpleado(empleado) {
+      this.selectedEmpleado = empleado;
+      this.showDeleteModal = true;
+
+      console.log("Empleado a eliminar:", empleado.nombre);
+    },
+
+    async confirmarEliminarEmpleado() {
+      if (!this.selectedEmpleado) return;
+
+      this.isDeleting = true;
+
+      try {
+        // Obtener id del empleado (intenta varios campos comunes)
+        const empId = this.selectedEmpleado.cedula || this.selectedEmpleado.id || this.selectedEmpleado.personaId || this.selectedEmpleado.id_employee;
+        const companyId = this.selectedCompanyCedula || this.selectedCompanyId;
+
+        if (!empId || !companyId) {
+          this.showMessage('ID de empleado o cédula de empresa faltante', 'error');
+          return;
+        }
+
+        const url = API_ENDPOINTS.DELETE_EMPLEADO(empId, companyId);
+
+        const resp = await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        // Considerar distintos formatos de respuesta
+        const success = resp.status === 200 || resp.data?.success === true;
+
+        if (success) {
+          // Remover empleado de la lista local
+          this.empleadosQuemados = this.empleadosQuemados.filter(e => {
+            const idCandidate = e.cedula || e.id || e.personaId || e.id_employee;
+            return String(idCandidate) !== String(empId);
+          });
+
+          this.showMessage('Empleado eliminado correctamente', 'success');
+        } else {
+          const msg = resp.data?.message || 'No se pudo eliminar el empleado';
+          this.showMessage(msg, 'error');
+        }
+      } catch (error) {
+        console.error('Error eliminando empleado:', error);
+        const msg = error.response?.data?.message || error.message || 'Error al eliminar empleado';
+        this.showMessage(msg, 'error');
+      } finally {
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.selectedEmpleado = null;
+      }
+    },
+
+    abrirModalEliminarEmpresa(empresa) {
+      this.selectedEmpresa = empresa;
+      this.selectedEmpresaCedula = empresa?.cedulaJuridica || empresa?.cedula || null;
+      this.showDeleteModal = true;
+
+      console.log("Empresa a eliminar:", empresa?.nombre);
+      console.log("Cédula de empresa seleccionada:", this.selectedEmpresaCedula);
+    },
+
+    async confirmarEliminarEmpresa() {
+      if (!this.selectedEmpresa || !this.selectedEmpresaCedula) {
+        this.showMessage('No se ha seleccionado una empresa válida', 'error');
+        return;
+      }
+
+      this.isDeleting = true;
+
+      try {
+        const resultado = await this.BorrarEmpresa(this.selectedEmpresaCedula);
+        
+        if (resultado.success) {
+          this.showMessage(
+            `Empresa eliminada exitosamente. ` +
+            `Empleados: ${resultado.successfulDeletions}/${resultado.employeesProcessed}, ` +
+            `Beneficios: ${resultado.successfulBenefitDeletions}/${resultado.benefitsProcessed}. `, 
+            'success'
+          );
+          setTimeout(() => {
+            this.$router.push('/Profile');
+          }, 3500);
+        } else {
+          this.showMessage(`Error al eliminar empresa: ${resultado.message}`, 'error');
+        }
+      } catch (err) {
+        console.error('Error en confirmarEliminarEmpresa:', err);
+        
+        if (err.response?.data?.message) {
+          this.showMessage(`Error: ${err.response.data.message}`, 'error');
+        } else if (err.message?.includes('Network Error')) {
+          this.showMessage('Error de conexión. Verifique su internet e intente nuevamente.', 'error');
+        } else {
+          this.showMessage('Error interno al intentar borrar la empresa', 'error');
+        }
+      } finally {
+        this.isDeleting = false;
+        this.showDeleteModal = false;
+        this.selectedEmpresa = null;
+        this.selectedEmpresaCedula = null;
+      }
+    },
+
+    async BorrarEmpresa(cedulaJuridica) {
+      try {
+        const response = await fetch(API_ENDPOINTS.COMPANY_DELETION(cedulaJuridica), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage = `Error ${response.status}: ${response.statusText}`;
+          
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            errorMessage = errorText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Error en BorrarEmpresa:', error);
+        throw error;
+      }
+    },
+    goToDashboard() {
+      this.$router.push('/DashboardEmpleador');
+    },
+
+        
+    // ============================================
+    // NUEVOS MÉTODOS PARA REPORTES
+    // ============================================
+    async toggleReportes() {
+      this.mostrandoEmpleados = false;
+      this.mostrandoBeneficios = false;
+      this.mostrandoPayroll = false;
+      this.mostrandoReportes = !this.mostrandoReportes;
+      
+      if (this.mostrandoReportes) {
+        if (this.loadSelectedCompany()) {
+          await this.loadLast12Payrolls();
+        } else {
+          this.showMessage('Selecciona una empresa primero desde Datos Personales', 'error');
+          this.mostrandoReportes = false;
+        }
+      } else {
+        this.clearReport();
+        this.showMessage('Mostrando lista de empresas', 'success');
+      }
+    },
+
+    async loadLast12Payrolls() {
+  console.log('🔍 INICIANDO loadLast12Payrolls');
+  console.log('Cedula empresa:', this.selectedCompanyCedula);
+  
+  if (!this.selectedCompanyCedula) {
+    console.error('No hay cedula de empresa');
+    this.showMessage('No hay empresa seleccionada', 'error');
+    return;
+  }
+
+  this.reportLoading = true;
+  try {
+    const url = API_ENDPOINTS.PAYROLL_REPORT_LAST_12(this.selectedCompanyCedula);
+    console.log('Llamando a:', url);
     
+    const response = await axios.get(url);
+    console.log('Respuesta completa:', response);
+    console.log('Datos recibidos:', response.data);
+
+    let payrolls = [];
+    
+    if (response.data && response.data.success) {
+      payrolls = response.data.payrolls || [];
+      console.log('Formato con success:', payrolls);
+    } else if (Array.isArray(response.data)) {
+      payrolls = response.data;
+      console.log('Formato array directo:', payrolls);
+    } else {
+      console.warn('Formato inesperado:', response.data);
+      payrolls = [];
+    }
+
+    this.last12Payrolls = payrolls;
+    console.log('Planillas asignadas:', this.last12Payrolls.length);
+
+    // Inicializar formatos
+    const formats = {};
+    payrolls.forEach(payroll => {
+      formats[payroll.payrollId] = 'pdf';
+    });
+    this.reportFormats = formats;
+    console.log('Formatos inicializados:', this.reportFormats);
+
+    this.showMessage(
+      `${payrolls.length} reporte(s) disponible(s)`, 
+      payrolls.length > 0 ? 'success' : 'error'
+    );
+  } catch (error) {
+    console.error('ERROR COMPLETO:', error);
+    console.error('Respuesta de error:', error.response?.data);
+    console.error('Status:', error.response?.status);
+    
+    this.last12Payrolls = [];
+    this.showMessage('Error al cargar reportes: ' + (error.response?.data?.message || error.message), 'error');
+  } finally {
+    this.reportLoading = false;
+    console.log('✅ Carga finalizada');
+  }
+},
+
+    async generateReport(payrollId) {
+      const format = this.reportFormats[payrollId] || 'pdf';
+      this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+      this.currentReportFormat = format;
+      
+      // limpiar vista previa previa (revoca URL si existe)
+      this.clearReport();
+       this.generatingReport = true;
+      this.selectedReportPayrollId = payrollId;
+      this.currentReportFormat = format;
+      
+
+      try {
+        const urlPdf = API_ENDPOINTS.PAYROLL_REPORT_PDF(payrollId);
+        const urlCsv = API_ENDPOINTS.PAYROLL_REPORT_CSV(payrollId);
+
+        if (format === 'pdf') {
+          // Traer PDF como blob para evitar descarga forzada por headers y permitir preview en iframe
+          const resp = await axios.get(urlPdf, { responseType: 'blob' });
+          const pdfBlob = new Blob([resp.data], { type: 'application/pdf' });
+          this.currentReportBlob = pdfBlob;
+          this.reportUrl = window.URL.createObjectURL(pdfBlob); // usado por iframe
+          this.showMessage('PDF listo para vista previa', 'success');
+        } else {
+          // Traer CSV como blob y extraer texto para mostrar en vista previa
+          const resp = await axios.get(urlCsv, { responseType: 'blob' });
+          const csvBlob = new Blob([resp.data], { type: 'text/csv' });
+          this.currentReportBlob = csvBlob;
+          this.currentReportText = await csvBlob.text(); // texto para preview
+          // opcional: también crear blob url por si se quiere abrir en nueva pestaña
+          this.reportUrl = window.URL.createObjectURL(csvBlob);
+          this.showMessage('CSV listo para vista previa', 'success');
+        }
+      } catch (error) {
+        console.error('Error generando reporte:', error);
+        this.showMessage('Error al generar reporte', 'error');
+        // limpieza por si algo quedó
+        this.clearReport();
+      } finally {
+        this.generatingReport = false;
+      }
+    },
+
+    async downloadReport() {
+      // No hacer nada si no hay nada para descargar
+      if (!this.currentReportBlob && !this.currentReportText && !this.reportUrl) return;
+
+      try {
+        // construir nombre: Reporte_Planilla_Nombre_Empresa_idPayrrol
+        const rawName = this.selectedCompany?.nombre || 'Empresa';
+        const safeName = rawName.replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+        const payrollIdPart = this.selectedReportPayrollId || 'unknown';
+        const fileBase = `Reporte_Planilla_${safeName}_${payrollIdPart}`; // sigue patrón solicitado
+
+        if (this.currentReportFormat === 'pdf') {
+          // descargar blob PDF
+          if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.pdf`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('PDF descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            // fallback
+            window.open(this.reportUrl, '_blank');
+          }
+        } else {
+          // CSV: si tenemos texto, creamos blob y forzamos descarga
+          if (this.currentReportText != null) {
+            const blob = new Blob([this.currentReportText], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`; // nombre final
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.currentReportBlob) {
+            const blobUrl = window.URL.createObjectURL(this.currentReportBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          } else if (this.reportUrl) {
+            const resp = await axios.get(this.reportUrl, { responseType: 'blob' });
+            const blob = new Blob([resp.data], { type: 'text/csv' });
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileBase}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+            this.showMessage('CSV descargado exitosamente', 'success');
+          }
+        }
+      } catch (error) {
+        console.error('Error descargando reporte:', error);
+        this.showMessage('Error al descargar reporte', 'error');
+      }
+    },
+
+    clearReport() {
+      // revocar object URL si existe
+      try {
+        if (this.reportUrl && this.reportUrl.startsWith('blob:')) {
+          window.URL.revokeObjectURL(this.reportUrl);
+        }
+      } catch (e) {
+        // noop
+      }
+
+      this.reportUrl = null;
+      this.selectedReportPayrollId = null;
+      this.currentReportBlob = null;
+    },
+
+    // ... RESTO DE TUS MÉTODOS EXISTENTES ...
   }
 }
 </script>
@@ -1437,8 +2078,8 @@ export default {
 }
 
 .type-badge.api {
-  background: rgba(102, 16, 242, 0.2);
-  color: #6610f2;
+  background: rgba(195, 70, 245, 0.2);
+  color: #d321ff;
 }
 
 .type-badge.default {
@@ -1448,6 +2089,19 @@ export default {
 
 .btn-editar {
   background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.btn-eliminar {
+  background: #a00101;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -1891,6 +2545,227 @@ footer {
   
   .content {
     padding: 15px;
+  }
+}
+
+/* ============================================ */
+/* NUEVOS ESTILOS PARA REPORTES */
+/* ============================================ */
+
+.reportes-management {
+  width: 100%;
+}
+
+.reportes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.reportes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.reportes-list-section h4 {
+  color: #1fb9b4;
+  margin-bottom: 15px;
+}
+
+.format-selector {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: whitesmoke;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.format-selector:focus {
+  outline: none;
+  border-color: #1fb9b4;
+}
+
+.btn-generate {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 12px;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: #1aa8a4;
+  transform: translateY(-1px);
+}
+
+.btn-generate:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.selected-row {
+  background: rgba(31, 185, 180, 0.1);
+  border-left: 3px solid #1fb9b4;
+}
+
+/* VISOR DE REPORTES */
+.report-viewer {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(31, 185, 180, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.viewer-header h4 {
+  color: #1fb9b4;
+  margin: 0;
+}
+
+.viewer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-download {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+  background: #1aa8a4;
+  transform: translateY(-1px);
+}
+
+.btn-close-viewer {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pdf-viewer {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-viewer iframe {
+  border-radius: 8px;
+}
+
+/* MENSAJE CSV */
+.csv-message {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.csv-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.csv-message h3 {
+  color: #1fb9b4;
+  margin-bottom: 10px;
+}
+
+.csv-message p {
+  color: #bdbdbd;
+  margin-bottom: 20px;
+}
+
+.btn-download-big {
+  background: #1fb9b4;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-download-big:hover {
+  background: #1aa8a4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 185, 180, 0.3);
+}
+
+.csv-hint {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #888;
+}
+
+/* TRANSICIONES */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .reportes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .viewer-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .viewer-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-download,
+  .btn-close-viewer {
+    width: 100%;
   }
 }
 </style>

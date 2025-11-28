@@ -1,4 +1,7 @@
 ﻿using backend.Models;
+using backend.Interfaces;
+using System.Threading.Tasks;
+using System;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
@@ -7,7 +10,7 @@ using System.Data.SqlClient;
 
 namespace backend.Repositories
 {
-    public class EmployeeBenefitRepository
+    public class EmployeeBenefitRepository : IEmployeeBenefitRepository
     {
         private readonly IDbConnection _db;
 
@@ -18,7 +21,10 @@ namespace backend.Repositories
 
         public async Task<List<int>> GetSelectedBenefitIdsAsync(int employeeId)
         {
-            var sql = "SELECT benefitId FROM EmployeeBenefit WHERE employeeId = @employeeId";
+            var sql = @"SELECT benefitId
+                       FROM EmployeeBenefit
+                       WHERE employeeId = @employeeId
+                        AND IsDeleted = 0";
             var result = await _db.QueryAsync<int>(sql, new { employeeId });
             return result.AsList();
         }
@@ -110,7 +116,8 @@ namespace backend.Repositories
                     benefitValue      AS BenefitValue,
                     benefitType       AS BenefitType
                 FROM EmployeeBenefit
-                WHERE employeeId = @EmployeeId;";
+                WHERE employeeId = @EmployeeId
+                    AND IsDeleted = 0;";
 
             if (_db is System.Data.SqlClient.SqlConnection sqlConn && sqlConn.State == System.Data.ConnectionState.Closed)
             {
@@ -126,7 +133,8 @@ namespace backend.Repositories
             const string query = @"
             SELECT COUNT(*) 
             FROM EmployeeBenefit 
-            WHERE EmployeeId = @EmployeeId";
+            WHERE EmployeeId = @EmployeeId
+                AND IsDeleted = 0; ";
 
             return _db.ExecuteScalar<int>(query, new { EmployeeId = employeeId });
         }

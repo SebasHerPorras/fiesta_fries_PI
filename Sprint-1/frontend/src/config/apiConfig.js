@@ -40,24 +40,34 @@ export const API_ENDPOINTS = {
   CREATE_EMPRESA: buildApiUrl("empresa"),
     CREATE_EMPLEADO: buildApiUrl("Person/empleado"),
     HIRE_DATE: (id) => `${buildApiUrl("Empleado/GetEmployeeHireDate")}?id=${encodeURIComponent(id)}`,
+    LAST_PAYROLL: (id) => `${buildApiUrl("Empleado/LastPayrollData")}?id=${encodeURIComponent(id)}`,
+    GET_PAYROLL: (id, date) => `${buildApiUrl("Empleado/GetpayrollData")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
+    GET_SALARY_DATA: (id, date) => `${buildApiUrl("Empleado/GetDashboardData")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
+    GET_IMAGE: (id, date) => `${buildApiUrl("Empleado/SalaryChart")}?id=${encodeURIComponent(id)}&date=${encodeURIComponent(date)}`,
     WORK_DAY_HOURS: (dateW, dateD, id) => `${buildApiUrl("Empleado/GetEmployeeWorkDayHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&id=${encodeURIComponent(id)}`,
     WORK_WEEK_HOURS: (date, id) => `${buildApiUrl("Empleado/GetWorkHoursWeek")}?date=${encodeURIComponent(date)}&id=${encodeURIComponent(id)}`,
     ADD_WORK_DAY_HOURS: (dateW, dateD, hours, id) => `${buildApiUrl("Empleado/AddWorkHours")}?dateW=${encodeURIComponent(dateW)}&dateD=${encodeURIComponent(dateD)}&hours=${encodeURIComponent(hours)}&id=${encodeURIComponent(id)}`,
 
   EMPRESA_BY_EMPLOYEE: (userId) => buildApiUrl(`empresa/employee-company/${userId}`),
-
+    EMPRESA_COUNT_ROLES: (id) => buildApiUrl(`Empresa/EmployeesTypeCount?id=${id}`),
+    EMPRESA_COUNT_ROLES_LIST: (id) => buildApiUrl(`Empresa/EmployeesTypeCountList?id=${id}`),
+    EMPRESA_PAY_DATES: (cedulaJuridica, fechaLimite) => buildApiUrl(`Empresa/PayrollDates?cedulaJuridica=${encodeURIComponent(cedulaJuridica)}&fechaLimite=${encodeURIComponent(fechaLimite)}`),
+    SPREADSHEET_COST: (id, Fecha) => buildApiUrl(`Empresa/SpreadsheetCost?id=${encodeURIComponent(id)}&Fecha=${encodeURIComponent(Fecha)}`),
+    CAKE_GRAPH: (id, Fecha) => buildApiUrl(`Empresa/GetEmployerDataImage?id=${encodeURIComponent(id)}&Fecha=${encodeURIComponent(Fecha)}`),
   BENEFICIOS_SELECCIONADOS: (empleadoId) => buildApiUrl(`EmployeeBenefit/${empleadoId}`),
   ELEGIR_BENEFICIO: buildApiUrl("EmployeeBenefit"),
-  CAN_SELECT_BENEFIT: (employeeId, benefitId) => buildApiUrl(`EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`),
+  CAN_SELECT_BENEFIT: (employeeId, benefitId) =>
+    buildApiUrl(
+      `EmployeeBenefit/can-select?employeeId=${employeeId}&benefitId=${benefitId}`
+    ),
   PERSON_BY_USER: (userGuid) => buildApiUrl(`person/by-user/${userGuid}`),
-  EMPLOYEE_BENEFIT_SELECTED: (employeeId) => buildApiUrl(`EmployeeBenefit/selected?employeeId=${employeeId}`),
+  EMPLOYEE_BENEFIT_SELECTED: (employeeId) =>
+    buildApiUrl(`EmployeeBenefit/selected?employeeId=${employeeId}`),
   PAYROLL_PREVIEW: buildApiUrl("payroll/preview"),
-
 
   CREATE_BENEFICIO: buildApiUrl("Beneficio"),
   UPDATE_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
   GET_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
-
 
   ID_VALIDATE: buildApiUrl("idverification/idvalidate"),
   USER_EMAIL_VERIFY: (email) =>
@@ -72,13 +82,14 @@ export const API_ENDPOINTS = {
   USER_NOTIFY_EMPLOYER: buildApiUrl("Empleado/EmailNotificationMessage"),
   PERSON_PROFILE: (userId) => buildApiUrl(`person/profile/${userId}`),
   EMPRESAS_TODAS: buildApiUrl("empresa/todas"),
-  EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
-  GET_EMPRESA_POR_CEDULA: cedula => buildApiUrl(`/empresa/por-cedula/${cedula}`),
-  MODIFICAR_EMPRESA_PROPIA: (cedula) => buildApiUrl(`/empresa/modificar-empresa/${cedula}`),
+    EMPRESAS_BY_USER: (personaId) => buildApiUrl(`empresa/byUser/${personaId}`),
+    GET_EMPRESA_POR_CEDULA: (cedula) =>
+    buildApiUrl(`/empresa/por-cedula/${cedula}`),
+  MODIFICAR_EMPRESA_PROPIA: (cedula) =>
+    buildApiUrl(`/empresa/modificar-empresa/${cedula}`),
 
   VALIDAR_MODIFICACION_BENEFICIOS: (cedula) =>
-  buildApiUrl(`empresa/validacion/modificacion-beneficios/${cedula}`),
-
+    buildApiUrl(`empresa/validacion/modificacion-beneficios/${cedula}`),
 
   BENEFICIOS_POR_EMPRESA: (cedulaEmpresa) =>
     buildApiUrl(`Beneficio/por-empresa/${cedulaEmpresa}`),
@@ -86,9 +97,52 @@ export const API_ENDPOINTS = {
   EMPLEADO_CREATE: buildApiUrl("Empleado/create"),
   PAYROLLS: (cedulaEmpresa) => buildApiUrl(`Payroll/company/${cedulaEmpresa}`),
   PAYROLL_PROCESS: buildApiUrl("Payroll/process"),
-  PAYROLL_NEXT_PERIOD: (companyId) => buildApiUrl(`Payroll/${companyId}/next-period`),
-  PAYROLL_PENDING_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/pending-periods`),
-  PAYROLL_OVERDUE_PERIODS: (companyId) => buildApiUrl(`Payroll/${companyId}/overdue-periods`),
+  PAYROLL_NEXT_PERIOD: (companyId) =>
+    buildApiUrl(`Payroll/${companyId}/next-period`),
+  PAYROLL_PENDING_PERIODS: (companyId) =>
+    buildApiUrl(`Payroll/${companyId}/pending-periods`),
+  PAYROLL_OVERDUE_PERIODS: (companyId) =>
+    buildApiUrl(`Payroll/${companyId}/overdue-periods`),
+
+  // Reportes de Planilla
+  PAYROLL_REPORT_LAST_12: (companyId) =>
+    buildApiUrl(`PayrollReport/company/${companyId}/last-12`),
+
+  PAYROLL_REPORT_PDF: (payrollId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/pdf`),
+
+  PAYROLL_REPORT_CSV: (payrollId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/csv`),
+
+  PAYROLL_REPORT_JSON: (payrollId) => buildApiUrl(`PayrollReport/${payrollId}`),
+  
+  EMPLOYER_HISTORICAL_REPORT: buildApiUrl("EmployerHistoricalReport"),
+  EMPLOYER_HISTORICAL_REPORT_CSV: buildApiUrl("EmployerHistoricalReport/csv"),
+  EMPLOYER_BY_PERSON_REPORT: buildApiUrl("EmployerByPersonReport"),
+  EMPLOYER_BY_PERSON_REPORT_CSV: buildApiUrl("EmployerByPersonReport/csv"),
+  EMPLOYEE_HISTORICAL_REPORT: buildApiUrl("EmployeeHistoricalReport"),
+  EMPLOYEE_HISTORICAL_REPORT_CSV: buildApiUrl("EmployeeHistoricalReport/csv"),
+
+  // Reporte por empleado en una planilla específica
+  PAYROLL_EMPLOYEE_REPORT_JSON: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}`),
+
+  PAYROLL_EMPLOYEE_REPORT_PDF: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}/pdf`),
+
+  PAYROLL_EMPLOYEE_REPORT_CSV: (payrollId, employeeId) =>
+    buildApiUrl(`PayrollReport/${payrollId}/employee/${employeeId}/csv`),
+
+  // Últimos 12 pagos de un empleado (histórico)
+  PAYROLL_EMPLOYEE_LAST_12_PAYMENTS: (employeeId) =>
+    buildApiUrl(`PayrollReport/employee/${employeeId}/last-payments`),
+  // Borrados
+  DELETE_EMPLEADO: (id, companyId) =>
+    `${buildApiUrl(
+      `Empleado/${encodeURIComponent(id)}`
+    )}?companyId=${encodeURIComponent(companyId)}`,
+  DELETE_BENEFICIO: (id) => buildApiUrl(`Beneficio/${id}`),
+  COMPANY_DELETION: (cedulaJuridica) => buildApiUrl(`CompanyDeletion/${cedulaJuridica}`),
 };
 
 // Log de configuración (solo en desarrollo)

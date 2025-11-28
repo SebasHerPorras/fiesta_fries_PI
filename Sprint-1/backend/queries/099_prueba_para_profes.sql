@@ -1,857 +1,458 @@
+-- =============================================
+-- SCRIPT DE CASOS DE PRUEBA - SPRINT 3
+-- Empresa: Empresa Sprint 3 y Empresa Integradora
+-- Fecha: Noviembre 2025
+-- =============================================
 USE Fiesta_Fries_DB;
 GO
 
--- ============================================
--- EMPRESA PI MENSUAL
--- ============================================
-
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('pi.empleador@gmail.com', '123456', 1, 0); 
+PRINT '========================================';
+PRINT 'INICIANDO SCRIPT DE CASOS DE PRUEBA';
+PRINT '========================================';
 GO
 
-DECLARE @userGuid UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid = PK_User 
-FROM [User] 
-WHERE email = 'pi.empleador@gmail.com';
+-- =============================================
+-- PASO 1: Crear empleador Ana Madrigal
+-- Nacida: 17/Nov/1985
+-- =============================================
+PRINT '';
+PRINT 'PASO 1: Creando empleador Ana Madrigal...';
 
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    550010001,
-    'Pablo',
-    'Ibarra',
-    '1990-05-12',
-    'San José, Costa Rica',
-    88887777,
-    @userGuid,
-    'Empleador'
-);
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('ana.madrigal@empresa.com', '123456', 1, 0);
+
+DECLARE @UserAnaGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'ana.madrigal@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (117851985, 'Ana', 'Madrigal', '1985-11-17', 'San JosÃ©, Costa Rica', '8888-1111', NULL, @UserAnaGuid, 'Empleador', 0);
+
+PRINT 'âœ“ Ana Madrigal creada como empleador (CÃ©dula: 117851985)';
 GO
 
-INSERT INTO Empresa(
-    [CedulaJuridica],
-    [Nombre],
-    [DueñoEmpresa],
-    [Telefono],
-    [DireccionEspecifica],
-    [NoMaxBeneficios],
-    [DiaPago],
-    [FrecuenciaPago],
-    [FechaCreacion]
-)
-VALUES(
-    550020002,
-    'Empresa PI',
-    550010001,                 
-    88887777,                 
-    'San José, Pavas, 400m sur de la iglesia',
-    3,                         
-    30,                        
-    'Mensual',                
-    '2025-09-30'            
-);
+-- =============================================
+-- PASO 2: Crear Empresa Sprint 3
+-- CÃ©dula: 3-101-123456
+-- MÃ¡ximo beneficios: 3
+-- Frecuencia pago: Mensual
+-- =============================================
+PRINT '';
+PRINT 'PASO 2: Creando Empresa Sprint 3...';
+
+INSERT INTO Empresa (CedulaJuridica, Nombre, DueÃ±oEmpresa, Telefono, DireccionEspecifica, NoMaxBeneficios, DiaPago, FrecuenciaPago, FechaCreacion)
+VALUES (3108123456, 'Empresa Sprint 3', 117851985, 22223333, 'San JosÃ©, Centro Empresarial', 3, 1, 'Mensual', '2025-01-01');
+
+PRINT 'âœ“ Empresa Sprint 3 creada (CÃ©dula: 3108123456, Pago: Mensual dÃ­a 1)';
 GO
 
-UPDATE Empresa
-SET [FechaCreacion] = '2025-01-01'
-WHERE [CedulaJuridica] = 550020002;
+-- =============================================
+-- PASOS 3-7: Crear beneficios para Empresa Sprint 3
+-- =============================================
+PRINT '';
+PRINT 'PASOS 3-7: Creando beneficios para Empresa Sprint 3...';
 
--- ============================================
--- Caso Número 2: Pedro Vargas
--- ============================================
+-- PASO 3: Beneficio Gimnasio (Monto fijo â‚¡25,000)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'Gimnasio', 'Monto Fijo', 'Empresa', 25000.00, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio Gimnasio creado (Monto fijo: â‚¡25,000)';
 
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('pedro.vargas@gmail.com', '123456', 1, 0);
+-- PASO 4: Beneficio EducaciÃ³n (Porcentual 3%)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'EducaciÃ³n', 'Porcentual', 'Empresa', 3.00, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio EducaciÃ³n creado (Porcentual: 3%)';
+
+-- PASO 5: Beneficio Seguro Privado (API)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'Seguro Privado', 'API', 'Empresa', NULL, 'DeducciÃ³n', 0);
+PRINT 'âœ“ Beneficio Seguro Privado creado (API: SeguroPrivado)';
+
+-- PASO 6: Beneficio PensiÃ³n Voluntaria (API)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'Pension Voluntaria', 'API', 'Empleado', NULL, 'DeducciÃ³n', 0);
+PRINT 'âœ“ Beneficio PensiÃ³n Voluntaria de Vida creado (API: PensionesVoluntarias)';
+
+-- PASO 7: Beneficio AsociaciÃ³n Solidarista (API)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'AsociaciÃ³n Solidarista', 'API', 'Empleado', NULL, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio AsociaciÃ³n Solidarista creado (API: AsociacionSolidarista)';
 GO
 
-DECLARE @userGuid_Empleado UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid_Empleado = PK_User 
-FROM [User]
-WHERE email = 'pedro.vargas@gmail.com';
+-- =============================================
+-- PASO 8: Crear empleada Ana Madrigal COMO EMPLEADA (DIFERENTE PERSONA)
+-- Salario: â‚¡4,845,000
+-- Fecha inicio: 1/May/2025
+-- Puesto: Gerente
+-- NOTA: Esta es una Ana Madrigal DIFERENTE a la dueÃ±a
+-- =============================================
+PRINT '';
+PRINT 'PASO 8: Creando empleada Ana Madrigal (diferente a la dueÃ±a)...';
 
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    152700726,
-    'Pedro',
-    'Vargas',
-    '2000-01-16',
-    'San José, Costa Rica',
-    88889999,
-    @userGuid_Empleado,
-    'Empleado'
-);
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('ana.madrigal.empleada@empresa.com', '123456', 1, 0);
+
+DECLARE @UserAnaEmpleadaGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'ana.madrigal.empleada@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (117111985, 'Ana', 'Madrigal', '1985-11-17', 'San JosÃ©, Sabana', '8888-7777', NULL, @UserAnaEmpleadaGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (117111985, 'Gerente', 'Tiempo Completo', 4845000, '2025-05-01', 'Gerencia', 3108123456, 0);
+
+PRINT 'âœ“ Ana Madrigal (empleada) creada (Gerente, â‚¡4,845,000, CÃ©dula: 117111985)';
 GO
 
-INSERT INTO Empleado(
-    id,
-    position,
-    employmentType,
-    salary,
-    hireDate,
-    department,
-    idCompny
-)
-VALUES(
-    152700726,          
-    'Analista',         
-    'Tiempo completo',  
-    500000,             
-    '2025-01-02',       
-    'Operaciones',      
-    550020002         
-);
+
+-- =============================================
+-- INSERCIÃ“N DE HORAS SEMANALES - ANA MADRIGAL (117111985)
+-- PERIODO: MAYO 2025 (1 al 31 de mayo)
+-- Contratada: 1/Mayo/2025
+-- =============================================
+PRINT '';
+PRINT 'Insertando horas semanales para Ana Madrigal - Mayo 2025...';
+
+-- MAYO 2025: Semanas del mes (del 1 al 31 de mayo)
+-- Semana del 28/04/2025 (lunes) - incluye 1 y 2 de mayo (jueves y viernes)
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-04-28', 117111985, 16);
+
+-- Semana del 05/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-05', 117111985, 40);
+
+-- Semana del 12/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-12', 117111985, 40);
+
+-- Semana del 19/05/2025 (lunes) - semana completa
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-19', 117111985, 40);
+
+-- Semana del 26/05/2025 (lunes) - incluye hasta 31 de mayo (sÃ¡bado) = 5 dÃ­as
+INSERT INTO Semana (start_date, id_employee, hours_count) VALUES ('2025-05-26', 117111985, 40);
+
+PRINT 'âœ“ Horas de Mayo 2025 insertadas para Ana Madrigal (176 horas total)';
 GO
 
--- ============================================
--- Caso número 3: Ana Salas
--- ============================================
+-- NOTE: PASO 9 - Ejecutar planilla Mayo 2025 se debe hacer manualmente desde la aplicaciÃ³n
 
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('ana.salas@gmail.com', '123456', 1, 0);
+-- =============================================
+-- PASO 10: Crear empleada Sara Rodriguez
+-- Nacida: 16/Ene/2000
+-- Salario: â‚¡900,000
+-- Fecha inicio: 1/Jun/2025
+-- Puesto: Desarrollador Jr.
+-- =============================================
+PRINT '';
+PRINT 'PASO 10: Creando empleada Sara Rodriguez...';
+
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('sara.rodriguez@empresa.com', '123456', 1, 0);
+
+DECLARE @UserSaraGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'sara.rodriguez@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (116012000, 'Sara', 'Rodriguez', '2000-01-16', 'Heredia, Costa Rica', '8888-2222', NULL, @UserSaraGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (116012000, 'Desarrollador Jr.', 'Tiempo Completo', 900000, '2025-06-01', 'Desarrollo', 3108123456, 0);
+
+PRINT 'âœ“ Sara Rodriguez creada (Desarrollador Jr., â‚¡900,000)';
 GO
 
-DECLARE @userGuid_Empleado UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid_Empleado = PK_User 
-FROM [User]
-WHERE email = 'ana.salas@gmail.com';
+-- =============================================
+-- PASO 11: Crear empleada Jenny Durango
+-- Nacida: 23/Dic/1988
+-- Salario: â‚¡2,500,000
+-- Fecha inicio: 16/Jun/2025
+-- Puesto: Desarrollador Senior
+-- =============================================
+PRINT '';
+PRINT 'PASO 11: Creando empleada Jenny Durango...';
 
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    208760987,
-    'Ana',
-    'Salas',
-    '1992-12-23',
-    'San José, Costa Rica',
-    88889998,
-    @userGuid_Empleado,
-    'Empleado'
-);
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('jenny.durango@empresa.com', '123456', 1, 0);
+
+DECLARE @UserJennyGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'jenny.durango@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (123121988, 'Jenny', 'Durango', '1988-12-23', 'Cartago, Costa Rica', '8888-3333', NULL, @UserJennyGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (123121988, 'Desarrollador Senior', 'Tiempo Completo', 2500000, '2025-06-16', 'Desarrollo', 3108123456, 0);
+
+PRINT 'âœ“ Jenny Durango creada (Desarrollador Senior, â‚¡2,500,000)';
 GO
 
-INSERT INTO Empleado(
-    id,
-    position,
-    employmentType,
-    salary,
-    hireDate,
-    department,
-    idCompny
-)
-VALUES(
-    208760987,
-    'Analista',
-    'Tiempo completo',
-    1000000,
-    '2025-01-02',
-    'Operaciones',
-    550020002
-);
+-- =============================================
+-- PASOS 12 y 13: Asignar beneficios a empleados para planilla Junio 2025
+
+DECLARE @benefitID1 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'AsociaciÃ³n Solidarista');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (123121988, @benefitID1, NULL, NULL, 'AsociaciÃ³n Solidarista', NULL, 'API', 0);
+
+
+DECLARE @benefitID2 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Pension Voluntaria');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (117111985, @benefitID2, 'C', NULL, 'Pension Voluntaria', NULL, 'API', 0);
+
+
+-- AGREGAR HORAS PARA LOS EMPLEADOS PARA EL MES DE JUNIO 2025 PARA QUE SE TOME EN CUENTA PARA EL PAGO DE JUNIO 2025
+/*
+INSERT INTO EmployeeHours (employeeId, month, year, hoursWorked, IsDeleted)
+VALUES (117111985, 6, 2025, 160, 0);
+*/
+
+--  =============================================
+-- PASO 14:
+-- GENERERAR PLANILLAS JUNIO 2025
+--  =============================================
+
+
+-- =============================================
+-- PASOS 15-16: Asignar beneficios adicionales a empleados para planilla Julio
+
+DECLARE @benefitID3 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Gimnasio');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (116012000, @benefitID3, NULL, NULL, 'Gimnasio', 25000, 'Monto Fijo', 0);
+
+
+DECLARE @benefitID4 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Seguro Privado');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (123121988, @benefitID4, NULL, 3, 'Seguro Privado', NULL, 'API', 0);
+
+
+-- AGREGAR HORAS PARA LOS EMPLEADOS PARA EL MES  JULIO , AGOSTO , SEPTIEMBRE 2025 PARA QUE SE TOME EN CUENTA PARA EL PAGO DE ESOS MESES
+/*
+INSERT INTO EmployeeHours (employeeId, month, year, hoursWorked, IsDeleted)
+VALUES (117111985, 7, 2025, 160, 0);
+*/
+
+-- =============================================
+-- PASOS 17-19
+-- GENERAR PLANILLAS JULIO 2025 , AGOSTO 2025, SEPTIEMBRE 2025
+--  =============================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- =============================================
+-- PASO 20: PromociÃ³n Sara Rodriguez (1/Oct/2025)
+-- Nuevo puesto: Desarrollador Mid
+-- Nuevo salario: â‚¡1,600,000
+-- =============================================
+PRINT '';
+PRINT 'PASO 20: Aplicando promociÃ³n de Sara Rodriguez...';
+
+UPDATE Empleado
+SET position = 'Desarrollador Mid',
+    salary = 1600000
+WHERE id = 116012000;
+
+PRINT 'âœ“ Sara Rodriguez promovida (Desarrollador Mid, â‚¡1,600,000)';
 GO
 
--- ============================================
--- Caso número 4: Juan Solano
--- ============================================
+-- =============================================
+-- PASO 21: Crear empleado John Smith
+-- Nacido: 25/Mar/1995
+-- Salario: â‚¡1,800,000
+-- Puesto: Product Owner
+-- Fecha inicio: 1/Oct/2025
+-- =============================================
+PRINT '';
+PRINT 'PASO 21: Creando empleado John Smith...';
 
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('juan.solano@gmail.com', '123456', 1, 0);
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('john.smith@empresa.com', '123456', 1, 0);
+
+DECLARE @UserJohnGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'john.smith@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (125031995, 'John', 'Smith', '1995-03-25', 'San JosÃ©, EscazÃº', '8888-4444', NULL, @UserJohnGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (125031995, 'Product Owner', 'Tiempo Completo', 1800000, '2025-10-01', 'Producto', 3108123456, 0);
+
+PRINT 'âœ“ John Smith creado (Product Owner, â‚¡1,800,000)';
 GO
 
-DECLARE @userGuid_Empleado UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid_Empleado = PK_User 
-FROM [User]
-WHERE email = 'juan.solano@gmail.com';
+-- =============================================
+-- PASOS 22-23: Crear beneficios adicionales
+-- =============================================
+PRINT '';
+PRINT 'PASOS 22-23: Creando beneficios adicionales...';
 
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    309870267,
-    'Juan',
-    'Solano',
-    '1985-11-17',
-    'San José, Costa Rica',
-    88889997,
-    @userGuid_Empleado,
-    'Empleado'
-);
+-- PASO 22: Beneficio Spa (Monto fijo â‚¡35,000)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'Spa', 'Monto Fijo', 'Empresa', 35000.00, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio Spa creado (Monto fijo: â‚¡35,000)';
+
+-- PASO 23: Beneficio Club Pass (Monto fijo â‚¡40,000)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3108123456, 'Club Pass', 'Monto Fijo', 'Empresa', 40000.00, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio Club Pass creado (Monto fijo: â‚¡40,000)';
 GO
 
-INSERT INTO Empleado(
-    id,
-    position,
-    employmentType,
-    salary,
-    hireDate,
-    department,
-    idCompny
-)
-VALUES(
-    309870267,
-    'Analista',
-    'Tiempo completo',
-    4000000,
-    '2025-01-02',
-    'Operaciones',
-    550020002
-);
+-- NOTE: PASO 24-25 - AsignaciÃ³n de beneficios a John Smith y planilla Octubre se hacen desde la aplicaciÃ³n
+
+DECLARE @benefitID5 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Seguro Privado');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID5, NULL, 1, 'Seguro Privado', NULL, 'API', 0);
+
+DECLARE @benefitID6 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Club Pass');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID6, NULL, NULL, 'Club Pass', 40000, 'Monto Fijo', 0);
+
+DECLARE @benefitID7 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Pension Voluntaria');
+
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031995, @benefitID7, 'A', NULL, 'Pension Voluntaria', NULL, 'API', 0);
+
+
+-- ==================
+-- PLANILLA DE OCTUBRE 2025
+-- ==================
+
+
+-- =============================================
+-- PASO 26: Crear empleada Jane Doe
+-- Nacida: 25/Mar/1991
+-- Salario: â‚¡1,600,000
+-- Fecha inicio: 1/Nov/2025
+-- =============================================
+PRINT '';
+PRINT 'PASO 26: Creando empleada Jane Doe...';
+
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('jane.doe@empresa.com', '123456', 1, 0);
+
+DECLARE @UserJaneGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'jane.doe@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (125031991, 'Jane', 'Doe', '1991-03-25', 'Alajuela, Costa Rica', '8888-5555', NULL, @UserJaneGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (125031991, 'Sin Puesto', 'Tiempo Completo', 1600000, '2025-11-01', 'General', 3108123456, 0);
+
+PRINT 'âœ“ Jane Doe creada (Sin Puesto, â‚¡1,600,000)';
 GO
 
--- ============================================
--- Caso número 5: Beneficio Gimnasio
--- ============================================
 
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550020002,        
-    'Gimnasio',
-    'Monto Fijo',
-    'Empresa',
-    35000,
-    'Beneficio'
-);
+
+-- NOTE: PASO 27 - AsignaciÃ³n de beneficios a Jane Doe se hace desde la aplicaciÃ³n
+
+DECLARE @benefitID8 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'EducaciÃ³n');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID8, NULL, NULL, 'EducaciÃ³n', 3.00, 'Porcentual', 0);
+
+DECLARE @benefitID9 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Spa');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID9, NULL, NULL, 'Spa', 35000, 'Monto Fijo', 0);
+
+DECLARE @benefitID10 INT = (SELECT IdBeneficio FROM [Beneficio] WHERE Nombre = 'Club Pass');
+INSERT INTO EmployeeBenefit (employeeId, benefitId, pensionType, dependentsCount, apiName, benefitValue, benefitType, IsDeleted)
+VALUES (125031991, @benefitID10, NULL, NULL, 'Club Pass', 40000, 'Monto Fijo', 0);
+
+
+
+-- =============================================
+-- PASO 28: Crear Empresa Integradora
+-- CÃ©dula: 3-102-654321
+-- MÃ¡ximo beneficios: 2
+-- Frecuencia pago: Mensual
+-- =============================================
+PRINT '';
+PRINT 'PASO 28: Creando Empresa Integradora...';
+
+INSERT INTO Empresa (CedulaJuridica, Nombre, DueÃ±oEmpresa, Telefono, DireccionEspecifica, NoMaxBeneficios, DiaPago, FrecuenciaPago, FechaCreacion)
+VALUES (3102654321, 'Empresa Integradora', 117851985, 22224444, 'San JosÃ©, Zona Industrial', 2, 1, 'Mensual', '2025-01-01');
+
+PRINT 'âœ“ Empresa Integradora creada (CÃ©dula: 3102654321, Pago: Mensual dÃ­a 1)';
 GO
 
--- ============================================
--- Caso número 6: Beneficio Educación
--- ============================================
+-- =============================================
+-- PASOS 29-30: Crear beneficios para Empresa Integradora
+-- =============================================
+PRINT '';
+PRINT 'PASOS 29-30: Creando beneficios para Empresa Integradora...';
 
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550020002,        
-    'Educación',
-    'Porcentual',
-    'Empresa',
-    3.00,
-    'Beneficio'
-);
+-- ==============================
+-- La empleadore es la misma Ana Madrigal (dueÃ±a) de la empresa anterior
+-- ==============================
+
+
+-- PASO 29: Beneficio AsociaciÃ³n Solidarista (API)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3102654321, 'AsociaciÃ³n Solidarista', 'API', 'Compartido', NULL, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio AsociaciÃ³n Solidarista creado (API: AsociacionSolidarista)';
+
+-- PASO 30: Beneficio Yoga (Monto fijo â‚¡15,000)
+INSERT INTO Beneficio (CedulaJuridica, Nombre, Tipo, QuienAsume, Valor, Etiqueta, IsDeleted)
+VALUES (3102654321, 'Yoga', 'Monto Fijo', 'Empresa', 15000.00, 'Beneficio', 0);
+PRINT 'âœ“ Beneficio Yoga creado (Monto fijo: â‚¡15,000)';
 GO
 
--- ============================================
--- Caso número 7: Beneficio Seguro privado
--- ============================================
+-- =============================================
+-- PASO 31: Crear empleado Juan Perez
+-- Nacido: 2/Jun/1997
+-- Salario: â‚¡1,200,000
+-- Tipo: Servicios Profesionales
+-- Fecha inicio: 1/Nov/2024
+-- =============================================
+PRINT '';
+PRINT 'PASO 31: Creando empleado Juan Perez...';
 
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550020002,        
-    'Seguro privado',
-    'API',
-    'Empresa',
-    NULL,
-    'Deducción'
-);
+INSERT INTO [User] (email, [password], active, [admin])
+VALUES ('juan.perez@empresa.com', '123456', 1, 0);
+
+DECLARE @UserJuanGuid UNIQUEIDENTIFIER = (SELECT PK_User FROM [User] WHERE email = 'juan.perez@empresa.com');
+
+INSERT INTO Persona (id, firstName, secondName, birthdate, direction, personalPhone, homePhone, uniqueUser, personType, IsDeleted)
+VALUES (102061997, 'Juan', 'Perez', '1997-06-02', 'Puntarenas, Costa Rica', '8888-6666', NULL, @UserJuanGuid, 'Empleado', 0);
+
+INSERT INTO Empleado (id, position, employmentType, salary, hireDate, department, idCompny, IsDeleted)
+VALUES (102061997, 'Sin Puesto', 'Servicios Profesionales', 1200000, '2024-11-01', 'ConsultorÃ­a', 3102654321, 0);
+
+PRINT 'âœ“ Juan Perez creado (Servicios Profesionales, â‚¡1,200,000)';
 GO
 
--- ============================================
--- Caso número 8: Pensión voluntaria
--- ============================================
+-- NOTE: PASOS 32-34 - AsignaciÃ³n de beneficios y planillas Nov 2024 - Oct 2025 se hacen desde la aplicaciÃ³n
 
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550020002,
-    'Pensión voluntaria de vida',
-    'API',
-    'Empleado',
-    NULL,
-    'Deducción'
-);
+
+
+PRINT '';
+PRINT '========================================';
+PRINT 'SCRIPT COMPLETADO EXITOSAMENTE';
+PRINT '========================================';
+PRINT '';
+PRINT 'RESUMEN:';
+PRINT '- Empleador creado: 1 (Ana Madrigal)';
+PRINT '- Empresas creadas: 2 (Empresa Sprint 3, Empresa Integradora)';
+PRINT '- Empleados Empresa Sprint 3: 5';
+PRINT '- Empleados Empresa Integradora: 1';
+PRINT '- Beneficios Empresa Sprint 3: 7';
+PRINT '- Beneficios Empresa Integradora: 2';
+PRINT '- Horas trabajadas Mayo 2025: Ana Madrigal (176 horas)';
+PRINT '';
+PRINT 'NOTA: Las planillas y asignaciÃ³n de beneficios deben';
+PRINT 'ejecutarse desde la aplicaciÃ³n web segÃºn los pasos indicados.';
+PRINT '========================================';
 GO
 
--- ============================================
--- Caso número 9: Asociación Solidarista
--- ============================================
 
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550020002,
-    'Asociación Solidarista',
-    'API',
-    'Empleado',
-    NULL,
-    'Deducción'
-);
-GO
-
--- ============================================
--- Caso número 10: Asignar Gimnasio a Pedro
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Gimnasio' AND CedulaJuridica = 550020002;
-
-IF dbo.CanEmployeeSelectBenefit(152700726, @BenefitId) = 1
-BEGIN
-    INSERT INTO EmployeeBenefit(
-        employeeId,
-        benefitId,
-        benefitType
-    )
-    VALUES(
-        152700726,
-        @BenefitId,
-        @BenefitType
-    );
-END
-GO
-
--- ============================================
--- Caso número 11: Asignar Educación a Ana
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Educación' AND CedulaJuridica = 550020002;
-
-IF dbo.CanEmployeeSelectBenefit(208760987, @BenefitId) = 1
-BEGIN
-    INSERT INTO EmployeeBenefit(
-        employeeId,
-        benefitId,
-        benefitType
-    )
-    VALUES(
-        208760987, 
-        @BenefitId,
-        @BenefitType
-    );
-END
-GO
-
--- ============================================
--- Caso número 12: Seguro privado a Juan
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Seguro privado' AND CedulaJuridica = 550020002;
-
-IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
-BEGIN
-    INSERT INTO EmployeeBenefit(
-        employeeId,
-        benefitId,
-        dependentsCount,
-        benefitType
-    )
-    VALUES(
-        309870267,  
-        @BenefitId,
-        2,
-        @BenefitType
-    );
-END
-GO
-
--- ============================================
--- Caso Número 13: Pensión voluntaria a Juan
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Pensión voluntaria de vida' AND CedulaJuridica = 550020002;
-
-IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
-BEGIN
-    INSERT INTO EmployeeBenefit(
-        employeeId,
-        benefitId,
-        pensionType,
-        benefitType
-    )
-    VALUES(
-        309870267,  
-        @BenefitId,
-        'B',
-        @BenefitType
-    );
-END
-GO
-
--- ============================================
--- Caso 14: Asociación Solidarista a Juan
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Asociación Solidarista' AND CedulaJuridica = 550020002;
-
-IF dbo.CanEmployeeSelectBenefit(309870267, @BenefitId) = 1
-BEGIN
-    INSERT INTO EmployeeBenefit(
-        employeeId,
-        benefitId,
-        benefitType
-    )
-    VALUES(
-        309870267,  
-        @BenefitId,
-        @BenefitType
-    );
-END
-GO
-
--- ============================================
--- caso 15: Registrar horas de octubre
--- ============================================
-
-DECLARE @StartDate DATE = '2025-10-06';
-DECLARE @EndDate DATE = '2025-11-03';
-DECLARE @CurrentWeekStart DATE;
-DECLARE @EmployeeId INT;
-DECLARE @CurrentDay DATE;
-
-DECLARE EmployeeCursor CURSOR FOR
-SELECT id FROM Empleado WHERE idCompny = 550020002;
-
-OPEN EmployeeCursor;
-FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    SET @CurrentWeekStart = @StartDate;
-
-    WHILE @CurrentWeekStart < @EndDate
-    BEGIN
-        EXEC sp_GetOrCreateWeek @CurrentWeekStart, @EmployeeId;
-
-        DECLARE @i INT = 0;
-        WHILE @i < 5
-        BEGIN
-            SET @CurrentDay = DATEADD(DAY, @i, @CurrentWeekStart);
-
-            EXEC sp_GetOrCreateDay @CurrentDay, @CurrentWeekStart, @EmployeeId;
-            EXEC sp_AddHoursToDay 9, @CurrentDay, @CurrentWeekStart, @EmployeeId;
-
-            SET @i = @i + 1;
-        END
-
-        SET @CurrentWeekStart = DATEADD(WEEK, 1, @CurrentWeekStart);
-    END
-
-    FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;
-END
-
-CLOSE EmployeeCursor;
-DEALLOCATE EmployeeCursor;
-GO
-
--- ============================================
--- EMPRESA PI QUINCENAL/SEMANAL
--- ============================================
-
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('pi.empleador@gmail2.com', '123456', 1, 0); 
-GO
-
-DECLARE @userGuid UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid = PK_User 
-FROM [User] 
-WHERE email = 'pi.empleador@gmail2.com';
-
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    550010002,
-    'Pablo',
-    'Ibarra',
-    '1990-05-12',
-    'San José, Costa Rica',
-    88887777,
-    @userGuid,
-    'Empleador'
-);
-GO
-
-INSERT INTO Empresa(
-    CedulaJuridica,
-    Nombre,
-    DueñoEmpresa,
-    Telefono,
-    DireccionEspecifica,
-    NoMaxBeneficios,
-    DiaPago,
-    FrecuenciaPago,
-    FechaCreacion
-)
-VALUES(
-    550030003,
-    'Empresa PI Quincenal',
-    550010002,       
-    88880000,
-    'San José, Costa Rica',
-    2,
-    7,               
-    'Semanal',
-    '2024-12-01'
-);
-GO
-
--- ============================================
--- Caso número 2: Mariana Vásquez
--- ============================================
-
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('mariana.vasquez@gmail.com', '123456', 1, 0);
-GO
-
-DECLARE @userGuid_Empleado UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid_Empleado = PK_User 
-FROM [User] 
-WHERE email = 'mariana.vasquez@gmail.com';
-
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    402830876,
-    'Mariana',
-    'Vásquez',
-    '1999-01-28',
-    'San José, Costa Rica',
-    88880123,
-    @userGuid_Empleado,
-    'Empleado'
-);
-GO
-
-INSERT INTO Empleado(
-    id,
-    position,
-    employmentType,
-    salary,
-    hireDate,
-    department,
-    idCompny
-)
-VALUES(
-    402830876,
-    'Profesional',
-    'Por horas',
-    15000,
-    '2025-02-02',
-    'Servicios',
-    550030003
-);
-GO
-
--- ============================================
--- Caso Número 3: Juan Vásquez
--- ============================================
-
-INSERT INTO [User](email, [password], active, [admin])
-VALUES('juan.vasquez@gmail.com', '123456', 1, 0);
-GO
-
-DECLARE @userGuid_Empleado UNIQUEIDENTIFIER;
-SELECT TOP 1 @userGuid_Empleado = PK_User 
-FROM [User] 
-WHERE email = 'juan.vasquez@gmail.com';
-
-INSERT INTO Persona(
-    id,
-    firstName,
-    secondName,
-    birthdate,
-    direction,
-    personalPhone,
-    uniqueUser,
-    personType
-)
-VALUES(
-    208760988,
-    'Juan',
-    'Vásquez',
-    '1991-12-23',
-    'San José, Costa Rica',
-    88880234,
-    @userGuid_Empleado,
-    'Empleado'
-);
-GO
-
-INSERT INTO Empleado(
-    id,
-    position,
-    employmentType,
-    salary,
-    hireDate,
-    department,
-    idCompny
-)
-VALUES(
-    208760988,
-    'Analista',
-    'Tiempo completo',
-    1500000,
-    '2025-10-02',
-    'Operaciones',
-    550030003
-);
-GO
-
--- ============================================
--- caso número 4: Beneficio Gimnasio empresa 2
--- ============================================
-
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550030003,
-    'Gimnasio',
-    'Monto Fijo',
-    'Empresa',
-    35000,
-    'Beneficio'
-);
-GO
-
--- ============================================
--- caso número 5: Beneficio Educación empresa 2
--- ============================================
-
-INSERT INTO Beneficio(
-    CedulaJuridica,
-    Nombre,
-    Tipo,
-    QuienAsume,
-    Valor,
-    Etiqueta
-)
-VALUES(
-    550030003,
-    'Educación',
-    'Porcentual',
-    'Empresa',
-    3.00,
-    'Beneficio'
-);
-GO
-
--- ============================================
--- Caso número 6: Asignar Gimnasio a Juan V.
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Gimnasio' AND CedulaJuridica = 550030003;
-
-INSERT INTO EmployeeBenefit(
-    employeeId, 
-    benefitId,
-    benefitType
-)
-VALUES(
-    208760988, 
-    @BenefitId,
-    @BenefitType
-);
-GO
-
--- ============================================
--- caso número 7: Asignar Educación a Juan V.
--- ============================================
-
-DECLARE @BenefitId INT;
-DECLARE @BenefitType VARCHAR(50);
-
-SELECT TOP 1 
-    @BenefitId = IdBeneficio,
-    @BenefitType = Tipo
-FROM Beneficio 
-WHERE Nombre = 'Educación' AND CedulaJuridica = 550030003;
-
-INSERT INTO EmployeeBenefit(
-    employeeId, 
-    benefitId,
-    benefitType
-)
-VALUES(
-    208760988, 
-    @BenefitId,
-    @BenefitType
-);
-GO
-
--- ============================================
--- Caso número 8: Registrar horas octubre empresa 2
--- ============================================
-
-DECLARE @WeekStart DATE;
-DECLARE @EmployeeId INT;
-DECLARE EmployeeCursor CURSOR FOR
-SELECT id FROM Empleado WHERE idCompny = 550030003;
-
-OPEN EmployeeCursor;
-FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    SET @WeekStart = '2025-10-01';
-    EXEC sp_GetOrCreateWeek @WeekStart, @EmployeeId;
-    DECLARE @i INT = 0;
-    WHILE @i < 5
-    BEGIN
-        DECLARE @CurrentDay DATE = DATEADD(DAY, @i, @WeekStart);
-        EXEC sp_GetOrCreateDay @CurrentDay, @WeekStart, @EmployeeId;
-        EXEC sp_AddHoursToDay 9, @CurrentDay, @WeekStart, @EmployeeId;
-        SET @i = @i + 1;
-    END
-
-    SET @WeekStart = '2025-10-08';
-    EXEC sp_GetOrCreateWeek @WeekStart, @EmployeeId;
-    SET @i = 0;
-    WHILE @i < 5
-    BEGIN
-        SET @CurrentDay = DATEADD(DAY, @i, @WeekStart);
-        EXEC sp_GetOrCreateDay @CurrentDay, @WeekStart, @EmployeeId;
-        EXEC sp_AddHoursToDay 9, @CurrentDay, @WeekStart, @EmployeeId;
-        SET @i = @i + 1;
-    END
-
-    SET @WeekStart = '2025-10-16';
-    EXEC sp_GetOrCreateWeek @WeekStart, @EmployeeId;
-    SET @i = 0;
-    WHILE @i < 5
-    BEGIN
-        SET @CurrentDay = DATEADD(DAY, @i, @WeekStart);
-        EXEC sp_GetOrCreateDay @CurrentDay, @WeekStart, @EmployeeId;
-        EXEC sp_AddHoursToDay 9, @CurrentDay, @WeekStart, @EmployeeId;
-        SET @i = @i + 1;
-    END
-
-    SET @WeekStart = '2025-10-22';
-    EXEC sp_GetOrCreateWeek @WeekStart, @EmployeeId;
-    SET @i = 0;
-    WHILE @i < 5
-    BEGIN
-        SET @CurrentDay = DATEADD(DAY, @i, @WeekStart);
-        EXEC sp_GetOrCreateDay @CurrentDay, @WeekStart, @EmployeeId;
-        EXEC sp_AddHoursToDay 9, @CurrentDay, @WeekStart, @EmployeeId;
-        SET @i = @i + 1;
-    END
-
-    FETCH NEXT FROM EmployeeCursor INTO @EmployeeId;
-END
-
-CLOSE EmployeeCursor;
-DEALLOCATE EmployeeCursor;
-GO

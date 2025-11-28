@@ -131,6 +131,32 @@ namespace backend.Services
             }
         }
 
+
+        private async Task<List<PayrollPeriod>> GetAllPeriodsAsync(string companyId, int months = 12)
+        {
+            ValidateCompanyId(companyId);
+
+            try
+            {
+                var company = await GetCompanyAsync(companyId);
+                var startDate = company.FechaCreacion;
+                var endDate = DateTime.Now.AddMonths(months);
+
+                var searchResult = await GeneratePeriodsInRangeAsync(company, startDate, endDate);
+                var processedPeriods = await MarkProcessedStatusAsync(companyId, searchResult.Periods);
+
+                // NO filtrar por IsProcessed - devolver todos los períodos
+                return processedPeriods
+                    .OrderBy(p => p.StartDate)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all periods for company {CompanyId}", companyId);
+                throw;
+            }
+        }
+
         public async Task<PayrollPeriod> CalculateCurrentPeriodAsync(string companyId)
         {
             ValidateCompanyId(companyId);
@@ -147,12 +173,13 @@ namespace backend.Services
 
             try
             {
-                var pending = await GetPendingPeriodsAsync(companyId, 12);
-                if (pending != null && pending.Any()) periods.AddRange(pending);
+                // Usar GetAllPeriodsAsync para incluir períodos procesados en la búsqueda
+                var allPeriods = await GetAllPeriodsAsync(companyId, 12);
+                if (allPeriods != null && allPeriods.Any()) periods.AddRange(allPeriods);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to retrieve pending periods for company {CompanyId}", companyId);
+                _logger.LogWarning(ex, "Failed to retrieve all periods for company {CompanyId}", companyId);
             }
 
             try
@@ -196,19 +223,37 @@ namespace backend.Services
                 .Select(g => g.OrderBy(p => p.IsProcessed ? 1 : 0).First())
                 .ToList();
 
+            // Búsqueda exacta: Períodos que contengan la fecha especificada
             var matches = deduped
                 .Where(p => periodDate.Date >= p.StartDate.Date && periodDate.Date <= p.EndDate.Date)
-                .Where(p => allowProcessed || !p.IsProcessed)
                 .OrderBy(p => p.StartDate)
                 .ToList();
 
             if (matches.Any())
             {
+                // Siempre devolver el período que contiene la fecha exacta
+                // La validación de si está procesado se hace en ProcessPayrollAsync
                 var chosen = matches.First();
-                _logger.LogDebug("Resolved period {Description} ({Start} - {End}) for date {Date} (company {CompanyId})",
-                    chosen.Description, chosen.StartDate.ToString("yyyy-MM-dd"), chosen.EndDate.ToString("yyyy-MM-dd"), periodDate.ToString("yyyy-MM-dd"));
+                
+                if (chosen.IsProcessed && !allowProcessed)
+                {
+                    _logger.LogWarning("Period {Description} ({Start} - {End}) for date {Date} (company {CompanyId}) is already processed", 
+                        chosen.Description, chosen.StartDate.ToString("yyyy-MM-dd"), chosen.EndDate.ToString("yyyy-MM-dd"), 
+                        periodDate.ToString("yyyy-MM-dd"), companyId);
+                }
+                else
+                {
+                    _logger.LogDebug("Resolved period {Description} ({Start} - {End}) for date {Date} (company {CompanyId})",
+                        chosen.Description, chosen.StartDate.ToString("yyyy-MM-dd"), chosen.EndDate.ToString("yyyy-MM-dd"), 
+                        periodDate.ToString("yyyy-MM-dd"), companyId);
+                }
+                
                 return chosen;
             }
+
+            // FALLBACK: Solo si NO hay período exacto, buscar alternativas
+            _logger.LogWarning("No exact period found containing date {Date} for company {CompanyId}, searching for alternatives", 
+                periodDate.ToString("yyyy-MM-dd"), companyId);
 
             // Si no hay un periodo que contenga la fecha busca el próximo periodo no procesado
             var future = deduped

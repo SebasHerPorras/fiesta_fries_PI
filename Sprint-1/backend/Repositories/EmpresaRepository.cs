@@ -1,9 +1,12 @@
-﻿using backend.Models;
-using backend.Interfaces;
-using System.Data;
-using System.Data.SqlClient;
+﻿using backend.Interfaces;
+using backend.Models;
 using Dapper;
+using System.ComponentModel.Design;
+using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Drawing;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace backend.Handlers.backend.Repositories
 {
@@ -27,7 +30,9 @@ namespace backend.Handlers.backend.Repositories
                     SELECT e.*, 
                            0 as CantidadEmpleados
                     FROM Empresa e
-                    WHERE e.CedulaJuridica = @CedulaJuridica";
+                    WHERE e.CedulaJuridica = @CedulaJuridica
+                    AND e.isDeleted = 0";
+
 
                 Console.WriteLine($"Buscando empresa con cédula: {cedulaJuridica}");
                 var empresa = connection.QueryFirstOrDefault<EmpresaModel>(query, new { CedulaJuridica = cedulaJuridica });
@@ -122,7 +127,7 @@ namespace backend.Handlers.backend.Repositories
             SELECT e.*, 
                    0 as CantidadEmpleados  -- Por ahora 0, luego puedes contar empleados reales
             FROM Empresa e
-            WHERE e.DueñoEmpresa = @OwnerId
+            WHERE e.DueñoEmpresa = @OwnerId AND e.isDeleted = 0
             ORDER BY e.Nombre";
 
                 Console.WriteLine($"Buscando empresas para DueñoEmpresa: {ownerId}");
@@ -243,5 +248,128 @@ namespace backend.Handlers.backend.Repositories
 
             connection.Execute(query, empresa);
         }
+
+        public List<EmploymentTypeCountModel>? GetEmpleadosCountByRoll(long id_)
+        {
+            using var connection = new SqlConnection(this._connectionString);
+
+            const string query = @"SELECT e.employmentType, COUNT(e.employmentType) AS cantidadEmpleados
+                                 FROM Empleado e inner JOIN Empresa em on e.idCompny = em.CedulaJuridica where em.CedulaJuridica = @id
+                                  AND e.isDeleted = 0 group by e.employmentType";
+
+            var result = connection.Query<EmploymentTypeCountModel>(query, new { id = id_ })
+                         ?.ToList();
+            if (result == null)
+            {
+                return null;
+            }
+
+            return result;
+        }
+
+        public List<DateTime> GetUltimasFechasPago(long cedulaJuridica, DateTime fechaLimite)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            Console.WriteLine("Cedula" + cedulaJuridica);
+            Console.WriteLine("Fecha" + fechaLimite);
+
+            const string query = @"
+             SELECT DISTINCT TOP 3 
+             CONVERT(date, CreatedDate) as FechaPago
+             FROM EmployerSocialSecurityByPayroll 
+             WHERE CedulaJuridicaEmpresa = @cedulaJuridica 
+             AND CONVERT(date, CreatedDate) <= @fechaLimite
+             ORDER BY CONVERT(date, CreatedDate) DESC";
+
+            List<DateTime> result = connection.Query<DateTime>(query, new
+             {
+                cedulaJuridica = cedulaJuridica,
+                fechaLimite = fechaLimite.Date
+             })?.ToList();
+
+            Console.WriteLine("Datos: " + result.Count);
+            return result;
+        }
+
+        public decimal getEmployerDeductions(long id, DateTime fecha)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+          SELECT 
+          ISNULL(SUM(es.Amount), 0) AS CostoTotal
+          FROM EmployerSocialSecurityByPayroll es
+          INNER JOIN Empleado e ON es.EmployeeId = e.id 
+          WHERE es.CedulaJuridicaEmpresa = @Cedula
+          AND e.IsDeleted = 0
+          AND CONVERT(date, es.CreatedDate) = @Fecha;";
+
+            return connection.QuerySingleOrDefault<decimal>(query, new { Cedula = id, Fecha = fecha });
+
+        }
+
+        public decimal GetBeneficiosEmpresa(long companyId, DateTime date)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            string sql = @"
+             SELECT TOP 1 TotalBenefits
+             FROM Payroll
+             WHERE CompanyId = @CompanyId
+             ORDER BY ABS(DATEDIFF(DAY, PeriodDate, @PeriodDate)) ASC;";
+
+            return connection.ExecuteScalar<decimal>(sql, new
+            {
+                CompanyId = companyId,
+                PeriodDate = date
+            });
+        }
+
+        public decimal GetTotalSalarios(long cedula)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+              SELECT 
+              ISNULL(SUM(e.salary), 0) AS SalarioTotal
+             FROM Empleado e
+             WHERE e.idCompny = @Cedula
+             AND e.isDeleted = 0;";
+
+            return connection.ExecuteScalar<decimal>(query, new { Cedula = cedula });
+        }
+
+
+
+
+        public int CheckCompanyPayroll(EmpresaModel empresa)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            const string query = @"
+                SELECT CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM payroll 
+                        WHERE companyid = @CedulaJuridica
+                    ) THEN 1 
+                    ELSE 0 
+                END";
+
+            return connection.ExecuteScalar<int>(query, new { empresa.CedulaJuridica });
+        }
+        public int DeleteEmpresa(long cedulaJuridica, bool physicalDelete)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            string query = physicalDelete
+                ? @"UPDATE Empresa SET isDeleted = 1 WHERE CedulaJuridica = @CedulaJuridica"
+                : @"DELETE FROM Empresa WHERE CedulaJuridica = @CedulaJuridica";
+
+
+            return connection.Execute(query, new { CedulaJuridica = cedulaJuridica });
+        }
+
     }
 }

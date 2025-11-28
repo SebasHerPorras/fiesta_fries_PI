@@ -10,15 +10,19 @@ namespace backend.Services
         private readonly IEmployeeSocialSecurityContributionsService _deduccionesSocialesService;
         private readonly IPersonalIncomeTaxService _impuestoRentaService;
         private readonly IEmployeeDeductionsByPayrollService _payrollService;
+        private readonly bool _saveInDB;
 
         public CalculatorDeductionsEmployeeService(
             IEmployeeSocialSecurityContributionsService deduccionesSocialesService,
             IPersonalIncomeTaxService impuestoRentaService,
-            IEmployeeDeductionsByPayrollService payrollService)
+            IEmployeeDeductionsByPayrollService payrollService,
+            bool saveInDB = true
+            )
         {
             _deduccionesSocialesService = deduccionesSocialesService;
             _impuestoRentaService = impuestoRentaService;
             _payrollService = payrollService;
+            _saveInDB = saveInDB;
             
             _deduccionesSociales = _deduccionesSocialesService.GetActiveContributions();
             _escalasImpuesto = _impuestoRentaService.GetActiveScales();
@@ -48,7 +52,17 @@ namespace backend.Services
                     Percentage = null
                 });
 
-                _payrollService.SaveEmployeeDeductions(deducciones);
+                if (_saveInDB)
+                {
+                    try
+                    {
+                        _payrollService.SaveEmployeeDeductions(deducciones);
+                    }
+                    catch (Exception)
+                    {
+                        // Error al guardar, continuar
+                    }
+                }
                 return 0;
             }
 
@@ -85,7 +99,17 @@ namespace backend.Services
 
                 totalDeducciones += impuestoRenta;
             }
-            _payrollService.SaveEmployeeDeductions(deducciones);
+            if (_saveInDB)
+            {
+                try
+                {
+                    _payrollService.SaveEmployeeDeductions(deducciones);
+                }
+                catch (Exception)
+                {
+                    // Error al guardar, continuar con el cálculo
+                }
+            }
 
             return Math.Round(totalDeducciones, 2);
         }

@@ -1,34 +1,73 @@
 <template>
   <div class="wrap">
-    <!-- HEADER (igual al de DatosPersonales.vue) -->
+<!-- HEADER -->
     <header class="header">
       <nav class="nav">
-        <div class="brand">
-          <div class="logo-box">
-            <span class="f">F</span>
+          <div class="display">
+              <div class="logo-box">
+                  <span class="f">F</span>
+              </div>
+              <div class="texts">
+                  <h1>{{ userName }}</h1>
+                  <p>{{ userRole }}</p>
+              </div>
           </div>
-          <div class="texts">
-            <h1>{{ userName }}</h1>
-            <p>{{ userRole }}</p>
-          </div>
-        </div>
 
-        <ul class="nav-list">
-          <li><router-link to="/Profile">Datos Personales</router-link></li>
-          <li v-if="userRole === 'Empleado'">
-            <router-link to="/RegisterHoras">Registrar Horas</router-link>
-          </li>
-          <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
-            <a href="#" @click.prevent>Empresa: {{ selectedCompany.nombre }}</a>
-          </li>
-          <li v-if="userRole === 'Empleado'">
-            <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
-          </li>
-          <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
-        </ul>
+          <ul class="nav-list">
+              <!-- Siempre visibles -->
+              <li><router-link to="/Profile">Datos Personales</router-link></li>
+              <li><router-link to="/Reportes">Reportes</router-link></li>
+              <!-- Solo Empleador: Registrar Empresa -->
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/FormEmpresa">Registrar Empresa</router-link>
+              </li>
+
+              <!--Solo Empleado: Añadir horas-->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/RegisterHoras">Registrar Horas</router-link>
+              </li>
+
+
+              <!-- Dropdown de empresas SOLO para Empleador -->
+              <li v-if="userRole === 'Empleador'" class="company-dropdown-item">
+                  <select v-model="selectedCompany" @change="onCompanyChange" class="company-select">
+                      <option :value="null">Seleccionar Empresa</option>
+                      <option v-for="company in companies" :key="company.cedulaJuridica" :value="company">
+                          {{ company.nombre }}
+                      </option>
+                  </select>
+              </li>
+
+              <!-- Solo Administrador: Ver Toda Empresa -->
+              <li v-if="isAdmin">
+                  <router-link to="/PageEmpresaAdmin">Ver Toda Empresa</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/DashboardEmpleado">Dashboard de Pago</router-link>
+              </li>
+
+              <li v-if="userRole === 'Empleador'">
+                  <router-link to="/DashboardEmpleador">Dashboard de pago</router-link>
+              </li>
+
+              <!-- Solo Empleado: Seleccionar Beneficios -->
+              <li v-if="userRole === 'Empleado'">
+                  <router-link to="/SelectBeneficios">Seleccionar Beneficios</router-link>
+              </li>
+
+              <!-- Nombre de Empresa: Solo Empleados -->
+              <li v-if="userRole === 'Empleado' && selectedCompany" class="company-info">
+                  <a href="#" @click.prevent>
+                      Empresa: {{ selectedCompany.nombre }}
+                  </a>
+              </li>
+
+              <!-- Siempre visible -->
+              <li><a href="#" @click.prevent="logout">Cerrar Sesión</a></li>
+          </ul>
       </nav>
-    </header>
-
+  </header>
     <main class="hero">
       <div class="beneficios-container">
         <div class="page-header">
@@ -243,17 +282,25 @@ export default {
       modalConfirmText: null
     };
   },
-  mounted() {
+  async mounted() {
     this.loadUserData();
-    this.loadSelectedCompany();
-    this.resolveEmpleadoId().then(() => {
-      if (this.empleadoId) {
-        this.loadBeneficios();
-        this.loadSelectedBenefits();
-      } else {
-        console.warn("mounted: empleadoId no resuelto, no se cargan beneficios");
-      }
-    });
+    
+    // ✅ Esperar a que se cargue la empresa antes de continuar
+    const hasCompany = await this.loadSelectedCompany();
+    
+    if (!hasCompany) {
+      console.warn("No se pudo cargar empresa, abortando carga de beneficios");
+      return;
+    }
+    
+    await this.resolveEmpleadoId();
+    
+    if (this.empleadoId) {
+      this.loadBeneficios();
+      this.loadSelectedBenefits();
+    } else {
+      console.warn("empleadoId no resuelto, no se cargan beneficios");
+    }
   },
   methods: {
     /* -------------------------
@@ -284,18 +331,42 @@ export default {
       }
     },
 
-    loadSelectedCompany() {
+    async loadSelectedCompany() {
       try {
         const savedCompany = localStorage.getItem("selectedCompany");
         if (savedCompany) {
           this.selectedCompany = JSON.parse(savedCompany);
+          console.log("✅ Empresa cargada desde localStorage:", this.selectedCompany.nombre);
           return true;
         } else {
-          this.showMessage("No hay empresa seleccionada", "error");
-          this.$router.push("/Profile");
+          // ✅ Fallback: intentar cargar empresa del backend para empleados
+          console.log("⚠️ No hay empresa en localStorage, intentando cargar del backend...");
+          const userData = localStorage.getItem("userData");
+          if (userData) {
+            const user = JSON.parse(userData);
+            if (user.personType === "Empleado" && user.id) {
+              try {
+                const response = await axios.get(API_ENDPOINTS.EMPRESA_BY_EMPLOYEE(user.id));
+                if (response.data?.success && response.data.empresa) {
+                  this.selectedCompany = response.data.empresa;
+                  localStorage.setItem("selectedCompany", JSON.stringify(this.selectedCompany));
+                  console.log("✅ Empresa cargada del backend y guardada:", this.selectedCompany.nombre);
+                  return true;
+                }
+              } catch (error) {
+                console.error("Error cargando empresa del backend:", error);
+              }
+            }
+          }
+          
+          this.showMessage("No hay empresa seleccionada. Redirigiendo a Datos Personales...", "error");
+          setTimeout(() => {
+            this.$router.push("/Profile");
+          }, 2000);
           return false;
         }
       } catch (error) {
+        console.error("Error en loadSelectedCompany:", error);
         this.showMessage("Error al cargar empresa", "error");
         return false;
       }
@@ -325,6 +396,15 @@ export default {
     async loadBeneficios() {
       if (!this.empleadoId) {
         this.showMessage("No se pudo determinar el id del empleado. Imposible cargar beneficios.", "error");
+        return;
+      }
+
+      // ✅ Validar que existe empresa seleccionada
+      if (!this.selectedCompany || !this.selectedCompany.cedulaJuridica) {
+        this.showMessage("No hay empresa seleccionada. Redirigiendo a Datos Personales...", "error");
+        setTimeout(() => {
+          this.$router.push("/Profile");
+        }, 2000);
         return;
       }
 
@@ -717,7 +797,7 @@ export default {
   align-items: center;
 }
 
-.brand {
+.display {
   display: flex;
   align-items: center;
   gap: 18px;

@@ -115,12 +115,13 @@ namespace backend_test
             _service = CreateServiceInstance();
         }
 
-        private ICalculatorDeductionsEmployeeService CreateServiceInstance()
+        private ICalculatorDeductionsEmployeeService CreateServiceInstance(bool saveInDB = true)
         {
             return new CalculatorDeductionsEmployeeService(
                 _mockSocialSecurityService.Object,
                 _mockIncomeTaxService.Object,
-                _mockPayrollService.Object);
+                _mockPayrollService.Object,
+                saveInDB);
         }
 
         [Test]

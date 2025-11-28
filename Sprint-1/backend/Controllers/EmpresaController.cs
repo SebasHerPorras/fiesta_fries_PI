@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Security.Claims;
+using System.Reflection.Metadata.Ecma335;
 
 namespace backend.Controllers
 {
@@ -271,9 +272,50 @@ namespace backend.Controllers
 
             return Ok(new { success = true, message = "Empresa actualizada correctamente." });
         }
+
+        [HttpGet("EmployeesTypeCount")]
+        public ActionResult ObtenerCantidadEmpleadosPorPuesto([FromQuery] long id)
+        {
+            byte[] img = this._empresaService.GenerateEmploymentTypeChart(id);
+
+            return File(img, "image/png");
+
+        }
+
+        [HttpGet("EmployeesTypeCountList")]
+        public ActionResult ObtenerLista([FromQuery] long id)
+        {
+            var data = this._empresaService.GetEmployeersCountbyRol(id);
+
+            return Ok(data);
+        }
+
+        [HttpGet("PayrollDates")]
+        public ActionResult<List<DateTime>> GetUltimasFechasDePago([FromQuery] long cedulaJuridica, DateTime fechaLimite)
+        {
+            var data = this._empresaService.GetUltimasFechasPago(cedulaJuridica, fechaLimite);
+
+            return Ok(data);
+        }
+
+        [HttpGet("SpreadsheetCost")]
+        public ActionResult ObtenerCostoPlanilla([FromQuery] long id, [FromQuery] DateTime Fecha)
+        {
+            var data = _empresaService.GetPlanillaCosto(id, Fecha);
+            return Ok(data);
+        }
+
+        [HttpGet("GetEmployerDataImage")]
+        public ActionResult ObtenerImage([FromQuery] long id, DateTime Fecha)
+        {
+            byte[] img = this._empresaService.CreateChart(id, Fecha);
+
+            return File(img, "image/png");
+        }
+
     }
 
-   
+
     public class EmpresaRequest
     {
         public string UserId { get; set; }

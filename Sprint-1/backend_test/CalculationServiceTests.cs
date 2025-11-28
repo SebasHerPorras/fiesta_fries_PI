@@ -17,10 +17,16 @@ namespace backend_test
         {
             // Arrange
             var mockDedEmp = new Mock<ICalculatorDeductionsEmployerService>();
-            var mockEmpDed = new Mock<ICalculatorDeductionsEmployeeService>();
             var mockTax = new Mock<IPersonalIncomeTaxService>();
-            var mockBenefits = new Mock<ICalculatorBenefitsService>();
             var mockLogger = new Mock<ILogger<CalculationService>>();
+            var mockServiceProvider = new Mock<IServiceProvider>();
+            var mockSocialSecurity = new Mock<IEmployeeSocialSecurityContributionsService>();
+            var mockPayrollDeduction = new Mock<IEmployeeDeductionsByPayrollService>();
+            var mockEmployerBenefit = new Mock<IEmployerBenefitDeductionService>();
+            var mockApiFactory = new Mock<IExternalApiFactory>();
+            var mockEmployeeBenefit = new Mock<IEmployeeBenefitService>();
+            var mockEmployerSocialSecurity = new Mock<IEmployerSocialSecurityContributionsService>();
+            var mockEmployerPayroll = new Mock<IEmployerSocialSecurityByPayrollService>();
 
             decimal salary = 100000m;
             decimal expectedTax = 1234.56m;
@@ -28,10 +34,17 @@ namespace backend_test
 
             var svc = new CalculationService(
                 mockDedEmp.Object,
-                mockEmpDed.Object,
                 mockTax.Object,
-                mockBenefits.Object,
-                mockLogger.Object);
+                mockLogger.Object,
+                mockServiceProvider.Object,
+                mockSocialSecurity.Object,
+                mockPayrollDeduction.Object,
+                mockEmployerBenefit.Object,
+                mockApiFactory.Object,
+                mockEmployeeBenefit.Object,
+                mockEmployerSocialSecurity.Object,
+                mockEmployerPayroll.Object
+            );
 
             var dto = new EmployeeCalculationDto { SalarioBruto = salary, CedulaEmpleado = 1, NombreEmpleado = "Test" };
 

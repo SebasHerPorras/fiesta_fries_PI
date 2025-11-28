@@ -1,5 +1,6 @@
+﻿using backend.Interfaces;
 using backend.Models;
-using backend.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace backend.Services
 {
@@ -9,86 +10,142 @@ namespace backend.Services
         private readonly IEmployerBenefitDeductionService _employerBenefitDeductionService;
         private readonly IExternalApiFactory _apiFactory;
         private readonly IEmployeeBenefitService _employeeBenefitService;
+        private readonly ILogger<CalculatorBenefitsService> _logger;
+        private readonly bool _saveInDB;
 
         public CalculatorBenefitsService(
             IEmployeeDeductionsByPayrollService employeeDeductionService,
             IEmployerBenefitDeductionService employerBenefitDeductionService,
             IExternalApiFactory apiFactory,
-            IEmployeeBenefitService employeeBenefitService)
+            IEmployeeBenefitService employeeBenefitService,
+            ILogger<CalculatorBenefitsService> logger,
+            bool saveInDB = true
+        )
         {
             _employeeDeductionService = employeeDeductionService;
             _employerBenefitDeductionService = employerBenefitDeductionService;
             _apiFactory = apiFactory;
             _employeeBenefitService = employeeBenefitService;
+            _logger = logger;
+            _saveInDB = saveInDB;
         }
 
         public async Task<decimal> CalculateBenefitsAsync(EmployeeCalculationDto employee, int reportId, long cedulaJuridicaEmpresa)
         {
             if (employee == null)
+            {
                 throw new ArgumentException("Los datos del empleado son requeridos");
+            }
 
             if (employee.SalarioBruto <= 0)
+            {
                 throw new ArgumentException("El salario bruto debe ser mayor a cero");
-
-            // USAR GetSelectedByEmployeeIdAsync para obtener beneficios del empleado
-            var employeeBenefits = await _employeeBenefitService.GetSelectedByEmployeeIdAsync((int)employee.CedulaEmpleado);
-
-            if (employeeBenefits == null || !employeeBenefits.Any())
-            {
-                return 0; // No hay beneficios para este empleado
             }
 
-            decimal totalEmployerCost = 0;
-            var employerDeductions = new List<EmployerBenefitDeductionDto>();
-            var employeeDeductions = new List<EmployeeDeductionsByPayrollDto>(); 
-
-            foreach (var employeeBenefit in employeeBenefits)
+            try
             {
-                var result = await ProcessEmployeeBenefitAsync(employeeBenefit, employee, reportId, cedulaJuridicaEmpresa);
-                
-                // Acumular costos del empleador
-                totalEmployerCost += result.employerAmount;
+                _logger.LogInformation("=== VALIDACIÓN DETALLADA DE BENEFICIOS ===");
+                _logger.LogInformation("Empleado: {NombreEmpleado}", employee.NombreEmpleado);
+                _logger.LogInformation("Salario bruto: {SalarioBruto}", employee.SalarioBruto);
+                _logger.LogInformation("Cédula: {CedulaEmpleado}", employee.CedulaEmpleado);
 
-                // Agregar a lista de deducciones del empleador
-                if (result.employerAmount > 0)
+                var employeeBenefits = await _employeeBenefitService.GetSelectedByEmployeeIdAsync((int)employee.CedulaEmpleado);
+
+                if (employeeBenefits == null || !employeeBenefits.Any())
                 {
-                    employerDeductions.Add(new EmployerBenefitDeductionDto
+                    _logger.LogInformation("No hay beneficios para este empleado");
+                    return 0;
+                }
+
+                decimal totalEmployerCost = 0;
+                var employerDeductions = new List<EmployerBenefitDeductionDto>();
+                var employeeDeductions = new List<EmployeeDeductionsByPayrollDto>();
+
+                _logger.LogInformation("Cantidad de beneficios: {BenefitCount}", employeeBenefits.Count);
+
+                foreach (var employeeBenefit in employeeBenefits)
+                {
+                    _logger.LogInformation("--- Procesando: {ApiName} ---", employeeBenefit.ApiName);
+                    _logger.LogInformation("Tipo: {BenefitType}, Valor: {BenefitValue}", employeeBenefit.BenefitType, employeeBenefit.BenefitValue);
+
+                    var result = await ProcessEmployeeBenefitAsync(employeeBenefit, employee, reportId, cedulaJuridicaEmpresa);
+
+                    _logger.LogInformation("Resultado: {EmployerAmount}", result.employerAmount);
+
+                    if (employeeBenefit.BenefitType == "PORCENTUAL" && employeeBenefit.BenefitValue.HasValue)
                     {
-                        ReportId = reportId,
-                        EmployeeId = (int)employee.CedulaEmpleado,
-                        CedulaJuridicaEmpresa = cedulaJuridicaEmpresa,
-                        BenefitName = employeeBenefit.ApiName ?? "Beneficio",
-                        DeductionAmount = result.employerAmount,
-                        BenefitType = employeeBenefit.BenefitType ?? "Unknown",
-                        Percentage = employeeBenefit.BenefitType == "Porcentual" ? employeeBenefit.BenefitValue : null
-                    });
+                        var calculoEsperado = employee.SalarioBruto * (employeeBenefit.BenefitValue.Value / 100);
+                        _logger.LogInformation("VALIDACIÓN PORCENTUAL: {Percentage}% de {SalarioBruto} = {CalculoEsperado}", employeeBenefit.BenefitValue, employee.SalarioBruto, calculoEsperado);
+                        _logger.LogInformation("COINCIDENCIA: {Coincide}", result.employerAmount == calculoEsperado);
+                    }
+
+                    totalEmployerCost += result.employerAmount;
+                    _logger.LogInformation("Acumulado: {TotalAcumulado}", totalEmployerCost);
+
+                    if (result.employerAmount > 0)
+                    {
+                        employerDeductions.Add(new EmployerBenefitDeductionDto
+                        {
+                            ReportId = reportId,
+                            EmployeeId = (int)employee.CedulaEmpleado,
+                            CedulaJuridicaEmpresa = cedulaJuridicaEmpresa,
+                            BenefitName = employeeBenefit.ApiName ?? "Beneficio",
+                            BenefitId = employeeBenefit.BenefitId,
+                            DeductionAmount = result.employerAmount,
+                            BenefitType = employeeBenefit.BenefitType ?? "Unknown",
+                            Percentage = employeeBenefit.BenefitType == "Porcentual" ? employeeBenefit.BenefitValue : null
+                        });
+                    }
+
+                    if (result.employeeDeductions.Any())
+                    {
+                        employeeDeductions.AddRange(result.employeeDeductions);
+                    }
                 }
 
-                // Acumular deducciones del empleado (NO guardar todav�a)
-                if (result.employeeDeductions.Any())
+                _logger.LogInformation("=== VALIDACIÓN FINAL ===");
+                _logger.LogInformation("Total beneficios: {TotalBeneficios}", totalEmployerCost);
+                var porcentaje = (totalEmployerCost / employee.SalarioBruto) * 100;
+                _logger.LogInformation("Porcentaje sobre salario: {Porcentaje}%", porcentaje);
+
+                if (totalEmployerCost > employee.SalarioBruto)
                 {
-                    employeeDeductions.AddRange(result.employeeDeductions);
+                    _logger.LogWarning("ADVERTENCIA: Beneficios superan el 100% del salario");
                 }
+
+                // Guardar en BD si es necesario (capturar errores de guardado por separado)
+                if (_saveInDB && employeeDeductions.Any())
+                {
+                    try
+                    {
+                        _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        _logger.LogError(saveEx, "Error guardando deducciones de empleado, pero continuando con el cálculo");
+                    }
+                }
+
+                if (_saveInDB && employerDeductions.Any())
+                {
+                    try
+                    {
+                        _employerBenefitDeductionService.SaveEmployerBenefitDeductions(employerDeductions);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        _logger.LogError(saveEx, "Error guardando deducciones del empleador, pero continuando con el cálculo");
+                    }
+                }
+
+                return Math.Round(totalEmployerCost, 2);
             }
-
-            Console.WriteLine("PASO TODOS LOS CALCULOS");
-
-            // Guardar todas las deducciones del empleado
-            if (employeeDeductions.Any())
+            catch (Exception ex)
             {
-                _employeeDeductionService.SaveEmployeeDeductions(employeeDeductions);
+                _logger.LogError(ex, "ERROR CRÍTICO en cálculo de beneficios para empleado {CedulaEmpleado}", employee?.CedulaEmpleado);
+                // Solo retornar 0 si el error es en el CÁLCULO, no en el guardado
+                throw;
             }
-
-            Console.WriteLine("SE GUARDO DEDUCUOIN DE EMPLEADO");
-
-            // Guardar todas las deducciones del empleador
-            if (employerDeductions.Any())
-            {
-                _employerBenefitDeductionService.SaveEmployerBenefitDeductions(employerDeductions);
-            }
-            Console.WriteLine("SE GUARDO DEDUCUOIN DE EMPLEADOR");
-
-            return Math.Round(totalEmployerCost, 2);
         }
 
         private async Task<(decimal employerAmount, List<EmployeeDeductionsByPayrollDto> employeeDeductions)> 
@@ -120,14 +177,13 @@ namespace backend.Services
                         employeeBenefit.PensionType.ToString(),
                         employeeBenefit.DependentsCount);
                     
-                    // Separar deducciones de empleador y empleado
                     foreach (var deduction in apiResult.Deductions ?? new List<ApiDeduction>())
                     {
-                        if (deduction.Type == "ER") // Employer
+                        if (deduction.Type == "ER") 
                         {
                             employerAmount += deduction.Amount;
                         }
-                        else if (deduction.Type == "EE") // Employee
+                        else if (deduction.Type == "EE") 
                         {
                             employeeDeductions.Add(new EmployeeDeductionsByPayrollDto
                             {
@@ -140,11 +196,11 @@ namespace backend.Services
                             });
                         }
                     }
-                    Console.WriteLine("PASO API SIN PROBLEMAS");
+                    _logger.LogInformation("PASO API SIN PROBLEMAS");
                     break;
 
                 default:
-                    Console.WriteLine($"Tipo de beneficio no reconocido: {benefitType}");
+                    _logger.LogWarning("Tipo de beneficio no reconocido: {BenefitType}", benefitType);
                     break;
             }
 
@@ -152,20 +208,23 @@ namespace backend.Services
         }
 
         private async Task<ExternalApiResponse> CallExternalApiAsync(
-            string apiName, 
-            EmployeeCalculationDto employee,
-            long idCompany,
-            string? pensionType = null,
-            int? dependentsCount = null)
+             string apiName,
+             EmployeeCalculationDto employee,
+             long idCompany,
+             string? pensionType = null,
+             int? dependentsCount = null)
         {
             try
             {
-                var normalizedApiName = apiName?.ToLowerInvariant() ?? string.Empty;
+                _logger.LogInformation("CALLING API: {ApiName} para {NombreEmpleado}", apiName, employee.NombreEmpleado);
+
+                var normalizedApiName = NormalizeApiName(apiName);
+                _logger.LogInformation("API normalizada: {NormalizedApiName}", normalizedApiName);
 
                 switch (normalizedApiName)
                 {
-                    case "asociacion solidarista":
                     case "asociacionsolidarista":
+                        _logger.LogInformation("API Reconocida: Asociación Solidarista");
                         var solidarityService = _apiFactory.CreateSolidarityAssociationService();
                         return await solidarityService.CalculateContributionAsync(new SolidarityAssociationRequest
                         {
@@ -173,9 +232,8 @@ namespace backend.Services
                             GrossSalary = employee.SalarioBruto
                         });
 
-                    case "privateinsurance":
                     case "seguroprivado":
-                    case "seguro privado":
+                        Console.WriteLine("API Reconocida: Seguro Privado");
                         var insuranceService = _apiFactory.CreatePrivateInsuranceService();
                         return await insuranceService.CalculatePremiumAsync(new PrivateInsuranceRequest
                         {
@@ -184,31 +242,48 @@ namespace backend.Services
                             DependentsCount = dependentsCount ?? 0
                         });
 
-                    case "voluntarypensions":
                     case "pensionesvoluntarias":
-                    case "pensiones voluntarias":
-                        var pensionsService = _apiFactory.CreateVoluntaryPensionsService();
+                        _logger.LogInformation("API Reconocida: Pensiones Voluntaria");
+                        var pensionsService = _apiFactory.CreateVoluntaryPensionsService(); 
                         return await pensionsService.CalculatePremiumAsync(new VoluntaryPensionsRequest
                         {
-                            PlanType = pensionType.ToUpper() ?? "A",
+                            PlanType = pensionType?.ToUpper() ?? "A",
                             GrossSalary = employee.SalarioBruto
                         });
 
                     default:
-                        Console.WriteLine($"API no reconocida: {apiName}");
+                        _logger.LogWarning("API no reconocida: {ApiName}", apiName);
+                        _logger.LogInformation("Buscando: '{NormalizedApiName}'", normalizedApiName);
+                        _logger.LogInformation("Opciones disponibles: asociacionsolidarista, seguroprivado, pensionesvoluntarias");
                         return new ExternalApiResponse();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error calling external API {apiName}: {ex.Message}");
+                _logger.LogError(ex, "Error calling external API {ApiName}", apiName);
                 return new ExternalApiResponse();
             }
         }
 
+        private string NormalizeApiName(string apiName)
+        {
+            if (string.IsNullOrEmpty(apiName))
+                return string.Empty;
+
+            var normalized = apiName.ToLowerInvariant().Replace(" ", "");
+            normalized = normalized
+                .Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u")
+                .Replace("ñ", "n");
+
+            return normalized;
+        }
+
         public List<BenefitDto> GetBenefitsList(long cedulaJuridicaEmpresa)
         {
-            // DEPRECATED: Este m�todo ya no se usa
             return new List<BenefitDto>();
         }
     }
